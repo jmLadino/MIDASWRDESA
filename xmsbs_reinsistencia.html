@@ -1,0 +1,187 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Reinsistencia</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_formularioCaso"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript" ></script>
+    <style>
+        .ocultar {
+            display: none;
+        }
+
+        .obligatorio {
+            font-weight: bold;
+            color: red;
+        }
+
+        .mr-1 {
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var apiToken = "";
+        var idIncident = null;
+        var idAccionEtapa = null;      
+
+        function setDisabled(item, bool) 
+        {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+		
+        function ExecuteSuceso(txtObservacionCaso)
+        {
+            //Marca para hacer el update de la forma nueva o antigua
+			if(true){
+                //Forma nueva
+                debugger;
+                var objeto = {};
+
+                //Usamos el ID del usuario a impersonar
+                var UsuarioAdminID = "d43af6f7-e875-eb11-a812-000d3ab23035"; // (DESA) Dynamics_CRM_MIDAS_CL_DEV
+                //var UsuarioAdminID = "a533cb3f-6583-eb11-a812-000d3abd3579"; // (HOMO y PROD) Dynamics_CRM_MIDAS_CL_DEV
+
+                //Obtenemos el ID del Caso
+                var idCaso = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+                idCaso = idCaso.replace(/[{}]/g, "");
+
+                //Seteamos la prioridad
+                objeto["prioritycode"] = 4;
+
+                //Seteamos la observación
+                var txtObservacionCaso = $("#txtObservacionCaso").val();
+                txtObservacionCaso = txtObservacionCaso.replace(/(\r\n|\n|\r)/gm, " ");
+                objeto["xmsbs_observacionesdevisacion"] = txtObservacionCaso;
+				
+				//Seteamos la fecha de Reinsistencia
+				var today = new Date();
+				objeto["xmsbs_fecha"] = today;
+
+                //Actualizamos impersonado
+                var resultado = SDK.WEBAPI.updateRecordImpersonate(window._executionContext, idCaso, objeto, "incident", UsuarioAdminID, null, null);
+                if(resultado){
+                    var alertStrings = { confirmButtonLabel: "Aceptar", title: "Caso en Reinsistencia", text: "El caso ha aumentado su prioridad para la atención."};
+                    var alertOptions = { height: 120, width: 260 };
+                    Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                        function (success) {
+                            //console.log("Alert dialog closed");
+                            Xrm.Utility.closeProgressIndicator();
+                            JumpStartLibXRM.Fx.formClose(window._executionContext);
+                        },
+                        function (error) {
+                        Xrm.Utility.closeProgressIndicator();
+                            //console.log(error.message);
+                        }
+                    );
+                }
+            }
+            else{
+                //Forma antigua
+                //actualizar la prioridad del caso a En reinsistencia 
+                JumpStartLibXRM.Fx.setValueField(window._executionContext, "prioritycode", 4);                 
+                
+                var txtObservacionCaso = $("#txtObservacionCaso").val();
+                txtObservacionCaso = txtObservacionCaso.replace(/(\r\n|\n|\r)/gm, " ");
+                txtObservacionCaso = txtObservacionCaso.trim();
+                JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionesdevisacion", txtObservacionCaso); 
+
+                //Dejo los campos No Requeridos
+                JumpStartLibXRM.Fx.SetAllFormFieldsOptional(window._executionContext);
+                
+                //Son iguales, hacemos el refresco normal
+                var alertStrings = { confirmButtonLabel: "Aceptar", title: "Caso en Reinsistencia", text: "El caso ha aumentado su prioridad para la atención. La ventana se cerrará"};
+                var alertOptions = { height: 120, width: 260 };
+                Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                    function (success) {
+                        //console.log("Alert dialog closed");
+                        Xrm.Utility.closeProgressIndicator();
+                        JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+                    },
+                    function (error) {
+                    Xrm.Utility.closeProgressIndicator();
+                        //console.log(error.message);
+                    }
+                );
+            }
+            
+            //window.close();
+        }		
+
+        $(document).ready(function () {
+            parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Reinsistencia");
+            $('#dvLoader').css("display", "block");      
+            //debugger;
+            window._executionContext = parent.getContextPopUp2();
+
+            $('#dvLoader').css("display", "none"); 
+            setDisabled("btnResolver", false);
+
+            $("#btnResolver").click(function () {
+				ExecuteSuceso(txtObservacionCaso);
+            });
+        });
+		
+    </script>
+<meta></head>
+<body>
+    <div class="container">
+        <div class="parent" id="dvLoader">
+        <p style="text-align:center">
+            <img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />
+        </p>
+        </div>
+		
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="staticEmail">Observaciones<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <textarea class="form-control" id="txtObservacionCaso" maxlength="1000" rows="3"></textarea>
+            </div>
+        </div>		
+
+        <div class="d-flex justify-content-center">
+            <button id="btnResolver" type="button" class="btn btn-danger">Confirmar</button>
+        </div>
+    </div>
+
+</body></html>

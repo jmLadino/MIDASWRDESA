@@ -1,0 +1,260 @@
+<html><head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js" integrity="sha512-Z8CqofpIcnJN80feS2uccz+pXWgZzeKxDsDNMD/dJ6997/LSRY+W4NmEt9acwR+Gt9OHN0kkI1CTianCwoqcjQ==" crossorigin="anonymous"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery351"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jqueryui1-12-1"></script>
+<!--    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30=" crossorigin="anonymous"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/1.10.100/pdf.min.js" integrity="sha512-yGqX3zcETFF6oOznup6VQ96a1R1NJOSl7EQXa7+a0InqhOiq1KjlmRrnkEifOfc4dxmcrbq4xeC+IxWU1MjrFw==" crossorigin="anonymous"></script>-->
+    <style>
+        #the-canvas {
+            border: 0px solid black;
+            direction: ltr;
+        }
+
+        .ocultar {
+            display: none;
+        }
+        
+        body {
+        background-color: #cccccc;
+        }
+
+        .boton-menu {
+            background-color: #efefef;
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-size: 16px;
+            align-items: center;
+        }
+
+        .boton-menu:hover {
+            background-color: rgb(216, 216, 216);
+            border-bottom: 3px solid #DA0202;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+
+        .boton-menu svg {
+            color: #DA0202;
+            padding-right: 3px;
+        }
+        /*.boton-menu:hover svg {
+            color: white;
+        }*/
+
+        .boton-menu span {
+            color: #DA0202;
+            text-align: center;
+        }
+        .botones{
+            position: fixed;
+            top:0;
+            margin-top: 10px;
+        }
+        .canvas{
+            margin-top:45px;
+        }
+    </style>
+<meta><meta></head>
+<body>
+    <div id="loading">
+        <p style="text-align:center">
+            <img src="xmsbs_loading32gif">
+        </p>
+    </div>
+    <div id="contenedor">
+        <div class="botones" id="botones" style="text-align: right;">
+
+            <label class="boton-menu" id="btnCerrar" onclick="cerrar()">Cerrar</label>
+            <label class="boton-menu" id="btnRetroceder" onclick="retrocederPagina()">Retroceder</label>
+            <label class="boton-menu" id="btnAvanzar" onclick="avanzarPagina()">Avanzar</label>
+            <label class="boton-menu" id="btnGuardar" onclick="guardar()">Subir a Filenet</label>
+
+        </div>
+        <div class="canvas" id="divCanvas">
+            <canvas id="the-canvas"></canvas>
+        </div>
+
+        
+    </div>
+
+    <script>
+        var casoId = null;
+        var base64Content = null;
+        var BASE64_MARKER = ';base64,';
+        var _pdf = null;
+        var _paginaActual = 1;
+        var contenedor = this.document.getElementById("contenedor");
+        contenedor.hidden = true;
+        var canWrite=true;
+              
+        window.addEventListener('message', function (event) {
+            //debugger;
+            console.log('message received:  ' + event.data, event);
+            let package = event.data;
+            casoId = package.casoId;
+            base64Content = package.contenido;
+            canWrite = package.canWrite;
+            if (!base64Content) { base64Content = ""; }
+
+            event.source.postMessage('Ok');
+            
+            var base64Index = base64Content.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+            var base64 = base64Content.substring(base64Index);
+
+            //contenedor.classList.remove("ocultar");
+            //console.log(base64);
+            //debugger;
+            renderPDF(base64);
+            contenedor.hidden = false;
+            $('#loading').hide();
+            if(canWrite==false){
+                $('#btnGuardar').hide();
+            }
+        }, false);
+        
+        function renderPDF(base64) {
+            //debugger;
+            //var pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.js';
+            var pdfData = atob(base64);
+            var loadingTask = pdfjsLib.getDocument({ data: pdfData });
+            loadingTask.promise.then(function (pdf) {
+                console.log('PDF loaded');
+                _pdf = pdf;
+                // Fetch the first page
+                //var pageNumber = 1;
+                let totalPaginas = _pdf.numPages;
+                resolverBotones(_paginaActual, totalPaginas);
+                pdf.getPage(_paginaActual).then(function (page) {
+                    console.log('Page loaded');
+
+                    var scale = 1.5;
+                    var viewport = page.getViewport({ scale: scale });
+
+                    // Prepare canvas using PDF page dimensions
+                    var canvas = document.getElementById('the-canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    // Render PDF page into canvas context
+                    var renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    var renderTask = page.render(renderContext);
+                    renderTask.promise.then(function () {
+                        console.log('Page rendered');
+                    });
+                });
+            }, function (reason) {
+                // PDF loading error
+                console.error(reason);
+            });
+        }
+        function avanzarPagina() {
+            //debugger;
+            _paginaActual = _paginaActual + 1;
+            let totalPaginas = _pdf.numPages;
+            resolverBotones(_paginaActual, totalPaginas);
+            _pdf.getPage(_paginaActual).then(function (page) {
+                console.log('Page loaded');
+
+                var scale = 1.5;
+                var viewport = page.getViewport({ scale: scale });
+
+                // Prepare canvas using PDF page dimensions
+                var canvas = document.getElementById('the-canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                    console.log('Page rendered');
+                });
+            });
+        }
+
+        function retrocederPagina() {
+            //debugger;
+            _paginaActual = _paginaActual - 1;
+            let totalPaginas = _pdf.numPages;
+            resolverBotones(_paginaActual, totalPaginas);
+            _pdf.getPage(_paginaActual).then(function (page) {
+                //console.log('Page loaded');
+
+                var scale = 1.5;
+                var viewport = page.getViewport({ scale: scale });
+
+                // Prepare canvas using PDF page dimensions
+                var canvas = document.getElementById('the-canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                    console.log('Page rendered');
+                });
+            });
+        }
+        function resolverBotones(paginaActual, totalPaginas) {
+            //debugger;
+            let botonRetroceder = document.getElementById("btnRetroceder");
+            let botonAvanzar = document.getElementById("btnAvanzar");
+            if (paginaActual === 1) {
+                botonRetroceder.hidden = true;
+            }
+            else {
+                botonRetroceder.hidden = false;
+            }
+            if (paginaActual === totalPaginas) {
+                botonAvanzar.hidden = true;
+            }
+            else {
+                botonAvanzar.hidden = false;
+            }
+        }
+
+        function cerrar() {
+            window.close();
+        }
+        function guardar() {
+            //debugger;
+            opener.uploadDocumento();
+            window.close();
+        }
+
+        function convertDataURIToBinary(dataURI) {
+            //debugger;
+            var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+            var base64 = dataURI.substring(base64Index);
+            console.log(base64);
+            var raw = window.atob(base64);
+            var rawLength = raw.length;
+            var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+            for (var i = 0; i < rawLength; i++) {
+                array[i] = raw.charCodeAt(i);
+            }
+            return array;
+        }
+    </script>
+
+</body></html>

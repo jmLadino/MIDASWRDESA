@@ -1,0 +1,37 @@
+<html><head>    
+
+    <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="/WebResources/xmsbs_webAPI"></script>
+    <script src="/WebResources/xmsbs_util"></script>    
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+	<script type="text/javascript">
+		function openSucursales() {
+			//debugger;
+			window._executionContext = window.parent.getExecutionContext();
+			window._formContext = window.parent.getExecutionFormContext();
+
+			var pageInput = {
+				pageType: "webresource",
+				webresourceName: "xmsbs_selectorsucursal"
+			};
+			
+			var navigationOptions = {
+				target: 2,
+				width: 800,
+				height: 600,
+				position: 1
+			};
+			
+			window.parent.Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(function success()
+			{}, function error()
+			{}); 
+			
+		 }
+	</script>
+<meta charset="utf-8"> 
+
+<meta><meta></head>
+<body> 
+    <button onclick="openSucursales()">Selección de Sucural</button>
+</body></html>

@@ -1,0 +1,388 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+<!--    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30=" crossorigin="anonymous"></script>-->
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery351"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jqueryui1-12-1"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_repositorioSucesos"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_helperRepositorioSucesos"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial;
+        }
+
+        .ocultar {
+            display: none;
+        }
+
+        .table {
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: 10px;
+        }
+
+            .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+                padding: 6px;
+                line-height: 1.12857143;
+                vertical-align: top;
+                border-top: 1px solid #ddd;
+            }
+
+        .boton {
+            border: 0px;
+            padding-left: 15px;
+            background-color: #efefef;
+            padding-right: 15px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            cursor: pointer;
+            font-family: "Segoe UI", Arial;
+            font-weight: bold;
+            color: rgb(221, 8, 8);
+        }
+
+        .div-texto {
+            border: 1px solid gray;
+            margin: 5px;
+            background-color: #efefef;
+            padding: 5px;
+            max-height: 80%;
+            overflow-y: scroll;
+        }
+
+        .div-botonera {
+            text-align: right;
+            padding-right: 10px;
+            margin-right: 10px;
+        }
+
+        .imagen-check {
+            width: 16px;
+        }
+        .btn-oculto {
+            display: none;
+        }
+
+        .botonera-grilla {
+            position: absolute;
+            bottom: 0;
+            width: 95%;
+            height: 60px;
+        }
+        .tenpct{
+            width:10%;
+        }
+        .seventypct {
+            width: 70%;
+        }
+        .twentypct {
+            width: 20%;
+        }
+    </style>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+</head>
+<body>
+    <div id="contenedorGrilla">
+        <div id="contenedorBotoneraGrilla" class="div-botonera botonera-grilla">
+            <button type="button" class="boton" onclick="cerrarPopup()">Cerrar</button>
+            <button type="button" class="boton" onclick="asociarRespuestas()">Asociar respuestas</button>
+        </div>
+    </div>
+    <div id="loading">
+        <p style="text-align:center">
+            <img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />
+        </p>
+    </div>
+    <div id="contenedorRespuesta">
+        <h4>Contenido de la respuesta seleccionada</h4>
+        <div id="contenedorTexto" class="div-texto">
+
+        </div>
+        <div id="contenedorBotonera" class="div-botonera">
+            <button type="button" class="boton" onclick="cerrar()">Cerrar</button>
+            <button type="button" class="boton" onclick="seleccionar()">Seleccionar</button>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var apiKey = "56C3D9E6-E5B6-4B76-816F-5741FA0420BE";
+        var formContext = null;
+        var data = null;
+        var casoId = null;
+        var respuestasSeleccionadas = [];
+        var respuestasDescargadas = [];
+        var seleccionada = { respuestaId: null, tipoRespuesta: null, contenido: null };
+        var tipoRespuesta = null; //1 email; 2 Push; 3 SMS
+
+        //$(document).ready(function () {
+        $("#contenedorGrilla").hide();
+        $("#contenedorRespuesta").hide();
+        //});
+        window.addEventListener('message', function (event) {
+            debugger;
+            console.log('message received:  ' + event.data, event);
+            let package = event.data;
+            casoId = package.casoId;
+            //formContext = package.context;
+            data = package.data;
+            event.source.postMessage('Ok');
+            renderGrilla(data);
+
+        }, false);
+
+
+        function renderGrilla(data) {
+            debugger;
+
+
+            var divContenedor = document.getElementById("contenedorGrilla");
+            if (data.listRespuestaEmail.length > 0) {
+                let h3E = document.createElement('h3');
+                h3E.innerHTML = '<h3> Respuestas para Email</h3>';
+                divContenedor.append(h3E);
+                var tableTempEmail = document.createElement('table');
+                tableTempEmail.className = 'table';
+                for (var g = 0; g < data.listRespuestaEmail.length; g++) {
+                    let trE = document.createElement('tr');
+
+                    let tdImgE = document.createElement('td');
+                    tdImgE.className = 'tenpct';
+                    let imgE = document.createElement('img');
+                    imgE.src = 'https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_greenCheck';
+                    imgE.className = 'imagen-check ' + 'img_1_' + data.listRespuestaEmail[g].respuesta.id;
+                    imgE.id = 'img_' + data.listRespuestaEmail[g].respuesta.id;
+                    imgE.hidden = true;
+                    tdImgE.append(imgE);
+                    trE.append(tdImgE);
+                    let tdNombreE = document.createElement('td');
+                    tdNombreE.className = 'seventypct';
+                    tdNombreE.innerHTML = data.listRespuestaEmail[g].respuesta.nombre;
+                    trE.append(tdNombreE);
+                    let tdPreviewE = document.createElement('td');
+                    tdPreviewE.className = 'twentypct';
+                    let btnPreviewE = document.createElement('button');
+                    btnPreviewE.id = data.listRespuestaEmail[g].respuesta.id;
+                    btnPreviewE.className = "boton 1_ver";
+                    btnPreviewE.innerHTML = 'Ver';
+                    btnPreviewE.onclick = function (event) {
+                        let id = event.currentTarget.id;
+                        tipoRespuesta = 1;
+                        getRespuesta(id, tipoRespuesta);
+                    };
+                    tdPreviewE.append(btnPreviewE);
+                    let btnDesmarcarE = document.createElement('button');
+                    btnDesmarcarE.id = 'des_1_' + data.listRespuestaEmail[g].respuesta.id;
+                    btnDesmarcarE.className = "boton btn-oculto";
+                    btnDesmarcarE.innerHTML = 'Desmarcar';
+                    btnDesmarcarE.onclick = function () {
+                        debugger;
+                        let id = event.currentTarget.id;
+                        tipoRespuesta = 1;
+                        desmarcarRespuesta(id, tipoRespuesta);
+                    }
+                    tdPreviewE.append(btnDesmarcarE);
+                    trE.append(tdPreviewE);
+                    tableTempEmail.append(trE);
+
+                }
+
+                divContenedor.append(tableTempEmail);
+            }
+            if (data.listRespuestaPush.length > 0) {
+                let h3P = document.createElement('h3');
+                h3P.innerHTML = '<h3> Respuestas para Push</h3>';
+                divContenedor.append(h3P);
+                var tableTempPush = document.createElement('table');
+                tableTempPush.className = 'table';
+                for (var h = 0; h < data.listRespuestaPush.length; h++) {
+                    let trP = document.createElement('tr');
+
+                    let tdImgP = document.createElement('td');
+                    tdImgP.className = 'tenpct';
+                    let imgP = document.createElement('img');
+                    imgP.src = 'https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_greenCheck';
+                    imgP.className = 'imagen-check ' + 'img_2_' + data.listRespuestaPush[h].respuesta.id;
+                    imgP.id = 'img_2_' + data.listRespuestaPush[h].respuesta.id;
+                    imgP.hidden = true;
+                    tdImgP.append(imgP);
+                    trP.append(tdImgP);
+                    let tdNombreP = document.createElement('td');
+                    tdNombreP.className = 'seventypct';
+                    tdNombreP.innerHTML = data.listRespuestaPush[h].respuesta.nombre;
+                    trP.append(tdNombreP);
+                    let tdPreviewP = document.createElement('td');
+                    tdPreviewP.className = 'twentypct';
+                    let btnPreviewP = document.createElement('button');
+                    btnPreviewP.id = '2_' + data.listRespuestaPush[h].respuesta.id;
+                    btnPreviewP.className = "boton 2_ver";
+                    btnPreviewP.innerHTML = 'Ver';
+                    btnPreviewP.onclick = function (event) {
+                        debugger;
+                        let id = event.currentTarget.id;
+                        tipoRespuesta = 2;
+                        getRespuesta(id, tipoRespuesta);
+
+                    };
+                    tdPreviewP.append(btnPreviewP);
+                    let btnDesmarcarP = document.createElement('button');
+                    btnDesmarcarP.id = 'des_2_' + data.listRespuestaPush[h].respuesta.id;
+                    btnDesmarcarP.className = "boton btn-oculto";
+                    btnDesmarcarP.innerHTML = 'Desmarcar';
+                    btnDesmarcarP.onclick = function () {
+                        debugger;
+                        let id = event.currentTarget.id;
+                        tipoRespuesta = 2;
+                        desmarcarRespuesta(id, tipoRespuesta);
+                    }
+                    tdPreviewP.append(btnDesmarcarP);
+                    trP.append(tdPreviewP);
+                    tableTempPush.append(trP);
+                }
+                divContenedor.append(tableTempPush);
+            }
+            if (data.listRespuestaSMS.length > 0) {
+                let h3S = document.createElement('h3');
+                h3S.innerHTML = '<h3> Respuestas para SMS</h3>';
+                divContenedor.append(h3S);
+                var tableTempSMS = document.createElement('table');
+                tableTempSMS.className = 'table';
+                for (var i = 0; i < data.listRespuestaSMS.length; i++) {
+                    let tr = document.createElement('tr');
+
+                    let tdImg = document.createElement('td');
+                    tdImg.className = 'tenpct';
+                    let img = document.createElement('img');
+                    img.src = 'https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_greenCheck';
+                    img.className = 'imagen-check ' + 'img_3_' + data.listRespuestaSMS[i].respuesta.id;
+                    img.id = 'img_3_' + data.listRespuestaSMS[i].respuesta.id;
+                    img.hidden = true;
+                    tdImg.append(img);
+                    tr.append(tdImg);
+                    let tdNombre = document.createElement('td');
+                    tdNombre.className = 'seventypct';
+                    tdNombre.innerHTML = data.listRespuestaSMS[i].respuesta.nombre;
+                    tr.append(tdNombre);
+                    let tdPreview = document.createElement('td');
+                    tdPreview.className = 'twentypct';
+                    let btnPreviewS = document.createElement('button');
+                    btnPreviewS.id = '3_' + data.listRespuestaSMS[i].respuesta.id;
+                    btnPreviewS.className = "boton 3_ver";
+                    btnPreviewS.innerHTML = 'Ver';
+                    btnPreviewS.onclick = function (event) {
+                        debugger;
+                        let id = event.currentTarget.id;
+                        tipoRespuesta = 3;
+                        getRespuesta(id, tipoRespuesta);
+                    };
+                    tdPreview.append(btnPreviewS);
+                    let btnDesmarcarS = document.createElement('button');
+                    btnDesmarcarS.id = 'des_3_' + data.listRespuestaSMS[i].respuesta.id;
+                    btnDesmarcarS.className = "boton btn-oculto";
+                    btnDesmarcarS.innerHTML = 'Desmarcar';
+                    btnDesmarcarS.onclick = function () {
+                        debugger;
+                        let id = event.currentTarget.id;
+                        tipoRespuesta = 3;
+                        desmarcarRespuesta(id, tipoRespuesta);
+                    }
+                    tdPreview.append(btnDesmarcarS);
+                    tr.append(tdPreview);
+                    tableTempSMS.append(tr);
+                }
+                divContenedor.append(tableTempSMS);
+            }
+            $("#loading").hide();
+            $("#contenedorGrilla").show();
+        }
+        function getRespuesta(id, tipoRespuesta) {
+            debugger;
+            $("#contenedorGrilla").hide();
+            $("#loading").show();
+            let toRemove = tipoRespuesta + '_';
+            let cleanId = id.replace(toRemove, '');
+            seleccionada.respuestaId = cleanId;
+            seleccionada.tipoRespuesta = tipoRespuesta;
+
+            let rutaAPI = 'RespuestaPredefinida/GetRespuesta/' + cleanId + '/' + casoId;
+            apiGet(rutaAPI, function (data) {
+                debugger;
+                if (data && data.success) {
+                    respuestasDescargadas.push(data.respuesta.respuesta);
+                    let contenido = data.respuesta.respuesta.contenido;
+                    seleccionada.contenido = contenido;
+                    let contenedor = document.getElementById("contenedorTexto");
+                    contenedor.innerHTML = contenido;
+                    $("#loading").hide();
+                    $("#contenedorRespuesta").show();
+
+                }
+
+            });
+
+
+        }
+        function desmarcarRespuesta(id, tipoRespuesta) {
+            debugger;
+            let botonDeseleccionar = document.getElementById(id);
+            botonDeseleccionar.classList.add("btn-oculto");
+            let claseVer = tipoRespuesta + '_ver';
+            let botonesVerSeccion = document.getElementsByClassName(claseVer);
+            for (var i = 0; i < botonesVerSeccion.length; i++) {
+                botonesVerSeccion[i].classList.remove('btn-oculto');
+            }
+            let idChecked = 'img_' + seleccionada.tipoRespuesta + '_' + seleccionada.respuestaId;
+            let checkedElement = document.getElementById(idChecked);
+            seleccionada = { respuestaId: null, tipoRespuesta: null, contenido: null };
+            checkedElement.hidden = true;
+        }
+        function cerrar() {
+            seleccionada = { respuestaId: null, tipoRespuesta: null, contenido: null };
+            $("#contenedorGrilla").show();
+            $("#contenedorRespuesta").hide();
+        }
+        function seleccionar() {
+            debugger;
+            respuestasSeleccionadas.push(seleccionada);
+            let idBotonDeseleccionar = 'des_' + seleccionada.tipoRespuesta + '_' + seleccionada.respuestaId; 
+            let botonDeseleccionar = document.getElementById(idBotonDeseleccionar);
+            botonDeseleccionar.classList.remove("btn-oculto");
+            let claseVer = seleccionada.tipoRespuesta + '_ver';
+            let botonesVerSeccion = document.getElementsByClassName(claseVer);
+            for (var i = 0; i < botonesVerSeccion.length; i++) {
+                botonesVerSeccion[i].classList.add('btn-oculto');
+            }
+            let idChecked = 'img_' + seleccionada.tipoRespuesta + '_' + seleccionada.respuestaId;
+            let checkedElement = document.getElementById(idChecked);
+            checkedElement.hidden = false;
+            //let checkElementClass = 'img_' + seleccionada.respuestaId;
+            //let checks = document.getElementsByClassName(checkElementClass);
+            //for (var i = 0; i < checks.length; i++) {
+            //    if (checks[i].hidden == true) {
+            //        checks[i].hidden = false;
+            //    }
+            //}
+
+            $("#contenedorGrilla").show();
+            $("#contenedorRespuesta").hide();
+
+
+        }
+        function cerrarPopup() {
+            window.close();
+        }
+        function asociarRespuestas() {
+            debugger;
+            console.log(respuestasSeleccionadas)
+            opener.setRespuestasCaso(respuestasSeleccionadas);
+            //window.close();
+        }
+
+    </script>
+
+
+</body>
+</html>

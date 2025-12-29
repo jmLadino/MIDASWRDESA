@@ -1,0 +1,701 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Sucursales y Equipos</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="/WebResources/xmsbs_webAPI"></script>
+    <script src="/WebResources/xmsbs_util"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+
+    <!-- TABLAS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/locale/es.js"></script>
+
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="/WebResources/xmsbs_checkboxjs" type="text/javascript"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+    <!--<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>-->
+
+    <link href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css" rel="stylesheet" type="text/css">
+    <!--<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />-->
+    <script src="/WebResources/xmsbs_checkboxcss" type="text/css"></script>
+
+    <style>
+		h5, .h5 {
+			font-size: 14px;
+			padding: 10px;
+		}
+	
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        thead th {
+            background-color: rgb(221, 8, 8);
+            color: white;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .NoBorde {
+            border-style: none;
+        }
+
+        #tblSucursales span {
+            display: none;
+        }
+		
+		#tblEquipos span {
+            display: none;
+        }
+
+        .msgerror {
+            color: rgb(234, 6, 0);
+        }
+    </style>
+    <script type="text/javascript">
+        var parametroApiKey = "AuthApi";
+        var parametroAzure = "AzureURL";
+        var baseUrl = "https://chld2weuapppmidas001.csbsand.cl.corp/";
+        //var baseUrl = "https://chli2weuapppmidas001.csbsanh.cl.corp/";
+        //var baseUrl = "https://chlp2weuapppmidas001.csbsan.cl.corp/";
+        var apiKey = "56C3D9E6-E5B6-4B76-816F-5741FA0420BE";
+        var UsuarioAdminID = "d43af6f7-e875-eb11-a812-000d3ab23035"; // Dynamics_CRM_MIDAS_CL_DEV
+
+        // DEV:  {d43af6f7-e875-eb11-a812-000d3ab23035}
+        // HOMO: {d43af6f7-e875-eb11-a812-000d3ab23035}
+        // PROD: {a533cb3f-6583-eb11-a812-000d3abd3579}
+
+        var IncidentId = null;
+		var NCaso = null;
+		var ComercioId = null;
+		var ComercioName = "";
+		var LstEquiposCaso = null;
+		var OwnerId = null;
+
+        var tblSucursales = null;
+		var tblEquipos = null;
+        var listSucursalesSeleccionadas = [];
+		var listEquiposSeleccionados = [];
+		var LstEquipos = null;
+
+        function get(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+        function post(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+        function openModal(mensaje, CierraModal) {
+            $("#pMensaje").html(mensaje);
+            $('#alertModal').modal("show");
+			
+			if (CierraModal)
+				$("#btnAceptarModal").on("click", cerrarModal);
+			else
+				$("#btnAceptarModal").off("click", cerrarModal);
+        }
+		
+		function SetVisibleDIV(TagDiv, esVisible){
+			if (esVisible)
+				$("#" + TagDiv).css("display", "block");
+			else
+				$("#" + TagDiv).css("display", "none");
+		}
+
+		function getGlobaVar(){
+			// Variables Globales
+            window._executionContext = window.parent.getExecutionContextAdquirencia();
+            window._formContext = window.parent.getExecutionFormContextAdquirencia();
+            IncidentId = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+			NCaso = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_numerocorrelativo", null);
+			ComercioId = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_comercio", null)[0].id;
+			ComercioName = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_comercio", null)[0].name;
+			OwnerId = Xrm.Utility.getGlobalContext().userSettings.userId;
+		}
+
+        $(document).ready(function () {
+            debugger;
+			getGlobaVar();
+			LstEquiposCaso = OData_getEquiposCaso();
+			// por default todos los DIVS están ocultos
+            LoadSucursales();
+        });
+
+        function LoadSucursales() {
+			// limpia selección
+			listSucursalesSeleccionadas = [];
+			listEquiposSeleccionados = [];
+		
+			SetVisibleDIV("dvLoaderSucursales", true);
+			var lstSuc = OData_getSucursalesCuenta();
+			SetVisibleDIV("dvLoaderSucursales", false);
+			
+			
+			SetVisibleDIV("DIVSucursales", true);
+			if (!lstSuc || lstSuc.value.length == 0)
+			{
+				$('#lblTituloSucursales').html("No existen Sucursales para el Comercio: " + ComercioName);
+				return;
+			}
+		 
+			$('#lblTituloSucursales').html("Se encontraron " + lstSuc.value.length + " sucursales para el Comercio: " + ComercioName);
+			PrintSucursales(lstSuc.value);
+			SetVisibleDIV("divTblSucursales", true);
+        }
+		
+        function PrintSucursales(results) {
+			debugger;
+			
+			var html = '';
+			results.forEach(function(item) {
+				html += '<tr>';
+				html += '	<td>' + formatTexto(item.xmsbs_sucursalid) + '</td>';
+				html += '	<td>' + formatTexto(item.xmsbs_nsucursal) + '</td>';
+				html += '	<td>' + formatTexto(item.xmsbs_name) + '</td>';
+				html += '</tr>';
+			});
+			
+            $("#tbodySucursales").html(html);
+            tblSucursales = $('#tblSucursales').DataTable({
+                "language": {
+                    "sProcessing": "Procesando...",
+                    "sLengthMenu": "Mostrar _MENU_ registros",
+                    "sZeroRecords": "No se encontraron resultados",
+                    "sEmptyTable": "Ningún dato disponible en esta tabla",
+                    "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                    "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                    "sSearch": "Buscar:",
+                    "sInfoThousands": ",",
+                    "sdvLoaderRecords": "Cargando...",
+                    "oPaginate": {
+                        "sFirst": "Primero",
+                        "sLast": "Último",
+                        "sNext": "Siguiente",
+                        "sPrevious": "Anterior"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                    },
+                    "buttons": {
+                        "copy": "Copiar",
+                        "colvis": "Visibilidad"
+                    }
+                },
+                select: {
+                    "style": "multi"
+                },
+                "info": false,
+                "columnDefs": [
+                    {
+                        "targets": [0],
+                        "checkboxes": {
+                            "selectRow": true
+                        },
+                        "searchable": false,
+                        "orderable": false
+                    }
+                ],
+                "order": [[1, "asc"]]
+            });
+        }
+		
+		function Siguiente(){
+			debugger;
+			if (!ValidaSucursales())
+				return;
+
+			SetVisibleDIV("DIVSucursales", false);
+
+			LoadEquipos();
+		}
+
+        function ValidaSucursales() {
+            debugger;
+            listSucursalesSeleccionadas = [];
+            var rows_selected = tblSucursales.column(0).checkboxes.selected();
+
+            $.each(rows_selected, function (index, rowId) {
+				listSucursalesSeleccionadas.push(rowId);
+				
+                /*
+				var lstSucSel = LstSucursales.filter(x => x.xmsbs_sucursalid == rowId);
+				let SucursalID = rowId;
+					
+                let SucursalNum = "";
+                if (lstSucSel[0].xmsbs_nsucursal != null)
+                    SucursalNum = lstSucSel[0].xmsbs_nsucursal;
+					
+                let SucursalNombre = "";
+                if (lstSucSel[0].xmsbs_name != null)
+                    SucursalNombre = lstSucSel[0].xmsbs_name;
+					
+                if (lstSucSel != null) {
+                    var itemSucursal = new Object();
+
+                    itemSucursal = {
+                        "SucursalID": SucursalID,
+                        "SucursalNum": SucursalNum,
+                        "SucursalNombre": SucursalNombre
+                    };
+                    listSucursalesSeleccionadas.push(itemSucursal);
+                }*/
+            });
+
+			if (listSucursalesSeleccionadas.length == 0){
+				openModal("Debe seleccionar al menos una sucursal.", false);
+				return false;
+			}
+			
+			return true;
+        }		
+		
+        function LoadEquipos() {
+			debugger;	
+			listEquiposSeleccionados = [];
+			
+			SetVisibleDIV("dvLoaderEquipos", true);
+			var lstEquipos = OData_getEquiposSucursales(listSucursalesSeleccionadas);
+			SetVisibleDIV("dvLoaderEquipos", false);
+			
+			SetVisibleDIV("DIVEquipos", true);
+			if (!lstEquipos || lstEquipos.value.length == 0)
+			{
+				$('#lblTituloEquipos').html("No existen equipos para las sucursales seleccionadas");
+				return;
+			}
+		 
+			$('#lblTituloEquipos').html("Seleccione Equipos");
+	 
+			// Dibuja tabla de Sucursales
+			PrintEquipos(lstEquipos.value);
+			SetVisibleDIV("divTblEquipos", true);
+        }
+		
+        function PrintEquipos(results) {
+			debugger;
+			
+            LstEquipos = results;
+			
+			// N° Sucursal
+			// Sucursal
+			// Marca
+			// Terminal físico
+			// Terminal lógico
+			// Cantidad equipos
+			
+			var html = '';
+			results.forEach(function(item) {
+				html += '<tr>';
+				html += '	<td>' + formatTexto(item.xmsbs_equipoadquirenciaid) + '</td>';
+				html += '	<td>' + formatTexto(item.xmsbs_sucursal.xmsbs_nsucursal) + '</td>';
+				html += '	<td>' + formatTexto(item.xmsbs_sucursal["_xmsbs_comercio_value@OData.Community.Display.V1.FormattedValue"]) + '</td>';
+				html += '	<td>' + formatTexto(item["xmsbs_marca@OData.Community.Display.V1.FormattedValue"]) + '</td>';
+				html += '	<td>' + formatTexto(item.xmsbs_terminalfisico) + '</td>';
+				html += '	<td>' + formatTexto(item.xmsbs_terminallogico) + '</td>';
+				html += '	<td>' + formatTexto(item.xmsbs_cantidadequipos) + '</td>';
+				
+				html += '</tr>';
+			});
+			
+            $("#tbodyEquipos").html(html);
+            tblEquipos = $('#tblEquipos').DataTable({
+                "language": {
+                    "sProcessing": "Procesando...",
+                    "sLengthMenu": "Mostrar _MENU_ registros",
+                    "sZeroRecords": "No se encontraron resultados",
+                    "sEmptyTable": "Ningún dato disponible en esta tabla",
+                    "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                    "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                    "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                    "sSearch": "Buscar:",
+                    "sInfoThousands": ",",
+                    "sdvLoaderRecords": "Cargando...",
+                    "oPaginate": {
+                        "sFirst": "Primero",
+                        "sLast": "Último",
+                        "sNext": "Siguiente",
+                        "sPrevious": "Anterior"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                    },
+                    "buttons": {
+                        "copy": "Copiar",
+                        "colvis": "Visibilidad"
+                    }
+                },
+                select: {
+                    "style": "multi"
+                },
+                "info": false,
+                "columnDefs": [
+                    {
+                        "targets": [0],
+                        "checkboxes": {
+                            "selectRow": true
+                        },
+                        "searchable": false,
+                        "orderable": false
+                    }
+                ],
+                "order": [[1, "asc"]]
+            });
+        }
+
+		function Volver(){
+			SetVisibleDIV("DIVEquipos", false);
+            if (tblSucursales != null) 
+                tblSucursales.destroy();
+			if (tblEquipos != null) 
+				tblEquipos.destroy();
+			LoadSucursales();
+		}
+
+		function GuardarEquipos(){
+			debugger;
+			if (!ValidaEquipos())
+				return;
+
+			var rows_selected = tblEquipos.column(0).checkboxes.selected();
+			var RegistroCreados = 0;
+
+            $.each(rows_selected, function(index, rowId){
+                debugger;
+				
+				var lstEqSel = LstEquipos.filter(x => x.xmsbs_equipoadquirenciaid == rowId);
+				
+				let SucursalID = "";
+				if (lstEqSel[0]._xmsbs_sucursal_value != null)
+					SucursalID = lstEqSel[0]._xmsbs_sucursal_value;
+				
+				var CreaRegistro = false;
+				
+				if (LstEquiposCaso.value.length == 0){
+					CreaRegistro = true;
+				}
+				else{
+					// lee en CRM, si el registro no existe, lo crea, la llave es: Sucursal, Equipo
+					var lstEqCRM = LstEquiposCaso.value.filter(x => x._xmsbs_sucursal_value == SucursalID &&
+																	x._xmsbs_equipoadquirencia_value == rowId.replace(/[{}]/g, ""));
+					if (lstEqCRM == null || lstEqCRM.length == 0)
+						CreaRegistro = true;
+				}
+				
+				if (CreaRegistro)
+				{
+					// crea el registro
+					var objeto = {};
+					objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId.replace(/[{}]/g, "") + ")";
+					objeto["xmsbs_equipoadquirencia@odata.bind"] = "/xmsbs_equipoadquirencias(" + rowId.replace(/[{}]/g, "") + ")";
+					objeto["xmsbs_sucursal@odata.bind"] = "/xmsbs_sucursals(" + SucursalID.replace(/[{}]/g, "") + ")";
+					
+					//NCaso - Sucursal - Equipo
+					objeto["xmsbs_name"] = NCaso + " - " + lstEqSel[0].xmsbs_sucursal["_xmsbs_comercio_value@OData.Community.Display.V1.FormattedValue"] + " - " + lstEqSel[0].xmsbs_name; 
+					//objeto["ownerid@odata.bind"] = "/systemusers(" + OwnerId + ")";
+					debugger;
+					var resultado = SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, "xmsbs_equipocaso", UsuarioAdminID);
+					//var resultado = SDK.WEBAPI.createRecord(window._executionContext, objeto, "xmsbs_equipocaso");
+					
+					RegistroCreados++;
+				}
+			});
+			
+			if (RegistroCreados > 0)
+				openModal("Se han agregado " + RegistroCreados + " equipos al Caso.", true);
+			else
+				openModal("No existen cambios.", true);
+		}
+		
+        function ValidaEquipos() {
+            debugger;
+            listEquiposSeleccionados = [];
+            var rows_selected = tblEquipos.column(0).checkboxes.selected();
+
+            $.each(rows_selected, function (index, rowId) {
+				listEquiposSeleccionados.push(rowId);
+            });
+
+			if (listEquiposSeleccionados.length == 0){
+				openModal("Debe seleccionar al menos un equipo.", false);
+				return false;
+			}
+			
+			return true;
+        }		
+
+        
+        function setDisabled(item, bool) {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+
+        function SoloNumeros(input) {
+            //debugger;
+            var campo = input.value; // Obtiene el valor inicial del input
+            if (campo) {
+                campo = campo.replace(/\D/g, '');
+                input.value = campo;
+            }
+        }
+
+        function formatTexto(texto) {
+            //debugger;
+            if (texto != null && texto != undefined) {
+                if (texto.toString().toLowerCase() == "null")
+                    texto = "";
+            }
+            else {
+                texto = "";
+            }
+
+            return texto;
+        }
+
+        function refrescarGrillaEnCaso() {
+            //debugger;
+            var subgrid = window._formContext.ui.controls.get("EquiposCaso");
+            if (subgrid)
+                subgrid.refresh();
+        }
+        
+        function cerrarModal() {
+            //debugger;
+            refrescarGrillaEnCaso();
+            if (tblSucursales != null) 
+                tblSucursales.destroy();
+			if (tblEquipos != null) 
+				tblEquipos.destroy();
+			
+            window.close();
+        }
+
+        // ODATA
+        function OData_getEquiposCaso() {
+            // Devuelve los registros actuales del caso
+            var entityType = "xmsbs_equipocaso";
+            var query = "$select=xmsbs_equipocasoid,xmsbs_name,_xmsbs_caso_value,_xmsbs_equipoadquirencia_value,_xmsbs_sucursal_value";
+            query += "&$filter=(_xmsbs_caso_value eq '" + IncidentId.replace(/[{}]/g, "") + "' and statecode eq 0)";
+            query += "&$orderby=xmsbs_name asc";
+
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+		
+        function OData_getSucursalesCuenta() {
+            // se listan sucursales activas, y que tengan al menos 1 equipo.
+            //var ComercioId = "af7eb993-6593-eb11-b1ac-0022489a15b1";
+            var entityType = "xmsbs_sucursal";
+            var query = "$select=xmsbs_sucursalid,xmsbs_name,xmsbs_tiposucursal,xmsbs_tipoproducto,xmsbs_subtipoproducto,xmsbs_region,xmsbs_nsucursal,xmsbs_indicadorpagodescentralizado,xmsbs_ecommerce,xmsbs_direccioncomercial,xmsbs_comuna,_xmsbs_comercio_value";
+            query += "&$filter=(_xmsbs_comercio_value eq '" + ComercioId.replace(/[{}]/g, "") + "' and statecode eq 0) and (xmsbs_xmsbs_sucursal_xmsbs_equipoadquirencia_sucursal/any(o1:(o1/xmsbs_equipoadquirenciaid ne null)))";
+            query += "&$orderby=xmsbs_name asc";
+
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+
+        function OData_getEquiposSucursales(ListSucursalID) {
+            // https://midaschiledesa.crm2.dynamics.com/api/data/v9.2/xmsbs_equipoadquirencias?
+            //$select=xmsbs_tipoequipos,xmsbs_tipodespachoequipos,xmsbs_cantidadequipos,xmsbs_tipodedespacho,xmsbs_equipoadquirenciaid,_xmsbs_sucursal_value,xmsbs_tipodespacho,xmsbs_tipodeequipos,xmsbs_terminallogico,xmsbs_terminalfisico,xmsbs_name,xmsbs_marca
+            //&$expand=xmsbs_sucursal($select=xmsbs_nsucursal,_xmsbs_comercio_value)
+            //&$filter=(statecode eq 0 and Microsoft.Dynamics.CRM.In(PropertyName='xmsbs_sucursal',PropertyValues=['%7b28221159-736D-EC11-8943-000D3AB4DEAF%7d','%7bD13DC57E-A56D-EC11-8943-000D3AB4DEAF%7d','%7bD119C61E-4996-EB11-B1AC-000D3ADA5008%7d','%7bF0DB2382-7693-EB11-B1AC-0022489A13E7%7d'
+            //&$orderby=_xmsbs_sucursal_value asc,xmsbs_name asc
+
+			debugger;
+			
+            var entityType = "xmsbs_equipoadquirencia";
+            var query = "$select=xmsbs_tipoequipos,xmsbs_tipodespachoequipos,xmsbs_cantidadequipos,xmsbs_tipodedespacho,xmsbs_equipoadquirenciaid,_xmsbs_sucursal_value,xmsbs_tipodespacho,xmsbs_tipodeequipos,xmsbs_terminallogico,xmsbs_terminalfisico,xmsbs_name,xmsbs_marca";
+            query += "&$expand=xmsbs_sucursal($select=xmsbs_nsucursal,_xmsbs_comercio_value)";
+            query += "&$filter=(statecode eq 0 and Microsoft.Dynamics.CRM.In(PropertyName='xmsbs_sucursal',PropertyValues=[" + "'" + ListSucursalID.join("','") + "'" + "]))";
+            query += "&$orderby=_xmsbs_sucursal_value asc,xmsbs_name asc";
+
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+    </script>
+
+    <meta>
+</head>
+<body>
+    <form autocomplete="off">
+
+        <div class="data-container">
+		
+			<div class="parent" id="dvLoaderSucursales" style="display:none">
+				<p style="text-align:center">
+					<img src="xmsbs_loading32gif">
+					<br />
+					<span>Cargando Sucursales</span>
+				</p>
+			</div>		
+		
+            <div id="DIVSucursales" style="display:none">
+			
+				<h5 class="h5">
+					<label id="lblTituloSucursales">[Título]</label>
+				</h5>
+			
+                <div class="d-flex justify-content-center">
+                    <div style="display:none">
+                        <button id="btnBuscarSucursales" type="button" class="btn btn-danger" onclick="this.disabled=true;consultarSucursales()">Buscar Sucursales</button>
+                    </div>
+                </div>
+
+                <div id="divTblSucursales" class="container" style="display:none">
+                    <table id="tblSucursales" class="table cell-border">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">N° Sucursal</th>
+                                <th scope="col">Nombre Sucursal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodySucursales"></tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-center">
+                        <button id="btnSiguiente" type="button" class="btn btn-danger" onclick="Siguiente()">Siguiente</button>
+                    </div>
+                </div>
+			</div>
+			
+			<div class="parent" id="dvLoaderEquipos" style="display:none">
+				<p style="text-align:center">
+					<img src="xmsbs_loading32gif">
+					<br />
+					<span>Cargando Equipos</span>
+				</p>
+			</div>
+			
+			<div id="DIVEquipos" style="display:none">
+			
+				<h5 class="h5">
+					<label id="lblTituloEquipos">[Título]</label>
+				</h5>
+			
+                <div id="divTblEquipos" class="container" style="display:none">
+                    <table id="tblEquipos" class="table cell-border">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">N° Sucursal</th>
+                                <th scope="col">Sucursal</th>
+                                <th scope="col">Marca</th>
+                                <th scope="col">Terminal físico</th>
+                                <th scope="col">Terminal lógico</th>
+                                <th scope="col">Cantidad equipos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyEquipos"></tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-center">
+						<button id="btnVolver" type="button" class="btn btn-danger" onclick="Volver()">Volver</button>
+						&nbsp;&nbsp;
+                        <button id="btnGuardar" type="button" class="btn btn-danger" onclick="GuardarEquipos()">Guardar</button>
+                    </div>
+                </div>
+
+                <div id="dvSavingSucursalesEquipos" style="display:none">
+                    <p style="text-align:center">
+                        <img src="xmsbs_loading32gif">
+                    </p>
+                </div>
+            </div>
+
+		</div>
+		
+        <!-- Modal -->
+        <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Información</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="pMensaje"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="btnAceptarModal" type="button" class="btn btn-danger" data-dismiss="modal">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</body>
+</html>

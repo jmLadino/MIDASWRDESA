@@ -1,0 +1,530 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Asignar Jefe Integrante UR</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_FormUnidadResolutora"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <style>
+        .ocultar {
+            display: none;
+        }
+
+        .obligatorio {
+            font-weight: bold;
+            color: red;
+        }
+
+        .mr-1 {
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var apiToken = "";
+        var listUR = null;
+        var idUR = null;
+        var idExecuteUsuario  = null;
+
+        function get(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+        
+        function getV2(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+
+        function post(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+        function postV2(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+
+        function setDisabled(item, bool) {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+        
+        function buscarJefesPlataformaUR(idUR){
+			
+			// https://midaschiledesa.crm2.dynamics.com/api/data/v9.2/systemusers?$select=systemuserid,xmsbs_rut,fullname&$expand=xmsbs_systemuser_xmsbs_integranteur_jefeplataforma($filter=(statecode eq 0 and _xmsbs_unidadresolutora_value eq e80bb93b-38fd-eb11-94ee-00224899c4b7))&$filter=(xmsbs_systemuser_xmsbs_integranteur_jefeplataforma/any(o1:(o1/statecode eq 0 and o1/_xmsbs_unidadresolutora_value eq e80bb93b-38fd-eb11-94ee-00224899c4b7)))
+			// https://midaschilepro.crm2.dynamics.com/api/data/v9.2/systemusers?$select=systemuserid,xmsbs_rut,fullname&$expand=xmsbs_systemuser_xmsbs_integranteur_jefeplataforma($filter=(statecode eq 0 and _xmsbs_unidadresolutora_value eq e80bb93b-38fd-eb11-94ee-00224899c4b7))&$filter=(xmsbs_systemuser_xmsbs_integranteur_jefeplataforma/any(o1:(o1/statecode eq 0 and o1/_xmsbs_unidadresolutora_value eq e80bb93b-38fd-eb11-94ee-00224899c4b7)))
+			
+            //var entityType = "systemusers";
+            //var query = "$select=fullname,systemuserid&$expand=xmsbs_systemuser_xmsbs_integranteur_jefeplataforma($filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and statecode eq 0))&$filter=(xmsbs_systemuser_xmsbs_integranteur_jefeplataforma/any(o1:(o1/_xmsbs_unidadresolutora_value eq "+idUR+" and o1/statecode eq 0)))&$orderby=fullname asc";
+            //var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            //return resultado;
+			
+			//https://midaschiledesa.crm2.dynamics.com/api/data/v9.2/xmsbs_integranteurs?$select=_xmsbs_jefeplataforma_value&$expand=xmsbs_jefeplataforma($select=fullname)&$filter=(_xmsbs_unidadresolutora_value eq e80bb93b-38fd-eb11-94ee-00224899c4b7 and _xmsbs_jefeplataforma_value ne null and statecode eq 0) and (xmsbs_jefeplataforma/systemuserid ne null)
+			//https://midaschilepro.crm2.dynamics.com/api/data/v9.2/xmsbs_integranteurs?$select=_xmsbs_jefeplataforma_value&$expand=xmsbs_jefeplataforma($select=fullname)&$filter=(_xmsbs_unidadresolutora_value eq e80bb93b-38fd-eb11-94ee-00224899c4b7 and _xmsbs_jefeplataforma_value ne null and statecode eq 0) and (xmsbs_jefeplataforma/systemuserid ne null)
+			
+            var entityType = "xmsbs_integranteurs";
+            var query = "$select=_xmsbs_jefeplataforma_value";
+			query += "&$expand=xmsbs_jefeplataforma($select=fullname)";
+			query += "&$filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_jefeplataforma_value ne null and statecode eq 0) and (xmsbs_jefeplataforma/systemuserid ne null)";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            return resultado;
+        }
+        
+        function buscarZonales(idUR){
+            //var entityType = "systemusers";
+            //var query = "$select=fullname,systemuserid&$expand=xmsbs_systemuser_xmsbs_integranteur_jefezonal($filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and statecode eq 0))&$filter=(xmsbs_systemuser_xmsbs_integranteur_jefezonal/any(o1:(o1/_xmsbs_unidadresolutora_value eq "+idUR+" and o1/statecode eq 0)))&$orderby=fullname asc";
+            //var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            //return resultado;
+			
+            var entityType = "xmsbs_integranteurs";
+            var query = "$select=_xmsbs_jefezonal_value";
+			query += "&$expand=xmsbs_jefezonal($select=fullname)";
+			query += "&$filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_jefezonal_value ne null and statecode eq 0) and (xmsbs_jefezonal/systemuserid ne null)";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            return resultado;			
+        }
+        
+        function buscarZonalesDondeSoyPlataforma(idUR, idUsuario){
+            var entityType = "systemusers";
+            var query = "$select=fullname,systemuserid&$expand=xmsbs_systemuser_xmsbs_integranteur_jefezonal($filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_jefeplataforma_value eq "+idUsuario+" and statecode eq 0))&$filter=(xmsbs_systemuser_xmsbs_integranteur_jefezonal/any(o1:(o1/_xmsbs_unidadresolutora_value eq "+idUR+" and o1/_xmsbs_jefeplataforma_value eq "+idUsuario+" and o1/statecode eq 0)))&$orderby=fullname asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+        
+        function buscarSubgerenteDondeSoyZonal(idUR, idUsuario){
+            var entityType = "systemusers";
+            var query = "$select=fullname,systemuserid&$expand=xmsbs_systemuser_xmsbs_integranteur_subgerente($filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_jefezonal_value eq "+idUsuario+" and statecode eq 0))&$filter=(xmsbs_systemuser_xmsbs_integranteur_subgerente/any(o1:(o1/_xmsbs_unidadresolutora_value eq "+idUR+" and o1/_xmsbs_jefezonal_value eq "+idUsuario+" and o1/statecode eq 0)))&$orderby=fullname asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+        
+        function buscarIntegrantesSiEsSubgerente(idUR, idSubgerente){
+            var entityType = "xmsbs_integranteurs";
+            var query = "$select=xmsbs_integranteurid,_xmsbs_usuario_value,xmsbs_name&$filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_subgerente_value eq "+idSubgerente+" and statecode eq 0)&$orderby=_xmsbs_usuario_value asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            return resultado; 
+        }
+        
+        function buscarCandidatosPlataforma(idUR, idZonal){
+            var entityType = "systemusers";
+            var query = "$select=fullname,systemuserid&$expand=xmsbs_systemuser_xmsbs_integranteur_jefeplataforma($filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_jefezonal_value eq "+idZonal+" and statecode eq 0))&$filter=(xmsbs_systemuser_xmsbs_integranteur_jefeplataforma/any(o1:(o1/_xmsbs_unidadresolutora_value eq "+idUR+" and o1/_xmsbs_jefezonal_value eq "+idZonal+" and o1/statecode eq 0)))&$orderby=fullname asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            return resultado;
+        }
+        
+        function buscarCandidatosZonales(idUR, idSubgerente){
+            var entityType = "systemusers";
+            var query = "$select=fullname,systemuserid&$expand=xmsbs_systemuser_xmsbs_integranteur_jefezonal($filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_subgerente_value eq "+idSubgerente+" and statecode eq 0))&$filter=(xmsbs_systemuser_xmsbs_integranteur_jefezonal/any(o1:(o1/_xmsbs_unidadresolutora_value eq "+idUR+" and o1/_xmsbs_subgerente_value eq "+idSubgerente+" and o1/statecode eq 0)))&$orderby=fullname asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            return resultado;
+        }
+        
+        function buscarSubgerentes(idUR){
+            //var entityType = "systemusers";
+            //var query = "$select=fullname,systemuserid&$expand=xmsbs_systemuser_xmsbs_integranteur_subgerente($filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and statecode eq 0))&$filter=(xmsbs_systemuser_xmsbs_integranteur_subgerente/any(o1:(o1/_xmsbs_unidadresolutora_value eq "+idUR+" and o1/statecode eq 0)))&$orderby=fullname asc";
+            //var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            //return resultado;
+			
+            var entityType = "xmsbs_integranteurs";
+            var query = "$select=_xmsbs_subgerente_value";
+			query += "&$expand=xmsbs_subgerente($select=fullname)";
+			query += "&$filter=(_xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_subgerente_value ne null and statecode eq 0) and (xmsbs_subgerente/systemuserid ne null)";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            return resultado;			
+        }
+        
+        function buscarBitacoraActivaDelUsuario(idUR, idUsuario){
+            var entityType = "xmsbs_bitacorareemplazosjefes";
+            var query = "$select=xmsbs_bitacorareemplazosjefeid,xmsbs_name,createdon&$filter=(_xmsbs_usuariooriginal_value eq "+idUsuario+" and xmsbs_estado eq false and _xmsbs_unidadresolutora_value eq "+idUR+")&$orderby=xmsbs_name asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function (){});
+            return resultado;
+        }
+
+        function setUsuarioReemplazar(){
+            //$('#dvLoader').css("display", "block");
+            
+            //Validamos si es admin. Si no, se pone el nombre del usuario en el campo.
+            var idUsuario = JumpStartLibXRM.Fx.getUserId();
+            if (idUsuario.indexOf("{") > -1){idUsuario = idUsuario.substring(1, 37);}
+            var usuarioName = JumpStartLibXRM.Fx.getUserName();
+            
+            var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+            if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+            
+            let arrayJefeCanales = new Array ();
+            Unidad.RolesArray.JefeCanales.forEach( 
+                function (x){
+                    arrayJefeCanales.push(x);
+                }
+            );
+            
+            let arraySystemUser = new Array ();
+            Unidad.RolesArray.SystemUser.forEach( 
+                function (x){
+                    arraySystemUser.push(x);
+                }
+            );
+            
+            let foundJefeCanales = JumpStartLibXRM.Fx.UserHasRolesArray(window._executionContext, arrayJefeCanales);
+            let foundSystemUser = JumpStartLibXRM.Fx.UserHasRolesArray(window._executionContext, arraySystemUser);
+            
+            if(foundSystemUser){
+                //Si tiene el rol de administrador de sistema, se debe buscar los nombres de jefes a reemplazar
+                var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+                if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+                let arrayUsuariosAReemplazar = new Array ();
+                debugger;
+                var usuariosPlataforma = buscarJefesPlataformaUR(idUR);
+                if(usuariosPlataforma && usuariosPlataforma.value.length > 0){
+                    for (var i = 0; i < usuariosPlataforma.value.length; ++i) {
+                        //var existe = arrayUsuariosAReemplazar.find(x=>x.systemuserid==usuariosPlataforma.value[i].systemuserid);
+						var existe = arrayUsuariosAReemplazar.find(x=>x.systemuserid == usuariosPlataforma.value[i]._xmsbs_jefeplataforma_value);
+                        if(!existe){
+                            //arrayUsuariosAReemplazar.push(usuariosPlataforma.value[i]);
+							arrayUsuariosAReemplazar.push({systemuserid: usuariosPlataforma.value[i]._xmsbs_jefeplataforma_value, fullname: usuariosPlataforma.value[i].xmsbs_jefeplataforma.fullname});
+                        }
+                    }
+                }
+                
+                var usuariosZonal = buscarZonales(idUR);
+                if(usuariosZonal && usuariosZonal.value.length > 0){
+                    for (var i = 0; i < usuariosZonal.value.length; ++i) {
+                        //var existe = arrayUsuariosAReemplazar.find(x=>x.systemuserid==usuariosZonal.value[i].systemuserid);
+						var existe = arrayUsuariosAReemplazar.find(x=>x.systemuserid == usuariosZonal.value[i]._xmsbs_jefezonal_value);
+                        if(!existe){
+                            //arrayUsuariosAReemplazar.push(usuariosZonal.value[i]);
+							arrayUsuariosAReemplazar.push({systemuserid: usuariosZonal.value[i]._xmsbs_jefezonal_value, fullname: usuariosZonal.value[i].xmsbs_jefezonal.fullname});
+                        }
+                    }
+                }
+                
+                var usuariosSubgerente = buscarSubgerentes(idUR);
+                if(usuariosSubgerente && usuariosSubgerente.value.length > 0){
+                    for (var i = 0; i < usuariosSubgerente.value.length; ++i) {
+                        //var existe = arrayUsuariosAReemplazar.find(x=>x.systemuserid==usuariosSubgerente.value[i].systemuserid);
+						var existe = arrayUsuariosAReemplazar.find(x=>x.systemuserid == usuariosSubgerente.value[i]._xmsbs_subgerente_value);
+                        if(!existe){
+                            //arrayUsuariosAReemplazar.push(usuariosSubgerente.value[i]);
+							arrayUsuariosAReemplazar.push({systemuserid: usuariosSubgerente.value[i]._xmsbs_subgerente_value, fullname: usuariosSubgerente.value[i].xmsbs_subgerente.fullname});
+                        }
+                    }
+                }
+                
+				debugger;
+                //Se recorrio todos los usuarios, ahora se agregan al selector
+                var selectUsuarioAReemplazar = $("#selectUsuarioReemplazar").empty().append('<option value="" disabled selected>Seleccione Usuario a reemplazar</option>');
+                if(arrayUsuariosAReemplazar){
+					// ordena alfabéticamente
+					var arrayUsuariosAReemplazarOrderByName = arrayUsuariosAReemplazar.sort((a, b) => {if (a.fullname < b.fullname) {return -1;}});
+				
+                    for (var i = 0; i < arrayUsuariosAReemplazarOrderByName.length; ++i) {
+                        var option = document.createElement('option');
+                        option.innerHTML = arrayUsuariosAReemplazarOrderByName[i].fullname;
+                        option.value = arrayUsuariosAReemplazarOrderByName[i].systemuserid;
+                        selectUsuarioAReemplazar.append(option);
+                    }
+                    debugger;
+                    //Dado que los encontró desde varios lugares, pueden estar duplicados. Borar duplicados
+                    
+                    setDisabled("selectUsuarioReemplazar", false);
+                    $('#dvLoader').css("display", "none");
+                    
+                    //Como es Admin, el control de usuario a reemplazar se lleno con varios posibles usuarios. Debe quedar seleccionable y el control del reemplazo bloqueado
+                }
+            }
+            else{
+                //Si no es admin, entonces es jefe de canal y se debe completar el campo con su nombre y bloquear
+                var selectUsuarioAReemplazar = $("#selectUsuarioReemplazar").empty();
+                var option = document.createElement('option');
+                option.innerHTML = usuarioName;
+                option.value = idUsuario;
+                selectUsuarioAReemplazar.append(option);
+                setDisabled("selectUsuarioReemplazar", true);
+                
+                //Ahora que se completó con el usuario Jefe Canales, ese campo debe quedar bloqueado y buscar los posibles candidatos a reemplazar
+                
+                buscarPosiblesReemplazos();
+            }
+        }
+
+        function buscarPosiblesReemplazos(){
+            $('#dvLoader').css("display", "block");
+            var selectUsuario = $("#selectUsuario").empty().append('<option value="" selected>Seleccione un usuario</option>');
+            setDisabled("selectUsuario", true);
+            setDisabled("btnAsignar", true);
+            
+            //Esta función toma el usuario seleccionado en el control, y busca sus posibles reemplazos según donde está como Jefe, Zonal o Subgerente
+            var idUsuario = $("#selectUsuarioReemplazar").val();
+            var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+            if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+            var arrayUsuariosReemplazo = new Array();
+            
+            //Candidatos como Jefe Plataforma:
+                //Buscar a todos los usuarios que aparecen como Zonal donde yo sea Jefe Plataforma (retorna 2, por ejemplo)
+                var resultado = buscarZonalesDondeSoyPlataforma(idUR, idUsuario);
+                if(resultado && resultado.value.length > 0){
+                    //Buscar a todos los Jefes de Plataforma que tengan a esos usuarios como Zonales (retorna a 5, por ejemplo)
+                    for(var i=0; i<resultado.value.length; i++){
+                        var idZonal = resultado.value[i].systemuserid;
+                        if (idZonal.indexOf("{") > -1){idZonal = idZonal.substring(1, 37);}
+                        var CandidatosPlataforma = buscarCandidatosPlataforma(idUR,idZonal);
+                        if(CandidatosPlataforma && CandidatosPlataforma.value.length > 0){
+                            //Trajo candidatos de plataforma para el zonal. Metemos en el array y pasamos al siguente Zonal
+                            for(var j=0; j < CandidatosPlataforma.value.length; j++){
+                                var existe = arrayUsuariosReemplazo.find(x=>x.systemuserid==CandidatosPlataforma.value[j].systemuserid);
+                                if(!existe && CandidatosPlataforma.value[j].systemuserid.toLowerCase() != idUsuario.toLowerCase()){
+                                    arrayUsuariosReemplazo.push(CandidatosPlataforma.value[j]);
+                                }
+                            }
+                        }
+                    }
+                    //En arrayUsuariosReemplazo están los candidatos a reemplazarme en mi rol como Jefe de Plataforma: Todos ellos tienen mis mismos Zonales
+                } 
+                    
+            //Candidatos como Zonal:
+                //Buscar a todos los usuarios que aparecen como Subgerente donde yo sea Zonal (retorna 2, por ejemplo)
+                var resultado = buscarSubgerenteDondeSoyZonal(idUR, idUsuario);
+                if(resultado && resultado.value.length > 0){
+                    //Buscar a todos los Zonales que tengan a esos usuarios como Subgerentes (retorna a 5, por ejemplo)
+                    for(var i=0; i<resultado.value.length; i++){
+                        var idSubgerente = resultado.value[i].systemuserid;
+                        if (idSubgerente.indexOf("{") > -1){idSubgerente = idSubgerente.substring(1, 37);}
+                        var CandidatosZonales = buscarCandidatosZonales(idUR,idSubgerente);
+                        if(CandidatosZonales && CandidatosZonales.value.length > 0){
+                            //Trajo candidatos de zonales para el subgerente. Metemos en el array y pasamos al siguente subgerente
+                            for(var j=0; j < CandidatosZonales.value.length; j++){
+                                var existe = arrayUsuariosReemplazo.find(x=>x.systemuserid==CandidatosZonales.value[j].systemuserid);
+                                if(!existe && CandidatosZonales.value[j].systemuserid.toLowerCase() != idUsuario.toLowerCase()){
+                                    arrayUsuariosReemplazo.push(CandidatosZonales.value[j]);
+                                }
+                            }
+                        }
+                    }
+                    //En arrayUsuariosReemplazo están los candidatos a reemplazarme en mi rol como Zonal: Todos ellos tienen mis mismos Subgerente
+                }
+                    
+             //Candidatos como Subgerente:
+                //Buscar a todos los usuarios que aparecen como Subgerente si es que el usuario también es subgerente
+                var resultado = buscarIntegrantesSiEsSubgerente(idUR, idUsuario);
+                if(resultado && resultado.value.length > 0){
+                    //Si trae 0, el no es subgerente y no se continúa. Si trae 1, es el mismo, y no aplica ya que mostraríamos su mismo nombre. Si es mayor a 1, ahi si vemos quienes son para ponerlos en el array. Buscar a todos los subgerentes
+                    var usuariosSubgerente = buscarSubgerentes(idUR);
+                    if(usuariosSubgerente && usuariosSubgerente.value.length > 0){
+                        for (var i = 0; i < usuariosSubgerente.value.length; ++i) {
+                            debugger;
+                            //var existe = arrayUsuariosReemplazo.find(x=>x.systemuserid==usuariosSubgerente.value[i].systemuserid);
+							//if(!existe && usuariosSubgerente.value[i].systemuserid.toLowerCase() != idUsuario.toLowerCase()){
+							//	arrayUsuariosReemplazo.push(usuariosSubgerente.value[i]);
+							//}
+							
+							var existe = arrayUsuariosReemplazo.find(x=>x.systemuserid==usuariosSubgerente.value[i]._xmsbs_subgerente_value);
+							if(!existe && usuariosSubgerente.value[i]._xmsbs_subgerente_value.toLowerCase() != idUsuario.toLowerCase()){
+                                arrayUsuariosReemplazo.push({systemuserid: usuariosSubgerente.value[i]._xmsbs_subgerente_value, fullname: usuariosSubgerente.value[i].xmsbs_subgerente.fullname});
+                            }
+                        }
+                    }
+                }
+            //En arrayUsuariosReemplazo están los candidatos los candidatos a reemplazar en el rol como Subgerente. Todos ellos son subgerentes
+            
+            //Ahora en arrayUsuariosReemplazo estan todos los posibles reemplazos en base a todas las posiciones del usuario elegido. Lo pegamos en el combobox y lo activamos
+            
+            var selectUsuario = $("#selectUsuario").empty().append('<option value="" selected>Seleccione un usuario</option>');
+            if(arrayUsuariosReemplazo.length > 0){
+                for (var i = 0; i < arrayUsuariosReemplazo.length; ++i) {
+                    var option = document.createElement('option');
+                    option.innerHTML = arrayUsuariosReemplazo[i].fullname;
+                    option.value = arrayUsuariosReemplazo[i].systemuserid;
+                    selectUsuario.append(option);
+                }
+
+                setDisabled("selectUsuario", false); 
+                setDisabled("btnAsignar", false);            
+                $('#dvLoader').css("display", "none");
+            }
+            else{
+                alert("El usuario seleccionado no posee reemplazos vigentes con su misma jerarquía");
+                setDisabled("btnAsignar", true);            
+                setDisabled("selectUsuario", true);
+                $('#dvLoader').css("display", "none");
+            }
+        }
+
+        $(document).ready(function () {            
+            $('#dvLoader').css("display", "block");
+            
+            window._executionContext = parent.getContextPopUp();
+            baseUrl = parent.getAzureURLPopUp();
+            apiKey = parent.getApiKeyPopUp();           
+            
+            setDisabled("selectUsuario", true);
+            setDisabled("btnAsignar", true);
+            
+            setUsuarioReemplazar();
+
+            $("#btnAsignar").click(function () {
+                setDisabled("btnAsignar", true);
+
+                var selectUsuarioReemplazar = $("#selectUsuarioReemplazar").val();
+                var selectUsuario = $("#selectUsuario").val();
+                var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+                if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+                debugger;
+
+                var buscarBitacoraActiva = buscarBitacoraActivaDelUsuario(idUR, selectUsuarioReemplazar);
+                if(buscarBitacoraActiva && buscarBitacoraActiva.value.length > 0){
+                    //Significa que encontró una Bitacora activa para ese usuario en esa UR. Alertar que no puede
+                    alert("El usuario seleccionado ya tiene un proceso de reemplazo activo. No puede ser reemplazado nuevamente");
+                }
+                else{
+                    if ((idUR != null && idUR != undefined)) {
+                        if ((selectUsuario != null && selectUsuario != undefined && selectUsuarioReemplazar != null && selectUsuarioReemplazar != undefined)) 
+                        {
+                            $('#dvLoader').css("display", "block");
+                            var request = {
+                                IdUsuarioOriginal: selectUsuarioReemplazar,
+                                IdUsuarioReemplazo: selectUsuario,
+                                IdUR: idUR
+                            };
+
+                            post("/UnidadResolutora/AsignarJefeIntegranteUR", request, function (data) {
+                                $('#dvLoader').css("display", "none");
+                                if (data.success) {
+                                    alert("Se ha realizado el cambio de jefatura exitosamente");
+                                    JumpStartLibXRM.Fx.formSave(window._executionContext);
+                                    window.close();
+                                }
+                                else {
+                                    setDisabled("btnAsignar", true);
+                                    alert("No pudo realizar la modificación de jefatura. Favor contactar al administrador");
+                                }
+                            });
+                        }
+                        else {
+                            setDisabled("btnAsignar", true);
+                            alert("Favor seleccionar usuario.");
+                        }
+                    }
+                    else {
+                        setDisabled("btnAsignar", true);
+                        alert("Favor refresque la ventana");
+                    }
+                }
+            });
+        });
+    </script>
+<meta><meta></head>
+<body>
+    <div class="container">
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="xmsbs_loading32gif">
+            </p>
+        </div>
+        
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Usuario a Reemplazar<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectUsuarioReemplazar" class="form-control" onchange="buscarPosiblesReemplazos()">
+                    <option value="" disabled="" selected="">Seleccione Usuario a reemplazar</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Seleccionar Usuario<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectUsuario" class="form-control">
+                    <option value="" disabled="" selected="">Seleccione un Usuario</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <button id="btnAsignar" type="button" class="btn btn-danger">Confirmar</button>
+        </div>
+    </div>
+</body></html>

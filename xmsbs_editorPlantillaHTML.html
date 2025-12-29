@@ -1,0 +1,156 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Editor de respuestas Formales</title>
+<!--    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>-->
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery341slim-min"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_summernote_lite_min_js"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_summerNote_es-ES"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_repositorioSucesos"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial;
+        }
+
+        .ocultar {
+            display: none;
+        }
+    </style>
+    <meta>
+</head>
+<body>
+<!--    <div id="loading">
+        <p style="text-align:center">
+            <img src="xmsbs_loading32gif">
+        </p>
+    </div>-->
+    <div id="contenedor">
+
+        <div id="summernote"></div>
+        <!--        <div id="botonera" class="div-botonera">
+                    <p></p>
+                    <button type="button" class="boton" onclick="cerrar()">Cerrar</button>
+                    <button type="button" class="boton" id="submit" onclick="guardar()">Guardar</button>
+                    <button type="button" class="boton" onclick="previsualizar()">Previsualizar</button>
+                </div>-->
+    </div>
+
+    <!--    <button type="button" onclick="getCode()">Get code</button>
+    -->
+    <script>
+        //var _qs = getQueryStrings();
+        //var _fieldName = getQueryString("field");
+        var _fieldName = "xmsbs_plantillahtml";
+        var _defaultValue = "%3Cb%3EHello%3C%2Fb%3E";
+
+         $(document).ready(function () {
+            //loadData();
+        });
+        //$('#contenedor').hide();
+        var currentContent = null;
+        $('#summernote').summernote({
+            placeholder: 'Ingrese el texto',
+            tabsize: 2,
+            height: 600,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'italic']],
+                //['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph', 'height']],
+                ['table', ['table']],
+                //['insert', ['link', 'picture', 'video']],
+                //['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            lang: "es-ES"
+        });
+        
+        //window.addEventListener('message', function (event) {
+        //    debugger;
+        //    console.log('message received:  ' + event.data, event);
+        //    let package = event.data;
+        //    casoId = package.casoId;
+        //    currentContent = package.contenido;
+        //    //if (!currentContent) { currentContent = "<p></p>"; }
+        //    let markupStr = currentContent;
+        //    $('#summernote').summernote('code', markupStr);
+        //    event.source.postMessage('Ok');
+        //    loadDropDown(casoId);
+
+        //}, false);
+
+        function getCode() {
+            let markupStr = $('#summernote').summernote('code');
+            console.log(markupStr);
+            return markupStr;
+        }
+        
+        function loadData() {
+            debugger;
+            //$('#loading').hide();
+            $('#contenedor').show();
+            // Get the existing value from the form (field must be on the form, hidden etc)
+            var field = window.Xrm.Page.getAttribute(_fieldName);
+            var htmlValue = field.getValue();
+
+            // If there is no existing value check for a default value
+            if (htmlValue == null || htmlValue == "" || htmlValue == "null") {
+                //htmlValue = decodeURIComponent(getQueryString("defaultvalue"));
+                htmlValue = _defaultValue;
+            }
+
+            // Populate the HTML editor with the existing value from the form
+            let markupStr = htmlValue;
+            $('#summernote').summernote('code', markupStr);
+            //document.getElementById('editor1').value = htmlValue;
+
+            // Check if the form is Create of Update
+            var formType = window.Xrm.Page.ui.getFormType();
+            if (formType == 1 || formType == 2) {
+                // Save the HTML to the form field when clicking out of the HTML editor
+                var onChangeFunction = function () {
+                    //debugger;
+                    var value = getCode();//CKEDITOR.instances.editor1.getData();
+                    var field = window.Xrm.Page.getAttribute(_fieldName);
+                    var maxLength = field.getMaxLength();
+
+                    // If the fields max length is exceeded display an error
+                    if (value.length > maxLength) {
+                        window.Xrm.Utility.alertDialog("You have exceeded the maximum number of " + maxLength + " characters in this field");
+                    }
+
+                    // Set the value, even if max length is exceeded to allow CRM validation to kick in on save
+                    field.setValue(value);
+                }
+                
+                $('#summernote').on("summernote.change", onChangeFunction);
+                $('#summernote').on("summernote.blur", onChangeFunction);
+                //CKEDITOR.instances.editor1.on('blur', onChangeFunction);
+                //CKEDITOR.instances.editor1.on('change', onChangeFunction);
+
+                
+
+                // Hide the disabled overlay
+                //$(".cke_dialog_background_cover").hide();
+            }
+            else {
+                // Show the disabled overlay
+                //$(".cke_dialog_background_cover").show();
+            }
+        }
+
+        function cerrar() {
+            window.close();
+        }
+
+        function setClientApiContext(xrm, formContext) {
+            //debugger;
+            //Optionally set Xrm and formContext as global variables on the page.
+            window.Xrm = xrm;
+            window._formContext = formContext;
+            loadData();
+        }
+    </script>
+
+</body>
+</html>

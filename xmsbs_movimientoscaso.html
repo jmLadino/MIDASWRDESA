@@ -1,0 +1,896 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Movimientos Caso</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">    
+    
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_util"></script>    
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/locale/es.js"></script>
+    
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_checkboxjs" type="text/javascript"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+    <!--<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>-->
+
+    <link href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css" rel="stylesheet" type="text/css">   
+    <!--<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />-->
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_checkboxcss" type="text/css"></script>    
+    <style>
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        thead th {
+            background-color: rgb(221, 8, 8);
+            color: white;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }       
+
+        .NoBorde {
+            border-style: none;
+        }  
+        
+        #tblMovimientosCasos span{
+          display:none;
+        }
+    </style>
+    <script type="text/javascript">
+        var parametroApiKey = "AuthApi";
+        var parametroAzure = "AzureURL";
+        //var baseUrl = "http://localhost:58839/";
+        var baseUrl = "https://chld2weuapppmidas001.csbsand.cl.corp/";
+        //var baseUrl = "https://chli2weuapppmidas001.csbsanh.cl.corp/";
+        //var baseUrl = "https://chlp2weuapppmidas001.csbsan.cl.corp/";        
+        var apiKey = "56C3D9E6-E5B6-4B76-816F-5741FA0420BE";
+        var apiToken = "";
+        var urlCRM = "";
+        var error = "";
+        var tabla = null;
+        var listMovimientosSeleccionados = [];
+        var listBGM4011 = [];
+		
+		var IncidentId = "";
+		var ContratoId = "";
+		
+        var rut = "";       
+        var NumeroOperacionContrato = "";
+        var NumeroDeCuenta = "";
+        var codigoMoneda = "";
+		var codigoOficina = "";
+		var codEntidad = "";
+        var canalEjecucion = "003";
+		
+        var idDescripcionProblema = "";  
+        var idDetalleOperacion = "";  
+		var DO1474 = "08570BFF-EB19-EF11-9F89-000D3AD8D133";
+		var UsuarioAdminID = "a533cb3f-6583-eb11-a812-000d3abd3579"; // Dynamics_CRM_MIDAS_CL_DEV
+
+        function get(url, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+        function post(url, params, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+        function setDisabled(item, bool){
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }  
+        function setMovimientosCaso(data){
+            $('#dvLoader').css("display", "block");
+            if (data.success) 
+            {
+                if (data.bgM4011.length > 0)
+                {                    
+                    listBGM4011 = data.bgM4011;    
+                    var html = template(data.bgM4011);    
+                    $("#tbody").html(html);
+                    tabla = $('#tblMovimientosCasos').DataTable({ 
+                        "language": {
+                            "sProcessing":     "Procesando...",
+                            "sLengthMenu":     "Mostrar _MENU_ registros",
+                            "sZeroRecords":    "No se encontraron resultados",
+                            "sEmptyTable":     "Ningún dato disponible en esta tabla",
+                            "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                            "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
+                            "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+                            "sSearch":         "Buscar:",
+                            "sInfoThousands":  ",",
+                            "sdvLoaderRecords": "Cargando...",
+                            "oPaginate": {
+                                "sFirst":    "Primero",
+                                "sLast":     "Último",
+                                "sNext":     "Siguiente",
+                                "sPrevious": "Anterior"
+                            },
+                            "oAria": {
+                                "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
+                                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                            },
+                            "buttons": {
+                                "copy": "Copiar",
+                                "colvis": "Visibilidad"
+                            }
+                        },
+                        select: {
+                            "style": "multi"
+                        },
+                        "info": false,
+                        "columnDefs": [                            
+                            {
+                                "targets": [0],
+                                "checkboxes": {
+                                   "selectRow": true
+                                },
+                                "searchable": false,
+                                "orderable": false
+                            }
+                        ],
+                        "order": [[1, "asc"]]
+                    });
+                }               
+                $('#dvLoader').css("display", "none");
+                $('#divFiltroBusqueda').hide(); 
+                $('#divMovimientosCaso').show();
+				
+				//var idUsuario = JumpStartLibXRM.Fx.getUserId();
+				//if (idUsuario == "{8B4CF48E-AAAD-EB11-8236-0022489BAFB9}") //JM
+					$('#divMovManuales').show();
+            }
+            else 
+            {
+                $('#dvLoader').css("display", "none");
+                openModal(data.message);
+            }
+            limpiarTitulo();
+        }
+        function template(data){
+            var html = '';
+            $.each(data, function (index, item) {
+                //debugger;
+                html += '<tr>';
+                html += '<td>' + item.numeroMovimiento + '</td>';
+                //html += '<td><span>' + formatFechaOrder(item.fechaOperacion) + '</span>' + formatFechaCL(item.fechaOperacion) + '</td>';
+                html += '<td data-sort=' + formatFechaOrder(item.fechaOperacion) + '>' + formatFechaCL(item.fechaOperacion) + '</td>';
+                html += '<td>' + item.importeMovimiento + '</td>';
+                html += '<td>' + formatTexto(item.codigoAmpliado) + '</td>';
+                html += '</tr>';
+            });
+
+            return html;
+        }
+        function formatTexto(texto){  
+            //debugger;
+            if(texto != null && texto != undefined)
+            {
+                if(texto.toLowerCase() == "null")
+                {
+                    texto = "";
+                }
+            }
+            else
+            {
+                texto = "";
+            }
+            
+            return texto;
+        }
+        function formatDecimal(texto){  
+            //debugger;
+            var valor;
+            if(texto == null || texto == undefined)
+            {
+                valor = 0;
+            }
+            else
+            {
+                valor = parseFloat(texto);
+            }
+            
+            return valor;
+        }
+        function formatFechaUS(fecha){  
+            //debugger;
+            var auxFecha = fecha.split("/");
+            return auxFecha[2].toString() + "-" + auxFecha[1].toString() + "-" + auxFecha[0].toString();
+        }
+        function formatFechaOrder(fecha){  
+            //debugger;
+            var auxFecha = fecha.split("-");
+            return auxFecha[0].toString() + auxFecha[1].toString() + auxFecha[2].toString();
+        }
+        function validarCantidadDiasFechas(fechaDesde, fechaHasta){
+            //debugger;
+            var auxDesde = fechaDesde.split("/");
+            var auxHasta = fechaHasta.split("/");
+            var mesDesdeAux = parseInt(auxDesde[1]);
+            var mesHastaAux = parseInt(auxHasta[1]);
+            var fechaDesdeAux = new Date(auxDesde[2], mesDesdeAux - 1, auxDesde[0]);
+            var fechaHastaAux = new Date(auxHasta[2], mesHastaAux - 1, auxHasta[0]);
+
+            var fechaResultado = fechaHastaAux - fechaDesdeAux;
+            var cantidadDias = fechaResultado / (1000 * 60 * 60 * 24);
+
+			debugger;
+			if (idDetalleOperacion == DO1474) // Aplica solo para el DO-1474 (en los 3 ambientes es el mismo GUID)
+			{
+				if (cantidadDias <= 60)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}			
+			}
+			else{
+				if (cantidadDias <= 90)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}			
+			}
+
+        }
+        function formatFechaCL(fecha){  
+            var auxFecha = fecha.split("-");
+            return auxFecha[2].toString() + "-" + auxFecha[1].toString() + "-" + auxFecha[0].toString();
+        }
+        function openModal(mensaje){
+            $("#pMensaje").html(mensaje);
+            $('#alertModal').modal("show");
+        }
+        function setCalendars(){
+            $('body').on('focus', '.cal-predefinida', function () {
+                $(this).datetimepicker({
+                    locale: 'es-es',
+                    format: 'L'
+                });
+            });
+        } 
+        function cerrar(){
+            window.close();
+        }
+        function buscarPregunta1(id){
+            //debugger;
+            var entityType = "xmsbs_preguntascaso";
+            var entityId = id;
+            var query = "xmsbs_name,xmsbs_codigo,xmsbs_ultimapregunta,xmsbs_tipologiaunica,xmsbs_mensajedeerror,statecode,statuscode";
+            var expand = "xmsbs_tipoydetalleoperacion($select=xmsbs_name)"
+            //realizamos la consulta
+            var resultado = SDK.WEBAPI.retrieveRecord(window._executionContext, entityId, entityType, query, expand);
+            return resultado;
+        }
+        function buscarTipoyDetalleOperacion(id){
+            //debugger;
+            var entityType = "xmsbs_tipoydetalledeoperacion";
+            var entityId = id;
+            var query = "xmsbs_name,xmsbs_codigo,statecode,statuscode";
+            var expand = "xmsbs_detalledeoperacion($select=xmsbs_name)"
+            //realizamos la consulta
+            var resultado = SDK.WEBAPI.retrieveRecord(window._executionContext, entityId, entityType, query, expand);
+            return resultado;
+        }
+        function buscarDetalleOperacion(id){
+            //debugger;
+            var entityType = "xmsbs_detalleoperacion";
+            var entityId = id;
+            var query = "xmsbs_name,xmsbs_codigo";
+            var expand = ""
+            //realizamos la consulta
+            var resultado = SDK.WEBAPI.retrieveRecord(window._executionContext, entityId, entityType, query, expand);
+            return resultado;
+        }
+        function buscarMovimientosCaso(){
+            //debugger;
+            var entityType = "xmsbs_movimiento";
+            var query = "$select=xmsbs_fechamovimiento,xmsbs_montocompra,_xmsbs_contratorelacionado_value,_xmsbs_caso_value";
+            query += "&$filter=statecode eq 0 and _xmsbs_caso_value eq '" + IncidentId + "'";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
+            {});
+            return resultado;
+        }
+        function buscarContrato(){
+            //debugger;
+            var entityType = "xmsbs_contratosdelcaso";
+
+            var query = "$select=xmsbs_name,xmsbs_rut,xmsbs_codmoneda,xmsbs_codigoentidad,xmsbs_numerodeoperacionocontrato,xmsbs_numerodecuenta,_xmsbs_caso_value";
+            query += "&$filter=statecode eq 0 and xmsbs_name eq '" + NumeroDeCuenta + "' and _xmsbs_caso_value eq '" + IncidentId + "'";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
+            {});
+            return resultado;
+        }
+        function VolverFiltroBusqueda(){
+            setDisabled("btnBuscarMovimientos", false);
+            limpiarTitulo();
+            tabla.destroy();
+            $('#divMovimientosCaso').hide();
+            $('#divFiltroBusqueda').show();            
+        }
+        function consultarMovimientos(){ 
+            //debugger;            
+            //setDisabled("btnBuscarMovimientos", true);
+            var fechaDesde = $("#fechaDesde").find("input").val();
+            var fechaHasta = $("#fechaHasta").find("input").val();
+   
+            if(rut && NumeroDeCuenta && NumeroOperacionContrato && codigoMoneda && fechaDesde && fechaHasta)
+            {
+                $('#dvLoader').css("display", "block");
+                var fechasValidas =  validarCantidadDiasFechas(fechaDesde, fechaHasta);
+                //debugger;
+                if(fechasValidas)
+                {
+                    var request = {
+                        "payload":{
+                            "canalEjecucion": canalEjecucion,
+                            "codigoDivisa": codigoMoneda,
+                            "numeroContrato": NumeroOperacionContrato,
+                            "movInicial": "",
+                            "movFinal": "",
+                            "tipoRegistro": "",
+                            "timestamp": "",
+                            "regARecuperar": "",
+                            "cobrarComision": "",
+                            "indEmisionCartola": "F",
+                            "fechaDesde": formatFechaUS(fechaDesde),
+                            "fechaHasta": formatFechaUS(fechaHasta)
+                        },
+                        "primeraPreguntaSeleccionada":{
+                            "codigo": ""
+                        },
+                        "tipoYDetalleOperacion":{
+                            "codigoDetalleOperacion": ""
+                        },	
+                        "rut": rut,
+                        "refNumeroDeContrato": NumeroDeCuenta                  
+                    };
+                    
+                    post("/Santander/GetMovimientosPasivosB401", request, function (data) 
+                    {       
+                        //debugger;
+                        $('#dvLoader').css("display", "none");
+                        if (data.success) { 
+                            if(data.bgM4011.length > 0)
+                            {
+                                setMovimientosCaso(data);
+                            }
+                            else 
+                            {
+                                openModal("No existen movimientos a exhibir.");
+								setDisabled("btnBuscarMovimientos", false);
+                            }
+                        }
+                        else {
+                            openModal(data.message);
+							setDisabled("btnBuscarMovimientos", false);
+                        }
+                    }); 
+                }
+                else
+                {
+                    $('#dvLoader').css("display", "none");
+					
+					debugger;
+					if (idDetalleOperacion == DO1474) // Aplica solo para el DO-1474 (en los 3 ambientes es el mismo GUID)
+						openModal("La cantidad de días entre las fechas desde y hasta no puede ser mayor a 60.");
+					else
+						openModal("La cantidad de días entre las fechas desde y hasta no puede ser mayor a 90.");
+						
+					setDisabled("btnBuscarMovimientos", false);
+                }           
+            }
+            else
+            {
+                openModal("Favor seleccionar campos obligatorios antes de consultar.");
+            }   
+            //setDisabled("btnBuscarMovimientos", false);
+        }
+        function guardarMovimientos(){
+            //debugger;
+            setDisabled("btnGuardarMovimientos", true); 
+			setDisabled("btnIngresarMovManuales", true); 
+			
+            listMovimientosSeleccionados = [];
+            var rows_selected = tabla.column(0).checkboxes.selected();
+            
+            $.each(rows_selected, function(index, rowId){
+                //debugger;
+                var movimientoBGM4011 = listBGM4011.filter(x => x.numeroMovimiento == rowId);
+                if(movimientoBGM4011 != null)
+                {
+                    var movimientoCaso = new Object();                
+                    movimientoCaso = {"numeroMovimiento": movimientoBGM4011[0].numeroMovimiento, "fechaOperacion": movimientoBGM4011[0].fechaOperacion, "importeMovimiento": formatDecimal(movimientoBGM4011[0].importeMovimiento), "codigoAmpliado": movimientoBGM4011[0].codigoAmpliado};
+                    listMovimientosSeleccionados.push(movimientoCaso);
+                }
+            });
+            
+            if(listMovimientosSeleccionados.length > 0)
+            {   
+                $('#dvLoader').css("display", "block");
+                eliminarMovimientos();
+				refrescarGrillaMovimientosEnCaso();
+				
+				crearContrato();
+                var entity = "xmsbs_movimiento";
+                
+                for (var i = 0; i < listMovimientosSeleccionados.length; i++) {
+                    //debugger;
+                    var objeto = {};
+                    objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId + ")";
+                    objeto["xmsbs_contratorelacionado@odata.bind"] = "/xmsbs_contratosdelcasos(" + ContratoId + ")";
+                    objeto["xmsbs_rut"] = rut;
+                    objeto["xmsbs_numerodecuenta"] = NumeroDeCuenta;
+                    objeto["xmsbs_contrato"] = NumeroOperacionContrato;
+                    objeto["xmsbs_montocompra"] = listMovimientosSeleccionados[i].importeMovimiento;
+                    objeto["xmsbs_importecompratotal"] = listMovimientosSeleccionados[i].importeMovimiento;
+                    objeto["xmsbs_fechamovimiento"] = listMovimientosSeleccionados[i].fechaOperacion;
+                    objeto["xmsbs_descripciontipofactura"] = listMovimientosSeleccionados[i].codigoAmpliado;                    
+                    objeto["xmsbs_numeromovimiento"] = listMovimientosSeleccionados[i].numeroMovimiento;
+                    objeto["xmsbs_monedadelmovimiento"] = codigoMoneda;                
+                    //debugger;
+					
+                    //var resultado = SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, entity, UsuarioAdminID);
+					var resultado = SDK.WEBAPI.createRecord(window._executionContext, objeto, entity);
+                }
+                
+                $('#dvLoader').css("display", "none");
+                openModal("Se han creado los registros de movimientos correctamente. La ventana se cerrará.");  
+                
+                setTimeout(function () {
+                    refrescarGrillaMovimientosEnCaso();
+                    tabla.destroy();
+                    cerrar();
+                }, 5000);
+            }
+            else
+            {
+                openModal("Debe seleccionar al menos un registro para proceder registrar los movimientos.");                                
+            } 
+            setDisabled("btnGuardarMovimientos", false);
+			setDisabled("btnIngresarMovManuales", false);
+        }
+        function IngresarMovimientosManuales(){
+			debugger;
+			// validar que no existan registros seleccionados.
+			if (tabla != null)
+			{
+				listMovimientosSeleccionados = [];
+				var rows_selected = tabla.column(0).checkboxes.selected();
+				if(rows_selected.length > 0)
+				{
+					alert("No puede agregar movimientos manuales si ya ha seleccionado movimientos en el listado.");
+					return;
+				}			
+			}
+			
+			$('#dvLoader').css("display", "block");
+			
+			//eliminarMovimientos();
+			refrescarGrillaMovimientosEnCaso();
+			crearContrato();
+            
+			debugger;
+			var objeto = {};
+			objeto["xmsbs_name"] = "Ingreso de Movimientos Manuales del Caso"; // para el caso: " + Correlativo;         // NO SE PUEDE MOSTRAR NINGUNA REFERENCIA AL N DEL CASO, ya que se debe asegurar que el caso esté con el ingreso único finalizado = Sí
+			objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId + ")";
+			objeto["xmsbs_contratorelacionado@odata.bind"] = "/xmsbs_contratosdelcasos(" + ContratoId + ")";
+			objeto["xmsbs_rut"] = rut;
+			objeto["xmsbs_numerodecuenta"] = NumeroDeCuenta;
+			objeto["xmsbs_contrato"] = NumeroOperacionContrato;
+			objeto["xmsbs_monedadelmovimiento"] = codigoMoneda;
+			objeto["xmsbs_tipodemovimiento"] = 2;
+			objeto["xmsbs_borrador"] = true;
+			//var resultado = SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, "xmsbs_movimiento", UsuarioAdminID);
+			var resultado = SDK.WEBAPI.createRecord(window._executionContext, objeto, "xmsbs_movimiento");
+			
+			// Guarda el caso, por si es que existen cambios pendientes.
+			JumpStartLibXRM.Fx.formSave(window._executionContext);
+			
+			$('#dvLoader').css("display", "none");
+
+			var entityFormOptions = {};
+			entityFormOptions["entityName"] = "xmsbs_movimiento";
+			entityFormOptions["openInNewWindow"] = false;
+			entityFormOptions["entityId"] = resultado; 
+			Xrm.Navigation.openForm(entityFormOptions).then(
+				function (success) {
+					//console.log(success);
+				},
+				function (error) {
+					//console.log(error);
+				});
+        }
+        function cerrarMovimientos(){
+			//var idUsuario = JumpStartLibXRM.Fx.getUserId();
+			//if (idUsuario == "{8B4CF48E-AAAD-EB11-8236-0022489BAFB9}") //JM
+			//{
+				$('#divMovManuales').show();
+				return; // permanece en la página, ya que es posible continuar ingresando movimientos manuales.
+			//}
+			
+            //debugger;
+            refrescarGrillaMovimientosEnCaso();
+            if(tabla != null)
+            {   
+                tabla.destroy();
+            }            
+            cerrar();
+        }
+        function refrescarGrillaMovimientosEnCaso(){
+            //debugger;
+            var subgrid = window._formContext.ui.controls.get("GrillaSoloMovimientos");
+            if(subgrid)
+            {
+                subgrid.refresh();
+            }          
+        }
+        function crearContrato(){
+			debugger;
+			if (!NumeroDeCuenta || !NumeroOperacionContrato || !codigoMoneda || !codEntidad || !IncidentId || !rut)
+			{
+				// mensaje de error.
+				return;	
+			}
+			
+			var objContrato = buscarContrato();
+            if(objContrato.value.length > 0)
+            {
+				ContratoId = objContrato.value[0].xmsbs_contratosdelcasoid;			
+			}
+			else
+			{
+				var entity = "xmsbs_contratosdelcaso";
+				var objeto = {};
+				objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId + ")";
+				objeto["xmsbs_name"] = NumeroDeCuenta;
+				objeto["xmsbs_numerodeoperacionocontrato"] = NumeroOperacionContrato;
+				objeto["xmsbs_numerodecuenta"] = NumeroDeCuenta;
+				objeto["xmsbs_rut"] = rut;
+				objeto["xmsbs_codmoneda"] = codigoMoneda;
+				objeto["xmsbs_codigoentidad"] = codEntidad;
+			
+				//return SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, entity, UsuarioAdminID);
+				ContratoId = SDK.WEBAPI.createRecord(window._executionContext, objeto, entity);					
+			}
+        }
+        function eliminarMovimientos(){            
+            var respuesta = buscarMovimientosCaso();
+            
+            if(respuesta != null && respuesta.value.length > 0)
+            {
+                var entity = "xmsbs_movimiento";
+                for (var i = 0; i < respuesta.value.length; i++) {                    
+                    //var objeto = {};
+                    //objeto["statecode"] = "1";
+                    //objeto["statuscode"] = "2";                
+                    //var resultado = SDK.WEBAPI.updateRecord(window._executionContext, respuesta.value[i].xmsbs_movimientoid, objeto, entity, null, null);
+			   
+                    //SDK.WEBAPI.deleteRecordImpersonate(window._executionContext, respuesta.value[i].xmsbs_movimientoid, entity, UsuarioAdminID, null, null);
+					SDK.WEBAPI.deleteRecord(window._executionContext, respuesta.value[i].xmsbs_movimientoid, entity, null, null);
+                }
+            }
+        }
+        function limpiarTitulo(){
+            parent.$("h1[data-id='defaultDialogChromeTitle-1']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-2']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-3']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-4']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-5']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-6']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-7']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-8']",parent.document).html("");
+            parent.$("h1[data-id='defaultDialogChromeTitle-9']",parent.document).html("");
+			
+			parent.$("h1[data-id='defaultDialogChromeTitle-10']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-11]",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-12']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-13']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-14']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-15']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-16']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-17']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-18']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-19']",parent.document).html("");
+			parent.$("h1[data-id='defaultDialogChromeTitle-20']",parent.document).html("");
+        }
+        $(document).ready(function () {
+            limpiarTitulo();
+            $('#dvLoader').css("display", "none");
+            $('#divFiltroBusqueda').show(); 
+            $('#divMovimientosCaso').hide();
+			$('#divMovManuales').hide();
+            //debugger;           
+            window._executionContext = window.parent.getExecutionContext();
+            window._formContext = window.parent.getExecutionFormContext();         
+           
+			// Si el contrato existe, se busca en base al IncidentID y N°Contrato.
+			// En caso de que no exista, entonces se debe a que se seleccionó OTRO contrato en el formulario del caso, no se guardó, y se hizo click en el btn "Seleccionar Movimientos".
+			// si eso ocurre, entonces los datos se obtienen del campo: xmsbs_contratoseleccioncache
+			IncidentId = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+			IncidentId = IncidentId.replace("{","").replace("}","");
+			NumeroDeCuenta = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_contratotexto", null);
+			rut = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_rut", null);	
+			
+			debugger;
+			idDetalleOperacion = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "xmsbs_detalledeoperacion");
+			idDetalleOperacion = idDetalleOperacion.replace(/[{}]/g, "");
+			
+			var objContrato = buscarContrato();
+            if(objContrato.value.length > 0)
+            {
+				//debugger;
+				ContratoId = objContrato.value[0].xmsbs_contratosdelcasoid;
+				NumeroOperacionContrato = objContrato.value[0].xmsbs_numerodeoperacionocontrato;
+				NumeroDeCuenta = objContrato.value[0].xmsbs_numerodecuenta;
+				codigoMoneda = objContrato.value[0].xmsbs_codmoneda;
+				codEntidad = objContrato.value[0].xmsbs_codigoentidad;
+            }
+            else
+            {
+				//debugger;
+				var contratoseleccioncache = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_contratoseleccioncache", null);
+				var arrayContratos = contratoseleccioncache.split(",");
+				for (var i = 0; i < arrayContratos.length; i++) 
+				{
+					if (arrayContratos[i].split(";")[0] == NumeroDeCuenta)
+					{
+						//debugger;
+						codigoMoneda = arrayContratos[i].split(";")[1];
+						codEntidad = "0035";
+						codigoOficina = arrayContratos[i].split(";")[2];
+						NumeroOperacionContrato = codEntidad + codigoOficina + NumeroDeCuenta;
+						break;
+					}
+				}
+            }
+
+            jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+                "date-eu-pre": function ( date ) {
+                    date = date.replace(" ", "");
+                     
+                    if ( ! date ) {
+                        return 0;
+                    }
+             
+                    var year;
+                    var eu_date = date.split(/[\.\-\/]/);
+             
+                    /*year (optional)*/
+                    if ( eu_date[2] ) {
+                        year = eu_date[2];
+                    }
+                    else {
+                        year = 0;
+                    }
+             
+                    /*month*/
+                    var month = eu_date[1];
+                    if ( month.length == 1 ) {
+                        month = 0+month;
+                    }
+             
+                    /*day*/
+                    var day = eu_date[0];
+                    if ( day.length == 1 ) {
+                        day = 0+day;
+                    }
+             
+                    return (year + month + day) * 1;
+                },
+             
+                "date-eu-asc": function ( a, b ) {
+                    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+                },
+             
+                "date-eu-desc": function ( a, b ) {
+                    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+                }
+            });
+
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = today.getFullYear();
+            today = mm + '/' + dd + '/' + yyyy;            
+            
+            var defaultFechaInicio = new Date();
+
+			debugger;
+			if (idDetalleOperacion == DO1474) // Aplica solo para el DO-1474 (en los 3 ambientes es el mismo GUID)
+			{
+				defaultFechaInicio.setDate(defaultFechaInicio.getDate() - 59); // se restan 59, para que la fecha de inicio sea una fecha válida para realizar la búsqueda.
+			}
+			else
+			{
+				defaultFechaInicio.setDate(defaultFechaInicio.getDate() - 89); // se restan 89, para que la fecha de inicio sea una fecha válida para realizar la búsqueda.
+			}
+			
+            dd = String(defaultFechaInicio.getDate()).padStart(2, '0');
+            mm = String(defaultFechaInicio.getMonth() + 1).padStart(2, '0'); //January is 0!
+            yyyy = defaultFechaInicio.getFullYear();
+            defaultFechaInicio = mm + '/' + dd + '/' + yyyy;
+            
+            $('#fechaDesde').datetimepicker({
+                locale: 'es-es',
+                format: 'L',
+                defaultDate: new Date(defaultFechaInicio) 
+            });
+
+            $('#fechaHasta').datetimepicker({
+                locale: 'es-es',
+                format: 'L',
+                //useCurrent: false,
+                defaultDate: new Date(today) 
+			});
+
+			// setea que la fecha de inicio no puede ser menor a 90 días.. ya que no existen movimientos menor a esa fecha.
+			//$('#fechaDesde').data("DateTimePicker").minDate(new Date(defaultFechaInicio));
+			//$('#fechaDesde').data("DateTimePicker").maxDate(new Date(today));
+			
+			//$('#fechaHasta').data("DateTimePicker").minDate(new Date(defaultFechaInicio));
+			//$('#fechaHasta').data("DateTimePicker").maxDate(new Date(today));
+			
+            $("#fechaDesde").on("dp.change", function (e) {
+               $('#fechaHasta').data("DateTimePicker").minDate(e.date);
+            });
+
+            $("#fechaHasta").on("dp.change", function (e) {
+               $('#fechaDesde').data("DateTimePicker").maxDate(e.date);
+            });
+        });
+    </script>
+<meta></head>
+<body>
+    <div class="data-container">       
+        <h3 class="d-flex justify-content-center">Movimientos Caso</h3>
+
+        <pre class="NoBorde">
+        </pre>
+        
+        <div id="divFiltroBusqueda" class="container">
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label mr-4">Rango Fecha (Desde / Hasta)<span class="obligatorio"> *</span></label>
+                <div class="input-group date col-sm-4 mr-4" id="fechaDesde">
+                    <input type="text" class="form-control">
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            
+                <div class="input-group date col-sm-4 mr-2" id="fechaHasta">
+                    <input type="text" class="form-control">
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center">  
+                <button id="btnBuscarMovimientos" type="button" class="btn btn-danger" onclick="this.disabled=true;consultarMovimientos()">Buscar</button>
+            </div>
+        </div>
+        
+        <div id="divMovimientosCaso" class="container">
+            <table id="tblMovimientosCasos" class="table cell-border">
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Fecha Operación</th>
+                        <th scope="col">Importe Movimiento</th>
+                        <th scope="col">Código Ampliado</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+              
+            <div class="d-flex justify-content-center">  
+                <button id="btnVolver" type="button" class="btn btn-danger mr-2" onclick="VolverFiltroBusqueda()">Volver</button>
+               
+                <button id="btnGuardarMovimientos" type="button" class="btn btn-danger" onclick="guardarMovimientos()">Guardar</button>
+            </div>
+        </div>
+
+		<div id="divMovManuales" class="container" style="text-align:right">  
+			<button id="btnIngresarMovManuales" type="button" class="btn btn-danger" onclick="IngresarMovimientosManuales()">Ingresar Movimientos Manuales</button>	
+		</div>		
+        
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="xmsbs_loading32gif">
+            </p>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Información</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="pMensaje"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="cerrarMovimientos()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>   
+</body></html>

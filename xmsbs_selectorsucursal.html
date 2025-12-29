@@ -1,0 +1,720 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Selección de Sucursal</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    
+    <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="/WebResources/xmsbs_webAPI"></script>
+    <script src="/WebResources/xmsbs_util"></script>    
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+	
+	<!-- ESTILO -->
+    <style>
+        .ocultar {
+            display: none;
+        }
+
+        .obligatorio {
+            font-weight: bold;
+            color: red;
+        }
+
+        .mr-1 {
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var idExecuteUsuario  = null;
+        var closeOnlyAlert = false;
+		var AplicaPlataforma = false;
+
+		var _idSucursal = null;
+		var _idPlataforma = null;
+		var _idPlataformaIntegranteUR = null;
+		var _idIntegranteUR = null;
+		var _idUsuarioIntegranteUR = null;
+		var _NombreUsuarioIntegranteUR = "";
+		var _NombreSucursal = "";
+		var UsuarioAdminID = "d43af6f7-e875-eb11-a812-000d3ab23035"; // (DESA) Dynamics_CRM_MIDAS_CL_DEV
+		//var UsuarioAdminID = "a533cb3f-6583-eb11-a812-000d3abd3579"; // (HOMO y PROD) Dynamics_CRM_MIDAS_CL_DEV		
+		
+
+
+        function setDisabled(item, bool){
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+        
+        function openModal(mensaje){
+            $("#pMensaje").html(mensaje);
+            $('#alertModal').modal("show");
+        }
+        
+        function cerrarModal(){			         
+            cerrar();
+        }		
+		function cerrar(){
+            if(closeOnlyAlert){
+                $('#alertModal').style.display = "none";
+                closeOnlyAlert = false;
+            }
+            else{
+                window.close();
+            }
+        }
+
+		// ODATA -----------------------------
+        function buscarRegiones(){
+            var entityType = "xmsbs_regions";
+            var query = "$select=xmsbs_regionid,xmsbs_name,xmsbs_codigo,createdon";
+			var expand = "";
+			var filter = "&$filter=(statecode eq 0)";
+			var orderby = "&$orderby=xmsbs_name asc";
+			
+			query = query + expand + filter + orderby;
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+        
+        function buscarComuna(idRegion){
+            var entityType = "xmsbs_comunas";
+            var query = "$select=xmsbs_comunaid,xmsbs_name,xmsbs_codigo,createdon";
+			var expand = "";
+			var filter = "&$filter=(statecode eq 0 and _xmsbs_region_value eq " + idRegion.replace(/[{}]/g, "") + ")";
+			var orderby = "&$orderby=xmsbs_name asc";
+			
+			query = query + expand + filter + orderby;
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+        
+        function buscarSucursales(idComuna){
+            var entityType = "xmsbs_sucursalclientes";
+			var query = "$select=xmsbs_name,xmsbs_sucursalclienteid";
+			var expand = "";
+			var filter = "&$filter=(statecode eq 0 and _xmsbs_comuna_value eq " + idComuna.replace(/[{}]/g, "") + " and xmsbs_tctofici eq 'N')";
+			var orderby = "&$orderby=xmsbs_name asc";
+			
+			query = query + expand + filter + orderby;
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+        
+        function buscarSucursal(idSucursal){
+            var entityType = "xmsbs_sucursalclientes";
+            var entityId = idSucursal;
+            var query = "xmsbs_name,xmsbs_sucursalclienteid,xmsbs_codigo,xmsbs_estadosucursal,xmsbs_direccion";
+            var expand = "";
+            //realizamos la consulta
+            var resultado = SDK.WEBAPI.retrieveRecord(window._executionContext, entityId, entityType, query, expand);
+            return resultado;
+        }
+		
+		function buscarPlataformas(idSucursal){
+            var entityType = "xmsbs_plataformas";
+			var query = "$select=xmsbs_name,createdon,_xmsbs_codsuc_raiz_value,xmsbs_codsuc_comercial,xmsbs_plataformaid";
+            var expand = "";
+			var filter = "&$filter=(statecode eq 0 and _xmsbs_codsuc_raiz_value eq " + idSucursal.replace(/[{}]/g, "") + ")";
+			var orderby = "&$orderby=xmsbs_name asc";
+			
+			query = query + expand + filter + orderby;
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+		
+		function BuscarPlataformaIntegranteUR(idSucursal, idPlataforma){
+			// Solo considera 1 registro de PlataformaIntegranteUR, si existe más de 1 no da error, pero solo considera el primero, por fecha de creación orden desc (el más reciente)
+            var entityType = "xmsbs_sucursalintegranteurs";
+            var query = "$select=xmsbs_sucursalintegranteurid,_xmsbs_sucursalcliente_value,_xmsbs_plataforma_value,_xmsbs_integrantedelaur_value";
+            var expand = "&$expand=xmsbs_sucursalcliente($select=xmsbs_codigo),xmsbs_plataforma($select=xmsbs_codsuc_comercial),xmsbs_integrantedelaur($select=_xmsbs_usuario_value,_xmsbs_jefezonal_value,_xmsbs_jefeplataforma_value)";
+			
+			var filtroSucursal = "";
+			var filtroPlataforma = "";
+			
+			if (idSucursal)
+				filtroSucursal = " and _xmsbs_sucursalcliente_value eq " + idSucursal.replace(/[{}]/g, "") + "";
+			if (idPlataforma)	
+				filtroPlataforma = " and _xmsbs_plataforma_value eq " + idPlataforma.replace(/[{}]/g, "") + "";
+			
+			var filter = "&$filter=(statecode eq 0" + filtroSucursal + filtroPlataforma + ")";
+			var orderby = "&$orderby=createdon desc";
+			var top = "&$top=1";
+			
+			query = query + expand + filter + orderby + top;
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+		}
+        
+        function buscarExtension(idIncident){
+            var entityType = "incidents";
+            var query = "$select=incidentid,_xmsbs_extensioncaso_value";
+			var filter = "&$filter=(incidentid eq " + idIncident.replace(/[{}]/g, "") + " )";
+			
+			query = query +  filter;
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+        
+		// FIN ODATA -------------------------
+
+
+		function LimpiaDatosSeleccionados(){
+			_idSucursal = null;
+			_idPlataforma = null;
+			_idPlataformaIntegranteUR = null;
+			_idIntegranteUR = null;
+			_idUsuarioIntegranteUR = null;
+			_NombreUsuarioIntegranteUR = "";
+			_NombreSucursal = "";
+
+			setDisabled("cmbSucursal", true);
+			$("#cmbSucursal").empty().append('<option value="" disabled selected>Seleccione una Sucursal</option>');
+			
+			$("#DIV_Plataforma").hide();
+			setDisabled("cmbPlataforma", true);
+			$("#cmbPlataforma").empty().append('<option value="" disabled selected>Seleccione una Plataforma</option>');
+			
+			$("#DIV_SinPlataforma").hide();
+			$("#txtPlataforma").text("");
+			
+			$("#DIV_Agente").hide();
+			$("#txtAgente").text("");
+			
+			$("#DIV_JefeZonal").hide();
+			$("#txtJefeZonal").text("");
+			
+			$("#txtDireccion").text("");
+			$("#txtCodigo").text("");
+			
+			setDisabled("btnSeleccionar", true);
+		}
+
+
+		// ONCHANGE --------------------------
+        function onChangeRegion(){
+			$('#dvLoader').css("display", "block");
+			
+            var idRegion = $("#cmbRegion").val();
+			var cmdComuna = $("#cmdComuna").empty().append('<option value="" selected>Seleccione una Comuna</option>');
+			
+			// Limpia selección
+			LimpiaDatosSeleccionados();
+			
+            if((idRegion != null && idRegion != undefined)){
+                var consultaComuna = buscarComuna(idRegion);
+				if (!consultaComuna || consultaComuna.value.length == 0)
+				{
+					closeOnlyAlert = true;
+                    openModal("La región seleccionada no tiene comunas relaciondas. Por favor seleccione otra región, o contacte al administrador.");
+					$('#dvLoader').css("display", "none");
+					return;
+				}
+				
+				for (var i = 0; i < consultaComuna.value.length; ++i) {
+					var option = document.createElement('option');
+					option.innerHTML = consultaComuna.value[i].xmsbs_name;
+					option.value = consultaComuna.value[i].xmsbs_comunaid;
+					cmdComuna.append(option);
+				}
+				setDisabled("cmdComuna", false);
+            }
+			
+			// Fin carga
+			$('#dvLoader').css("display", "none");			
+        }
+        
+        function onChangeComuna(){
+			$('#dvLoader').css("display", "block");
+			
+            var idComuna = $("#cmdComuna").val();
+			var cmbSucursal = $("#cmbSucursal").empty().append('<option value="" selected>Seleccione una Sucursal</option>');
+
+			// Limpia selección
+			LimpiaDatosSeleccionados();
+			
+            if((idComuna != null && idComuna != undefined)){
+                var consultaSucursales = buscarSucursales(idComuna);
+				if (!consultaSucursales || consultaSucursales.value.length == 0)
+				{
+					closeOnlyAlert = true;
+                    openModal("La comuna seleccionada no tiene Sucursales relaciondas. Por favor seleccione otra comuna, o contacte al administrador.");
+					$('#dvLoader').css("display", "none");
+					return;
+				}
+				
+				for (var i = 0; i < consultaSucursales.value.length; ++i) {
+					var option = document.createElement('option');
+					option.innerHTML = consultaSucursales.value[i].xmsbs_name;
+					option.value = consultaSucursales.value[i].xmsbs_sucursalclienteid;
+					cmbSucursal.append(option);
+				}
+				setDisabled("cmbSucursal", false);
+            }
+			
+			// Fin carga
+			$('#dvLoader').css("display", "none");			
+        }
+
+        function onChangeSucursal(){
+        debugger;
+			$('#dvLoader').css("display", "block");
+            $("#txtAgente").text("");
+			$("#txtJefeZonal").text("");
+            
+            _idSucursal = $("#cmbSucursal").val();
+			_NombreSucursal = $("#cmbSucursal option:selected").text();
+			
+            if((_idSucursal != null && _idSucursal != undefined)){
+				// completo los datos de la sucursal seleccionada.
+				var SucursalSeleccionada = buscarSucursal(_idSucursal);
+				if(!SucursalSeleccionada){
+					closeOnlyAlert = true;
+					openModal("Error al obtener los datos de la sucursal seleccionada.");
+					$('#dvLoader').css("display", "none");
+					return;
+				}							
+				
+				$("#txtDireccion").text(SucursalSeleccionada.xmsbs_direccion);
+				$("#txtCodigo").text(SucursalSeleccionada.xmsbs_codigo);				
+				
+                AplicaPlataforma = true;
+				if (AplicaPlataforma){
+                    //Sección para Agente
+					$("#DIV_JefeZonal").hide();
+					$("#txtJefeZonal").text("");
+				
+					// busca plataformas, si no existen, entonces en carga el nombre de la sucursal en el txtPlataforma, pero no hace nada en CRM.
+					_idPlataforma = null;
+					var cmbPlataforma = $("#cmbPlataforma").empty().append('<option value="" selected>Seleccione una Plataforma</option>');
+					var consultaPlataformas = buscarPlataformas(_idSucursal);
+					if (!consultaPlataformas || consultaPlataformas.value.length == 0){
+						//$('#DIV_Plataforma').style.display = "none";
+						//$('#DIV_SinPlataforma').style.display = "block";
+						$('#DIV_Plataforma').hide();
+						
+						$('#DIV_SinPlataforma').show();
+						$("#txtPlataforma").text($("#cmbSucursal option:selected").text());
+						
+						// busca el usuario en: Plataforma Integrante UR
+						var PlataformaIntegranteUR = BuscarPlataformaIntegranteUR(_idSucursal, null);
+						if (!PlataformaIntegranteUR || PlataformaIntegranteUR.value.length == 0)
+						{
+							closeOnlyAlert = true;
+							openModal("La sucursal seleccionada no tiene ejecutivos para gestionar el caso. Por favor seleccione otra sucursal, o contacte al administrador para asignar un ejecutivo a la sucursal");
+							$('#dvLoader').css("display", "none");
+                            setDisabled("btnSeleccionar", true);
+							return;
+						}
+						
+						_idPlataformaIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_sucursalintegranteurid;
+						_idIntegranteUR = PlataformaIntegranteUR.value[0]._xmsbs_integrantedelaur_value;
+						_idUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefeplataforma_value"]; // AGENTE
+						_NombreUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefeplataforma_value@OData.Community.Display.V1.FormattedValue"];
+						
+						$("#DIV_Agente").show();
+						$("#txtAgente").text(PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefeplataforma_value@OData.Community.Display.V1.FormattedValue"]);
+
+						// habilito el botón Confirmar
+						setDisabled("btnSeleccionar", false);
+					}
+					else{
+						$("#DIV_Plataforma").show();
+						for (var i = 0; i < consultaPlataformas.value.length; ++i) {
+							var option = document.createElement('option');
+							option.innerHTML = consultaPlataformas.value[i].xmsbs_name;
+							option.value = consultaPlataformas.value[i].xmsbs_plataformaid;
+							cmbPlataforma.append(option);
+						}
+						setDisabled("cmbPlataforma", false);
+
+						// Limpio los datos de la sucursal seleccionada.
+						_idPlataformaIntegranteUR = null;
+						_idIntegranteUR = null;
+						_idUsuarioIntegranteUR = null;
+						_NombreUsuarioIntegranteUR = "";
+
+						$("#DIV_SinPlataforma").hide();
+						$("#txtPlataforma").text("");
+						
+						$("#DIV_Agente").hide();
+						$("#txtAgente").text("");
+						
+						$("#DIV_JefeZonal").hide();
+						$("#txtJefeZonal").text("");
+						
+						setDisabled("btnSeleccionar", true);						
+					}
+				}
+				else{
+                //Sección para Jefe Zonal
+					// muestra directamente el Jefe Zonal
+
+						$('#DIV_Plataforma').hide();
+						$('#DIV_SinPlataforma').hide();
+						$("#txtPlataforma").text("");
+						$("#DIV_Agente").hide();
+						$("#txtAgente").text("");
+						
+						// busca el usuario en: Plataforma Integrante UR
+						var PlataformaIntegranteUR = BuscarPlataformaIntegranteUR(_idSucursal, null);
+						if (!PlataformaIntegranteUR || PlataformaIntegranteUR.value.length == 0)
+						{
+							closeOnlyAlert = true;
+                            openModal("La Sucursal seleccionada no tiene un Jefe Zonal configurado. Por favor seleccione otra Sucursal, o contacte al administrador para asignar un Jefe Zonal a la sucursal.");
+							$('#dvLoader').css("display", "none");
+                            setDisabled("btnSeleccionar", true);
+							return;
+						}
+						
+						_idPlataformaIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_sucursalintegranteurid;
+						_idIntegranteUR = PlataformaIntegranteUR.value[0]._xmsbs_integrantedelaur_value;
+						_idUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefezonal_value"]; // NO AGENTE
+						_NombreUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefezonal_value@OData.Community.Display.V1.FormattedValue"];
+                        
+                        if(_idUsuarioIntegranteUR == null)
+                        {
+                            closeOnlyAlert = true;
+                            openModal("La Sucursal seleccionada no tiene un Jefe Zonal configurado. Por favor seleccione otra Sucursal, o contacte al administrador para asignar un Jefe Zonal a la sucursal.");
+                            $('#dvLoader').css("display", "none");
+                            setDisabled("btnSeleccionar", true);
+                            return;
+                        
+                        }else{
+                            $("#DIV_JefeZonal").show();
+                            $("#txtJefeZonal").text(_NombreUsuarioIntegranteUR);
+                        }
+						
+						// habilito el botón Confirmar
+						setDisabled("btnSeleccionar", false);					
+				}
+            }
+
+			$('#dvLoader').css("display", "none");
+        }
+
+		function onChangePlataforma(){
+			$('#dvLoader').css("display", "block");
+			
+			_idPlataforma = $("#cmbPlataforma").val();
+			if((_idPlataforma != null && _idPlataforma != undefined)){
+            
+                var CargoSel = JumpStartLibXRM.Fx.getField(window._executionContext, "xmsbs_picklist1g").getValue();			
+                // 2: (OLD) JEFE DE OFICINA (NEW) AGENTE
+                if (CargoSel == 2){
+                    // Es Agente
+                    var PlataformaIntegranteUR = BuscarPlataformaIntegranteUR(_idSucursal, _idPlataforma);
+                    if (!PlataformaIntegranteUR || PlataformaIntegranteUR.value.length == 0)
+                    {
+                        closeOnlyAlert = true;
+                        openModal("La Sucursal seleccionada no tiene un Jefe Zonal configurado. Por favor seleccione otra Sucursal, o contacte al administrador para asignar un Jefe Zonal a la sucursal.");
+                        $('#dvLoader').css("display", "none");
+                        setDisabled("btnSeleccionar", true);
+                        return;
+                    }
+                    
+                    _idPlataformaIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_sucursalintegranteurid;
+                    _idIntegranteUR = PlataformaIntegranteUR.value[0]._xmsbs_integrantedelaur_value;
+                    _idUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefezonal_value"]; // NO AGENTE
+                    _NombreUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefezonal_value@OData.Community.Display.V1.FormattedValue"];
+                    
+                    if(_idUsuarioIntegranteUR == null)
+                    {
+                        closeOnlyAlert = true;
+                        openModal("La Plataforma seleccionada no tiene un Jefe Zonal configurado. Por favor seleccione otra Sucursal, o contacte al administrador para asignar un Jefe Zonal a la sucursal.");
+                        $('#dvLoader').css("display", "none");
+                        setDisabled("btnSeleccionar", true);
+                        return;
+                    
+                    }else{
+                        $("#DIV_JefeZonal").show();
+                        $("#txtJefeZonal").text(_NombreUsuarioIntegranteUR);
+                    }
+                    
+                    // habilito el botón Confirmar
+                    setDisabled("btnSeleccionar", false);
+                }
+                else{
+                    // Es lo demás
+                    // busca el usuario en: Plataforma Integrante UR
+                    var PlataformaIntegranteUR = BuscarPlataformaIntegranteUR(_idSucursal, _idPlataforma);
+                    if (!PlataformaIntegranteUR || PlataformaIntegranteUR.value.length == 0)
+                    {
+                        closeOnlyAlert = true;
+                        openModal("La plataforma seleccionada no tiene ejecutivos para gestionar el caso. Por favor seleccione otra plataforma, o contacte al administrador.");
+                        $('#dvLoader').css("display", "none");
+                        setDisabled("btnSeleccionar", true);
+                        return;
+                    }
+                    
+                    _idPlataformaIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_sucursalintegranteurid;
+                    _idIntegranteUR = PlataformaIntegranteUR.value[0]._xmsbs_integrantedelaur_value;
+                    _idUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefeplataforma_value"]; // AGENTE
+                    _NombreUsuarioIntegranteUR = PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefeplataforma_value@OData.Community.Display.V1.FormattedValue"];
+                    
+                    $("#DIV_Agente").show();
+                    $("#txtAgente").text(PlataformaIntegranteUR.value[0].xmsbs_integrantedelaur["_xmsbs_jefeplataforma_value@OData.Community.Display.V1.FormattedValue"]);
+                    
+                    // habilito el botón Confirmar
+                    setDisabled("btnSeleccionar", false);			
+                }
+			}
+
+            $('#dvLoader').css("display", "none");
+        }
+		// FIN ONCHANGE ----------------------
+		
+		
+		
+        $(document).ready(function () {
+            $('#dvLoader').css("display", "block");
+			setDisabled("btnSeleccionar", true);
+            setDisabled("cmbRegion", true);
+            setDisabled("cmdComuna", true);
+            setDisabled("cmbSucursal", true);
+			setDisabled("cmbPlataforma", true);
+            
+            window._executionContext = window.parent.getExecutionContext();
+            window._formContext = window.parent.getExecutionFormContext();
+			
+			// para llegar a este modal, el campo xmsbs_picklist1g siempre debe tener valor.
+			var CargoSel = JumpStartLibXRM.Fx.getField(window._executionContext, "xmsbs_picklist1g").getValue();
+			
+			// 2: (OLD) JEFE DE OFICINA (NEW) AGENTE
+			if (CargoSel == 2)
+				AplicaPlataforma = false;
+			else
+				AplicaPlataforma = true;
+
+            
+            var regiones = buscarRegiones();
+            var cmbRegion = $("#cmbRegion").empty().append('<option value="" disabled selected>Seleccione una Región</option>');
+            if(!regiones)
+				return; // error al carga regiones.
+			
+			for (var i = 0; i < regiones.value.length; ++i) {
+				var option = document.createElement('option');
+				option.innerHTML = regiones.value[i].xmsbs_name;
+				option.value = regiones.value[i].xmsbs_regionid;
+				cmbRegion.append(option);
+			}
+
+			setDisabled("cmbRegion", false);
+			$('#dvLoader').css("display", "none");
+        });
+		
+		function Confirmar(){
+			$('#dvLoader').css("display", "block");
+			
+			// debe guardar los datos seleccionados en la extensión del caso.
+			// solo se puede llegar a este punto si ya se seleccionaron los datos necesarios.
+			
+			//Set lookup
+			var fieldName = "xmsbs_sucursales";
+			var id = _idSucursal;
+			var name = _NombreSucursal;
+			var entityType = "xmsbs_sucursalcliente";
+			JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+			
+            window._formContext = window.parent.getExecutionFormContext();
+            var incident = buscarExtension(_formContext.data.entity.getId());
+            debugger;
+
+			//var xmsbs_extensioncaso = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_extensioncaso", null);
+			var xmsbs_extensioncaso = incident.value[0]._xmsbs_extensioncaso_value;
+			if (!xmsbs_extensioncaso)
+				return;
+			
+			var objExtCaso = {};
+			objExtCaso["xmsbs_integranteurplataforma@odata.bind"] = "/xmsbs_sucursalintegranteurs(" + _idPlataformaIntegranteUR.replace(/[{}]/g, "") + ")";;
+			objExtCaso["xmsbs_integranteursucursal@odata.bind"] = "/xmsbs_integranteurs(" + _idIntegranteUR.replace(/[{}]/g, "") + ")";;
+			
+			// Jefe Zonal o Agente
+            if(_idUsuarioIntegranteUR != null)
+            {
+            			objExtCaso["xmsbs_jefezonal@odata.bind"] = "/systemusers(" + _idUsuarioIntegranteUR.replace(/[{}]/g, "") + ")";;
+            }else{
+            
+                        if (AplicaPlataforma){
+                            //Agentes
+                                    closeOnlyAlert = true;
+                                    openModal("La Sucursal seleccionada no tiene ejecutivos para gestionar el caso. Por favor seleccione otra Sucursal, o contacte al administrador para asignar un ejecutivo a la sucursal.");
+                                    $('#dvLoader').css("display", "none");
+                                    setDisabled("btnSeleccionar", true);
+                                    return;
+                            }else{
+                            //Jefes zonales
+                                    closeOnlyAlert = true;
+                                    openModal("La Sucursal seleccionada no tiene Jefe Zonal configurado para gestionar el caso. Por favor seleccione otra Sucursal, o contacte al administrador para asignar un Jefe Zonal a la sucursal.");
+                                    $('#dvLoader').css("display", "none");
+                                    setDisabled("btnSeleccionar", true);
+                                    return;
+                        }
+                
+                    }
+			
+			if (_idPlataforma) // La Plataforma es opcional
+				objExtCaso["xmsbs_plataforma@odata.bind"] = "/xmsbs_plataformas(" + _idPlataforma.replace(/[{}]/g, "") + ")";;
+			
+
+			var resultExtCaso = SDK.WEBAPI.updateRecordImpersonate(window._executionContext, xmsbs_extensioncaso, objExtCaso, "xmsbs_extensioncaso", UsuarioAdminID, null, null);
+            
+			debugger;
+			$('#dvLoader').css("display", "none");
+			JumpStartLibXRM.Fx.formSave(window._executionContext);
+			
+			closeOnlyAlert = false;
+			//openModal("Sucursal seleccionada correctamente");
+			window.close();			
+		}
+    </script>
+</head>
+<body style="overflow-wrap: break-word;">
+	<form autocomplete="off">
+	
+    <div class="container">
+		<h3 class="d-flex justify-content-center">Selector de Sucursal</h3>
+		
+        <div class="form-group row">
+            <label for="cmbRegion" class="col-sm-3 my-2">Seleccione Región<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="cmbRegion" class="form-control" onchange="onChangeRegion()">
+                    <option value="" disabled="" selected="">Seleccione una Región</option>
+                </select>
+            </div>
+        </div>
+		
+		<div class="form-group row">
+            <label for="cmdComuna" class="col-sm-3 my-2">Seleccione Comuna<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="cmdComuna" class="form-control" onchange="onChangeComuna()">
+                    <option value="" disabled="" selected="">Seleccione una Comuna</option>
+                </select>
+            </div>
+        </div>
+		
+		<div class="form-group row">
+            <label for="cmbSucursal" class="col-sm-3 my-2">Seleccione Sucursal<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="cmbSucursal" class="form-control" onchange="onChangeSucursal()">
+                    <option value="" disabled="" selected="">Seleccione una Sucursal</option>
+                </select>
+            </div>
+        </div>
+
+		<div id="DIV_Plataforma" class="form-group row" style="display: none;">
+            <label for="cmbPlataforma" class="col-sm-3 my-2">Seleccione Plataforma<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="cmbPlataforma" class="form-control" onchange="onChangePlataforma()">
+                    <option value="" disabled="" selected="">Seleccione una Plataforma</option>
+                </select>
+            </div>
+        </div>
+		
+        <div id="DIV_SinPlataforma" class="form-group row" style="display: none;">
+			<label for="txtPlataforma" class="col-sm-3 my-2">Plataforma</label>
+            <div class="col-sm-3 my-2">
+              <label id="txtPlataforma" type="label"></label>
+            </div>
+		</div>		
+
+        <div id="DIV_Agente" class="form-group row" style="display: none;">
+            <label for="txtAgente" class="col-sm-3 my-2">Agente</label>
+            <div class="col-sm-9">
+              <label id="txtAgente" type="label"></label>
+            </div>
+		</div>
+		
+        <div id="DIV_JefeZonal" class="form-group row" style="display: none;">
+            <label for="txtJefeZonal" class="col-sm-3 my-2">Jefe Zonal</label>
+            <div class="col-sm-9">
+              <label id="txtJefeZonal" type="label"></label>
+            </div>
+		</div>
+		
+        <div class="form-group row">
+            <div class="col-sm-3 my-2">
+                <label for="txtDireccion">Dirección Sucursal</label>
+            </div>
+            <div class="col-sm-3 my-2">
+              <label id="txtDireccion" type="label"></label>
+            </div>
+		</div>
+
+        <div class="form-group row">
+            <div class="col-sm-3 my-2">
+                <label for="txtCodigo">Código Sucursal</label>
+            </div>
+            <div class="col-sm-3 my-2">
+              <label id="txtCodigo" type="label"></label>
+            </div>
+        </div>
+		
+		<div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="xmsbs_loading32gif">
+            </p>
+        </div>		
+
+        <div class="d-flex justify-content-center">
+            <button id="btnSeleccionar" type="button" class="btn btn-danger" onclick="this.disabled=true;Confirmar();">Confirmar</button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Información</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="pMensaje"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="cerrarModal()">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div> 
+</form>
+</body>

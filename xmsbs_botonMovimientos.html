@@ -1,0 +1,211 @@
+<html><head>    
+
+    <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="/WebResources/xmsbs_webAPI"></script>
+    <script src="/WebResources/xmsbs_util"></script>    
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+ <script type="text/javascript">
+ 
+    function openMovimientosCaso() {   
+        //debugger;
+        window._executionContext = window.parent.getExecutionContext();
+        window._formContext = window.parent.getExecutionFormContext();
+		
+        var rut = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_rut", null);       
+        var numeroContrato = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_contratotexto", null);
+		
+        if(rut)
+			rut = rut.replace("-", "");
+        
+		var IncidentId = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+		var ContratoManual = JumpStartLibXRM.Fx.getVisible(window._executionContext, "xmsbs_contratotexto");
+		if (ContratoManual)
+		{
+			debugger;
+				
+			var NumeroDeCuenta = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_contratotexto", null);
+			var NumeroOperacionContrato = NumeroDeCuenta;
+			var codigoMoneda = ""; // N/A , se indica al momento de ingresar el primer movimiento manual.
+			var codEntidad = "0035";
+			
+			if (!NumeroDeCuenta || NumeroDeCuenta == ""){
+				alert("Debe ingresar un número de cuenta.");
+				return;
+			}
+
+			if (!NumeroDeCuenta || !NumeroOperacionContrato || !codEntidad || !IncidentId || !rut)
+			{
+				alert("Faltan datos requeridos para el ingreso de Movimientos del Caso.");
+				return;	
+			}			
+			
+			var ContratoId = BuscaoCreaContrato(IncidentId, NumeroDeCuenta, NumeroOperacionContrato, codEntidad, rut, "2");
+			if (!ContratoId){
+				alert("No existe contrato relacionado.");
+				return;
+			}
+			
+			
+			var MovManualContenedorID = CreaMovimientoManualContenedor(IncidentId, ContratoId, rut, NumeroDeCuenta, NumeroOperacionContrato);
+			if (!MovManualContenedorID)
+				return; // error
+				
+			// Guarda el caso, por si es que existen cambios pendientes.
+			JumpStartLibXRM.Fx.formSave(window._executionContext);			
+			RedirigeAIngresoMovManual(MovManualContenedorID);
+		}
+		else
+		{
+			debugger;
+			
+            // si el Cliente es FUNCIONARIO, entonces aplica como contrato manual, es decir, dirige directo al ingreso de movimientos manuales.
+            var CustomerID = JumpStartLibXRM.Fx.getValueField(window._executionContext, "customerid", null);
+			if (!CustomerID)
+				return; // error
+				
+			var oCliente = buscarCliente(CustomerID[0].id);
+			if (!oCliente)
+				return; // error
+				
+			if (oCliente.value[0].xmsbs_esfuncionariobanco == 1 || oCliente.value[0].xmsbs_esfuncionariobanco == 2) // Si es funcionario, o no se sabe, entonces aplica ingreso de movimientos manuales.
+			{
+				// crea el contrato en el CASO.
+				var codigoMoneda = "";
+				var codEntidad = "0035";
+				var codigoOficina = "";
+				var NumeroOperacionContrato = "";
+				var NumeroDeCuenta = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_contratotexto", null);
+				var contratoseleccioncache = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_contratoseleccioncache", null);
+				var arrayContratos = contratoseleccioncache.split(",");
+				
+				for (var i = 0; i < arrayContratos.length; i++) 
+				{
+					if (arrayContratos[i].split(";")[0] == NumeroDeCuenta)
+					{
+						codigoMoneda = arrayContratos[i].split(";")[1];
+						codigoOficina = arrayContratos[i].split(";")[2];
+						NumeroOperacionContrato = codEntidad + codigoOficina + NumeroDeCuenta;
+						break;
+					}
+				}						
+		
+				var ContratoId = BuscaoCreaContrato(IncidentId, NumeroDeCuenta, NumeroOperacionContrato, codEntidad, rut, "1");
+				
+				var MovManualContenedorID = CreaMovimientoManualContenedor(IncidentId, ContratoId, rut, NumeroDeCuenta, NumeroOperacionContrato);
+				if (!MovManualContenedorID)
+					return; // error
+					
+				// Guarda el caso, por si es que existen cambios pendientes.
+				JumpStartLibXRM.Fx.formSave(window._executionContext);			
+				RedirigeAIngresoMovManual(MovManualContenedorID);
+			}
+			else
+			{
+				// abre el buscador de movimientos (integración)
+				if(rut && numeroContrato)
+				{
+					var pageInput = {
+						pageType: "webresource",
+						webresourceName: "xmsbs_movimientoscaso"
+					};
+					
+					var navigationOptions = {
+						target: 2,
+						width: 1000,
+						height: 800,
+						position: 1
+					};
+					
+					window.parent.Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(function success()
+					{}, function error()
+					{}); 
+				}
+			}
+		}
+     }
+	 
+	 function CreaMovimientoManualContenedor(IncidentId, ContratoId, rut, NumeroDeCuenta, NumeroOperacionContrato)
+	 {
+		var objeto = {};
+		objeto["xmsbs_name"] = "Ingreso de Movimientos Manuales del Caso";
+		objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId.replace(/[{}]/g, "") + ")";
+		objeto["xmsbs_contratorelacionado@odata.bind"] = "/xmsbs_contratosdelcasos(" + ContratoId.replace(/[{}]/g, "") + ")";
+		objeto["xmsbs_rut"] = rut;
+		objeto["xmsbs_numerodecuenta"] = NumeroDeCuenta;
+		objeto["xmsbs_contrato"] = NumeroOperacionContrato;
+		//objeto["xmsbs_monedadelmovimiento"] = codigoMoneda;
+		objeto["xmsbs_tipodemovimiento"] = 2;
+		objeto["xmsbs_borrador"] = true;
+		//var resultado = SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, "xmsbs_movimiento", UsuarioAdminID);
+		var resultado = SDK.WEBAPI.createRecord(window._executionContext, objeto, "xmsbs_movimiento");
+		
+		return resultado;
+	 }
+	 
+	 function RedirigeAIngresoMovManual(MovManualContenedorID)
+	 {
+		// redirige altiro al ingreso de movimientos manuales.
+		var entityFormOptions = {};
+		entityFormOptions["entityName"] = "xmsbs_movimiento";
+		entityFormOptions["openInNewWindow"] = false;
+		entityFormOptions["entityId"] = MovManualContenedorID; 
+		Xrm.Navigation.openForm(entityFormOptions).then(
+			function (success) {
+				//console.log(success);
+			},
+			function (error) {
+				//console.log(error);
+			});	 
+	 }
+	 
+	function BuscaoCreaContrato(IncidentId, NumeroDeCuenta, NumeroOperacionContrato, codEntidad, rut, TipoContrato){
+		var ContratoId = null;
+		var objContrato = buscarContrato(IncidentId, NumeroDeCuenta);
+		if(objContrato && objContrato.value.length > 0){
+			ContratoId = objContrato.value[0].xmsbs_contratosdelcasoid;			
+		}
+		else{
+			var entity = "xmsbs_contratosdelcaso";
+			var objeto = {};
+			objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId.replace(/[{}]/g, "") + ")";
+			objeto["xmsbs_name"] = NumeroDeCuenta;
+			objeto["xmsbs_numerodeoperacionocontrato"] = NumeroOperacionContrato;
+			objeto["xmsbs_numerodecuenta"] = NumeroDeCuenta;
+			objeto["xmsbs_rut"] = rut;
+			//objeto["xmsbs_codmoneda"] = "";
+			objeto["xmsbs_codigoentidad"] = codEntidad;
+			objeto["xmsbs_tipodecontrato"] = TipoContrato;
+		
+			//return SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, entity, UsuarioAdminID);
+			ContratoId = SDK.WEBAPI.createRecord(window._executionContext, objeto, entity);
+		}
+		
+		return ContratoId;
+    }	 
+	function buscarContrato(IncidentId, NumeroDeCuenta){
+		//debugger;
+		var entityType = "xmsbs_contratosdelcaso";
+
+		var query = "$select=xmsbs_name,xmsbs_rut,xmsbs_codmoneda,xmsbs_codigoentidad,xmsbs_numerodeoperacionocontrato,xmsbs_numerodecuenta,_xmsbs_caso_value";
+		query += "&$filter=statecode eq 0 and xmsbs_name eq '" + NumeroDeCuenta + "' and _xmsbs_caso_value eq '" + IncidentId.replace(/[{}]/g, "") + "'";
+		var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
+		{});
+		return resultado;
+	}
+	function buscarCliente(ClienteID){
+		//debugger;
+		var entityType = "contact";
+		var query = "$select=xmsbs_esfuncionariobanco";
+		query += "&$filter=(contactid eq '" + ClienteID.replace(/[{}]/g, "") + "')";
+		var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
+		{});
+		return resultado;
+	}		
+     </script>
+<meta charset="utf-8"> 
+
+</head>
+<body> 
+    <button onclick="openMovimientosCaso()">Seleccionar Movimientos</button>
+</body></html>

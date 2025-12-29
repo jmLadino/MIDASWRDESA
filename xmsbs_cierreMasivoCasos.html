@@ -1,0 +1,1893 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Cierre Masivo de Casos</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">    
+    
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery351"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jqueryui1-12-1"></script>
+
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_util"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/locale/es.js"></script>
+    
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_checkboxjs" type="text/javascript"></script>
+    <!--<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>-->
+
+    <link href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css" rel="stylesheet" type="text/css">   
+    <!--<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />-->
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_checkboxcss" type="text/css"></script> 
+    <style>
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        thead th {
+            background-color: rgb(221, 8, 8);
+            color: white;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #tblCasos tbody tr.selected {
+            color: white !important;
+            background-color: gray !important;
+        }
+
+         body {
+            font-family: 'Segoe UI', Arial;
+        }
+
+        #the-canvas {
+            border: 0px solid black;
+            direction: ltr;
+        }
+
+        .ocultar {
+            display: none;
+        }
+
+        .boton {
+            border: 0px;
+            padding-left: 15px;
+            background-color: #efefef;
+            padding-right: 15px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            cursor: pointer;
+            font-family: "Segoe UI", Arial;
+            font-weight: bold;
+            color: rgb(221, 8, 8);
+        }
+
+        .boton-menu {
+            background-color: #efefef;
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-size: 16px;
+            align-items: center;
+        }
+
+            .boton-menu:hover {
+                background-color: rgb(216, 216, 216);
+                border-bottom: 3px solid #DA0202;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+
+            .boton-menu svg {
+                color: #DA0202;
+                padding-right: 3px;
+            }
+            /*.boton-menu:hover svg {
+            color: white;
+        }*/
+
+            .boton-menu span {
+                color: #DA0202;
+                text-align: center;
+            }
+
+        .botones {
+            position: fixed;
+            top: 0;
+            margin-top: 10px;
+        }
+
+        .canvas {
+            margin-top: 45px;
+        }
+
+        .div-botonera {
+            text-align: right;
+            padding-right: 10px;
+            margin-right: 10px;
+        }
+
+        .col-mayor {
+            max-width: 70%;
+            min-width: 70%
+        }
+
+        .col-menor {
+            max-width: 30%;
+            min-width: 30%
+        }
+
+        .select-css {
+            font-size: 14px;
+            font-family: sans-serif;
+            font-weight: 400;
+            color: #444;
+            line-height: 1.3;
+            max-width: 95%;
+            min-width: 95%;
+            padding: .6em 1.4em .5em .8em;
+            width: 70%;
+            box-sizing: border-box;
+            margin-left: 5px;
+            border: 1px solid #aaa;
+            appearance: none;
+            background-color: #fff;
+        }
+            /* Hide arrow icon in IE browsers */
+            .select-css::-ms-expand {
+                display: none;
+            }
+            /* Hover style */
+            .select-css:hover {
+                border-color: #888;
+            }
+            /* Focus style */
+            .select-css:focus {
+                border-color: #aaa;
+                /* It'd be nice to use -webkit-focus-ring-color here but it doesn't work on box-shadow */
+                box-shadow: 0 0 1px 3px rgba(59, 153, 252, .7);
+                box-shadow: 0 0 0 3px -moz-mac-focusring;
+                color: #222;
+                outline: none;
+            }
+
+        #wrapper {
+            display: flex;
+        }
+
+        #col-mayor {
+            flex: 0 0 70%;
+        }
+
+        #col-menor {
+            flex: 1;
+        }
+
+        .etiqueta-meta {
+            margin-left: 5px;
+        }
+
+        .campo-texto {
+            margin-left: 5px;
+            max-width: 95%;
+            min-width: 95%;
+            line-height: 1.3;
+            padding: .6em 1.4em .5em .8em;
+            font-size: 14px;
+            font-family: sans-serif;
+            font-weight: 400;
+        }
+
+        .elemento-meta {
+            padding-bottom: 10px;
+            padding-left: 5px;
+        }
+
+        .titulo-cabecera-respuesta {
+            font-size: 18px;
+        }
+
+        .vista-respuesta {
+            background-color: #fff;
+            margin: 5px;
+            padding: 10px;
+            line-height: 2em;
+        }
+
+        .padding-top {
+            padding-top: 10px;
+        }
+
+        .body-respuesta-predefinida {
+            background-color: rgb(239, 239, 239);
+        }
+
+        .fila-respuesta {
+            cursor: pointer;
+            line-height: 2em;
+            text-align: left;
+            border-bottom: 1px solid grey;
+        }
+
+        tr.fila-respuesta td {
+            border-bottom: 1px solid grey;
+        }
+
+            tr.fila-respuesta td:hover {
+                border-bottom: 2px solid #DA0202;
+            }
+
+        .tabla-respuestas {
+            margin: 5px;
+            padding: 10px;
+            width: 100%;
+        }
+
+            .tabla-respuestas:hover span {
+                font-color: #DA0202;
+            }
+
+        .fila-cabecera-respuestas {
+            line-height: 2em;
+            background-color: #cccccc
+        }
+        textarea {
+            width: 100%;
+        }
+
+        .textwrapper {
+            margin: 5px 0;
+            padding: 3px;
+        }
+
+        .NoBorde {
+            border-style: none;
+        }  
+    </style>
+    <script type="text/javascript">
+        var parametroApiKey = "AuthApi";
+        var parametroAzure = "AzureURL";
+        var globalEC = null;
+        var baseUrl = "https://chld2weuapppmidas001.csbsand.cl.corp/";
+        var apiKey = "56C3D9E6-E5B6-4B76-816F-5741FA0420BE";
+        var apiToken = "";
+        var urlCRM = "";
+        var error = "";
+        var listProducto = null;
+        var listTipoOperacion = null;
+        var listDetalleOperacion = null;
+        var listCasosSeleccionados = [];
+        var tabla = null;
+        var idDetalleOperacion = null;
+        var tipoResolucion = null;
+        var dataRespuestaPredefinida = null;
+        var respuestaPredefinida = "";
+        var casosConRespuesta = false;
+        var respuestaVacia;
+        var respuestaActual;
+        var listaCodigos;
+        var diccionarioValoresCodigos = [];
+        var respuestaTextoLibre;
+        var elementosReemplazados=false;
+        var URReguladores = false;
+        var listCausaRaiz = [];
+        var resultadoGestion = "";
+        var codigoRespuesta = "";
+
+        function get(url, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+
+        function getV2(url, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+
+        function post(url, params, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+        
+        function postV2(url, params, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+                
+        function setDisabled(item, bool){
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }  
+
+        function setCasosBackup(data){
+            $('#dvLoader').css("display", "block");
+            if (data.success) 
+            {
+                if (data.listCaso.length > 0)
+                {
+                    var html = template(data.listCaso);    
+                    $("#tbody").html(html);
+                    tabla = $('#tblCasos').DataTable({ 
+                        "language": {
+                            "sProcessing":     "Procesando...",
+                            "sLengthMenu":     "Mostrar _MENU_ registros",
+                            "sZeroRecords":    "No se encontraron resultados",
+                            "sEmptyTable":     "Ningún dato disponible en esta tabla",
+                            "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                            "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
+                            "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+                            "sSearch":         "Buscar:",
+                            "sInfoThousands":  ",",
+                            "sdvLoaderRecords": "Cargando...",
+                            "oPaginate": {
+                                "sFirst":    "Primero",
+                                "sLast":     "Último",
+                                "sNext":     "Siguiente",
+                                "sPrevious": "Anterior"
+                            },
+                            "oAria": {
+                                "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
+                                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                            },
+                            "buttons": {
+                                "copy": "Copiar",
+                                "colvis": "Visibilidad"
+                            }
+                        },
+                        select: {
+                            style: 'multi'
+                        },
+                        "info": false,
+                        "columnDefs": [
+                            {
+                                "targets": [0],
+                                "visible": false,
+                                "searchable": false
+                            },
+                            {
+                                "targets": [1],
+                                "visible": false,
+                                "searchable": false
+                            },
+                            { 
+                                "type": "date-eu",
+                                "targets": [2] 
+                            }
+                        ]
+                    });
+                }
+                
+                $('#dvLoader').css("display", "none");
+            }
+            else 
+            {
+                $('#dvLoader').css("display", "none");
+                alert(data.message);
+            }
+        }
+
+        function setCasos(data){
+            $('#dvLoader').css("display", "block");
+            if (data.success) 
+            {
+                if (data.listCaso.length > 0)
+                {
+                    var html = template(data.listCaso);    
+                    $("#tbody").html(html);
+                    tabla = $('#tblCasos').DataTable({ 
+                        "language": {
+                            "sProcessing":     "Procesando...",
+                            "sLengthMenu":     "Mostrar _MENU_ registros",
+                            "sZeroRecords":    "No se encontraron resultados",
+                            "sEmptyTable":     "Ningún dato disponible en esta tabla",
+                            "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                            "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
+                            "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+                            "sSearch":         "Buscar:",
+                            "sInfoThousands":  ",",
+                            "sdvLoaderRecords": "Cargando...",
+                            "oPaginate": {
+                                "sFirst":    "Primero",
+                                "sLast":     "Último",
+                                "sNext":     "Siguiente",
+                                "sPrevious": "Anterior"
+                            },
+                            "oAria": {
+                                "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
+                                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                            },
+                            "buttons": {
+                                "copy": "Copiar",
+                                "colvis": "Visibilidad"
+                            }
+                        },
+                        select: {
+                            "style": "multi"
+                        },
+                        "info": false,
+                        "columnDefs": [                            
+                            {
+                                "targets": [0],
+                                "checkboxes": {
+                                   "selectRow": true
+                                },
+                                "searchable": false,
+                                "orderable": false
+                            }
+                        ],
+                        "order": [[1, "asc"]]
+                    });
+                }
+                
+                $('#dvLoader').css("display", "none");
+            }
+            else 
+            {
+                $('#dvLoader').css("display", "none");
+                openModal(data.message);
+            }
+        }
+        
+        function templateBackup(data){
+            //debugger;
+            var html = '';
+            $.each(data, function (index, item) {
+                html += '<tr>';
+                html += '<td>' + item.id + '</td>';
+                html += '<td>' + item.tieneRespuestaCliente + '</td>';
+                html += '<td>' + item.fechaCreacion + '</td>';
+                html += '<td>' + item.etiquetaEstadoSLA + '</td>';
+                html += '<td>' + item.numeroCaso + '</td>';                        
+                html += '<td>' + item.cliente.name + '</td>';
+                html += '<td>' + item.etiquetaEstado + '</td>';
+                html += '<td>' + item.etiquetaRazonEstado + '</td>';
+                html += '<td>' + item.etapa.name + '</td>';
+                html += '<td>' + item.unidadResolutora.name + '</td>';
+                html += '<td>' + item.propietario.name + '</td>';
+                html += '</tr>';
+            });
+
+            return html;
+        }
+        
+        function template(data){
+            //debugger;
+            var html = '';
+            $.each(data, function (index, item) {
+                html += '<tr>';
+                html += '<td>' + item.id + '</td>';
+                html += '<td>' + ParseTieneRespuestaCliente(item.tieneRespuestaCliente) + '</td>';
+                html += '<td>' + item.fechaCreacion + '</td>';
+                html += '<td>' + item.etiquetaEstadoSLA + '</td>';
+                html += '<td>' + item.numeroCaso + '</td>';                        
+                html += '<td>' + item.cliente.name + '</td>';
+                html += '<td>' + item.etiquetaEstado + '</td>';
+                html += '<td>' + item.etiquetaRazonEstado + '</td>';
+                html += '<td>' + item.etapa.name + '</td>';
+                html += '<td>' + item.unidadResolutora.name + '</td>';
+                html += '<td>' + item.propietario.name + '</td>';
+                html += '</tr>';
+                UREsReguladores(item.unidadResolutora.name);
+            });
+
+            return html;
+        }
+        
+        function UREsReguladores(unidadResolutora){
+            if(unidadResolutora.toLowerCase() == "reguladores")
+            {
+                URReguladores = true;
+            }
+        }
+        
+        function ParseTieneRespuestaCliente(tieneRespuestaCliente){
+            var resultado = "";
+            if(tieneRespuestaCliente == true)
+            {
+                casosConRespuesta = true;
+                resultado = "Sí";
+            }
+            else
+            {
+                resultado = "No";
+            }
+            
+            return resultado;
+        }
+                
+        function setFiltros(){            
+            var selectTipoRequerimiento = $("#selectTipoRequerimiento").empty().append('<option value="" disabled selected>Seleccione Tipo de Requerimiento</option>');
+            var selectProducto = $("#selectProducto").empty().append('<option value="" disabled selected>Seleccione Producto</option>');
+            var selectTipoOperacion = $("#selectTipoOperacion").empty().append('<option value="" disabled selected>Seleccione Tipo de Operación</option>');
+            var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+            var selectCausaRaiz = $("#selectCausaRaiz").empty().append('<option value="" disabled selected>Seleccione Causa Raíz</option>');
+            
+            setDisabled("selectTipoRequerimiento", false); 
+            setDisabled("selectProducto", true); 
+            setDisabled("selectTipoOperacion", true); 
+            setDisabled("selectDetalleOperacion", true); 
+            setDisabled("selectEtapas", true); 
+            setDisabled("btnConsultar", true); 
+            
+            get("/MantenedorWeb/GetMantenedoresCierreMasivo/banco%20santander", function (data) {
+                $('#dvLoader').css("display", "block");
+                if (data.success) 
+                {                    
+                    if (data.listERTipoRequerimiento.success)
+                    {                        
+                        for (var i = 0; i < data.listERTipoRequerimiento.listER.length; ++i) {
+                            var option = document.createElement('option');
+                            option.innerHTML = data.listERTipoRequerimiento.listER[i].name;
+                            option.value = data.listERTipoRequerimiento.listER[i].id;
+                            selectTipoRequerimiento.append(option);
+                        }
+                    }
+                    
+                    if (data.listERProductoServicio.success)
+                    {
+                        listProducto = data.listERProductoServicio.listPS;
+                        for (var i = 0; i < listProducto.length; ++i) {
+                            var option = document.createElement('option');
+                            option.innerHTML = listProducto[i].name;
+                            option.value = listProducto[i].id;
+                            selectProducto.append(option);
+                        }
+                    }
+                                        
+                    if (data.listERDetalleOperacion.success)
+                    {
+                        listDetalleOperacion = data.listERDetalleOperacion.listER;
+                    }
+                    
+                    //if (data.listERCausaRaiz.success)
+                    //{
+                        //for (var i = 0; i < data.listERCausaRaiz.listER.length; ++i) {
+                            //var option = document.createElement('option');
+                            //option.innerHTML = data.listERCausaRaiz.listER[i].name;
+                            //option.value = data.listERCausaRaiz.listER[i].id;
+                            //selectCausaRaiz.append(option);
+                        //}
+                    //}
+                    
+                    $('#dvLoader').css("display", "none");
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    setDisabled("btnConsultar", true);
+                    openModal(data.message);
+                }
+            });
+        }
+        
+        function setEtapas(idDetalleOperacion){            
+            var selectEtapas = $("#selectEtapas").empty().append('<option value="" disabled selected>Seleccionar Etapas</option>');
+            
+            get("/MantenedorWeb/GetEtapasCierreMasivoByDetalleOperacion/" + idDetalleOperacion, function (data) {
+                $('#dvLoader').css("display", "block");
+                if (data.success) 
+                {                     
+                    for (var i = 0; i < data.listER.length; ++i) {
+                        var option = document.createElement('option');
+                        option.innerHTML = data.listER[i].name;
+                        option.value = data .listER[i].id;
+                        selectEtapas.append(option);
+                    }                    
+                    
+                    $('#dvLoader').css("display", "none");
+                    $('#selectEtapas').attr('multiple','multiple');
+                    setDisabled("selectEtapas", false); 
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    setDisabled("btnConsultar", true);
+                    openModal(data.message);
+                }
+            });
+        }
+        
+        function setTipoOperacion(idTipoRequerimiento, idProducto){
+            var selectTipoOperacion = $("#selectTipoOperacion");
+            if((idTipoRequerimiento != null && idTipoRequerimiento != undefined) &&
+            (idProducto != null && idProducto != undefined))
+            {
+                get("/MantenedorWeb/GetTipoOperacionByTipoRequerimientoProducto/" + idTipoRequerimiento + "/" + idProducto, function (data) {
+                    $('#dvLoader').css("display", "block");
+                    if (data.success) 
+                    {    
+                        listTipoOperacion = data.listER;
+                        for (var i = 0; i < listTipoOperacion.length; ++i) {
+                            var option = document.createElement('option');
+                            option.innerHTML = listTipoOperacion[i].name;
+                            option.value = listTipoOperacion[i].id;
+                            selectTipoOperacion.append(option);
+                        }                        
+                        
+                        $('#dvLoader').css("display", "none");
+                        setDisabled("selectTipoOperacion", false);
+                    }
+                    else {
+                        $('#dvLoader').css("display", "none");
+                        setDisabled("btnConsultar", true);
+                        openModal(data.message);
+                    }
+                });
+            }
+            else
+            {
+                openModal("Para obtener los tipos de operación, debe seleccionar Tipo de Requerimiento y Producto previamente.");
+            }
+        }
+        
+        function setDetalleOperacion(idTipoOperacion){  
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            var selectDetalleOperacion = $("#selectDetalleOperacion");
+            
+            var listDetalleOperacionAux = listDetalleOperacion.filter(x => x.idDependencia == idTipoOperacion);
+            
+            for (var i = 0; i < listDetalleOperacionAux.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = listDetalleOperacionAux[i].name;
+                option.value = listDetalleOperacionAux[i].id;
+                selectDetalleOperacion.append(option);
+            }
+            
+            $('#dvLoader').css("display", "none");
+        }
+        
+        function setProducto(idTipoRequerimiento){  
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            var selectProducto = $("#selectProducto");
+            
+            //var listProductoAux = listProducto.filter(x => x.idDependencia == idTipoRequerimiento);
+            
+            for (var i = 0; i < listProducto.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = listProducto[i].name;
+                option.value = listProducto[i].id;
+                selectProducto.append(option);
+            }
+            
+            $('#dvLoader').css("display", "none");
+        }
+
+        function changeFiltrosTipologia(filtro){  
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            
+            if(filtro == "selectTipoRequerimiento"){
+                var selectTipoRequerimiento = $("#selectTipoRequerimiento").val(); 
+                
+                var selectProducto = $("#selectProducto").empty().append('<option value="" disabled selected>Seleccione Producto</option>');
+                var selectTipoOperacion = $("#selectTipoOperacion").empty().append('<option value="" disabled selected>Seleccione Tipo de Operación</option>');
+                var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                var selectEtapas = $("#selectEtapas").empty().append('<option value="" disabled selected>Seleccione Etapas</option>');   
+
+                setDisabled("selectProducto", true); 
+                setDisabled("selectTipoOperacion", true); 
+                setDisabled("selectDetalleOperacion", true);
+                setDisabled("selectEtapas", true);
+                setDisabled("btnConsultar", true);   
+
+                setProducto(selectTipoRequerimiento); 
+                setDisabled("selectProducto", false); 
+            }
+            else if(filtro == "selectProducto"){
+                var selectTipoRequerimiento = $("#selectTipoRequerimiento").val();                
+                var selectProducto = $("#selectProducto").val();
+                
+                var selectTipoOperacion = $("#selectTipoOperacion").empty().append('<option value="" disabled selected>Seleccione Tipo de Operación</option>');
+                var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                var selectEtapas = $("#selectEtapas").empty().append('<option value="" disabled selected>Seleccione Etapas</option>');    
+
+                setDisabled("selectTipoOperacion", true); 
+                setDisabled("selectDetalleOperacion", true);
+                setDisabled("selectEtapas", true);
+                setDisabled("btnConsultar", true);  
+                                
+                setTipoOperacion(selectTipoRequerimiento, selectProducto);
+                setDisabled("selectTipoOperacion", false); 
+            }
+            else if(filtro == "selectTipoOperacion"){
+                var selectTipoOperacion = $("#selectTipoOperacion").val();
+                
+                var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                var selectEtapas = $("#selectEtapas").empty().append('<option value="" disabled selected>Seleccione Etapas</option>');   
+
+                setDisabled("selectDetalleOperacion", true);
+                setDisabled("selectEtapas", true); 
+                
+                setDetalleOperacion(selectTipoOperacion);                
+                setDisabled("selectDetalleOperacion", false);
+            }
+            else if(filtro == "selectDetalleOperacion")
+            {           
+                var selectDetalleOperacion = $("#selectDetalleOperacion").val();
+                setEtapas(selectDetalleOperacion);
+                setDisabled("selectEtapas", false);
+            }
+            
+            $('#dvLoader').css("display", "none");
+        }
+        
+        function formatFecha(fecha){  
+            var auxFecha = fecha.split("/");
+            return auxFecha[1].toString() + "/" + auxFecha[0].toString() + "/" + auxFecha[2].toString();
+        }
+        
+        function GetCasosCierreMasivo(){           
+            var selectTipoRequerimiento = $("#selectTipoRequerimiento").val();
+            var selectProducto = $("#selectProducto").val();
+            var selectTipoOperacion = $("#selectTipoOperacion").val();
+            var selectDetalleOperacion = $("#selectDetalleOperacion").val();
+            var selectEtapas = $("#selectEtapas").val();
+            var fechaDesde = $("#fechaDesde").find("input").val();
+            var fechaHasta = $("#fechaHasta").find("input").val();
+            
+            if ((selectTipoRequerimiento != null && selectTipoRequerimiento != undefined)
+                && (selectProducto != null && selectProducto != undefined)
+                && (selectTipoOperacion != null && selectTipoOperacion != undefined)
+                && (selectDetalleOperacion != null && selectDetalleOperacion != undefined) 
+                && (selectEtapas != null && selectEtapas != undefined) 
+                && (fechaDesde != null && fechaDesde != undefined && fechaDesde != "")
+                && (fechaHasta != null && fechaHasta != undefined && fechaHasta != "")) 
+            {
+                $('#dvLoader').css("display", "block");
+                
+                fechaDesde = formatFecha(fechaDesde);
+                fechaHasta = formatFecha(fechaHasta);
+                
+                var request = {
+                    IdTipoRequerimiento: selectTipoRequerimiento,
+                    IdProductoServicio: selectProducto,
+                    IdTipoOperacion: selectTipoOperacion,
+                    IdDetalleOperacion: selectDetalleOperacion,
+                    ListEtapas: selectEtapas,
+                    FechaDesde: fechaDesde,
+                    FechaHasta: fechaHasta
+                };
+                //debugger;
+                post("/Caso/GetCasosCierreMasivo", request, function (data) 
+                {                
+                    $('#dvLoader').css("display", "none");
+                    if (data.success) {                        
+                        setCasos(data);    
+                        VolverCasos();
+                    }
+                    else {
+                        openModal(data.message);
+                    }
+                });
+            }
+            else {
+                alert("Favor seleccionar campos obligatorios antes de confirmar.");
+            }        
+        }
+        
+        function VolverFiltro(){
+            tabla.destroy();
+            $('#divFiltros').show();
+            $('#divCasos').hide();
+            $('#divCierre').hide();
+        }
+        
+        function AvanzarCierre(){
+            //debugger;
+            listCasosSeleccionados = [];
+            var rows_selected = tabla.column(0).checkboxes.selected();
+            
+            $.each(rows_selected, function(index, rowId){
+                listCasosSeleccionados.push(rowId);
+            });
+            
+            if(!casosConRespuesta)
+            {
+                if(listCasosSeleccionados.length > 0)
+                {
+                    $('#divFiltros').hide();
+                    $('#divCasos').hide();
+                    $('#divCierre').show();
+                    setCausaRaiz();
+                    showMotivoResolucion();
+                }
+                else
+                {
+                    openModal("Debe seleccionar al menos un registro para proceder con el cierre masivo de casos");
+                }
+            }
+            else
+            {
+                var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Cerrar Casos", subtitle:"Hay casos seleccionados que poseen contenido en la respuesta de cliente, la respuesta se sobrescribirá. ¿Desea Continuar?", text: "" };
+                var confirmOptions  = { height: 200, width: 260 };
+                Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
+                        function (success) {
+                        if(success.confirmed){
+                            //debugger;
+                            if(listCasosSeleccionados.length > 0)
+                            {
+                                $('#divFiltros').hide();
+                                $('#divCasos').hide();                                
+                                $('#divCierre').show();
+                                 setCausaRaiz();
+                                showMotivoResolucion();
+                            }
+                            else
+                            {
+                                openModal("Debe seleccionar al menos un registro para proceder con el cierre masivo de casos");                                
+                            }                            
+                        }
+                        else{
+                            //Si cancela
+                        }
+                    },
+                    function (error) {
+                        //console.log(error.message);
+                    }
+                );
+            } 
+        }
+        
+        function showMotivoResolucion(){
+            if(URReguladores)
+            {
+                $('#lblMotivoResolucion').show(); 
+                $('#selectMotivoResolucion').show();                
+            }
+            else if(!URReguladores)
+            {
+                $('#lblMotivoResolucion').hide(); 
+                $('#selectMotivoResolucion').hide(); 
+            }
+        }
+        
+        function getCausaRaizGeneral(){
+            //debugger;
+            let entityType = "xmsbs_causaraiz";
+            let query = "$select=xmsbs_causaraizid,xmsbs_name,xmsbs_codigo,xmsbs_flag";
+            query += "&$filter=statecode eq 0 and xmsbs_flag eq false";
+            let resultado = SDK.WEBAPI.retrieveMultipleRecords(globalEC, entityType, query, null, null, function () { });
+            
+            if (resultado && resultado.value.length > 0) {
+                for (var i = 0; i < resultado.value.length; ++i) {
+                    var causaRaiz = new Object();                
+                    causaRaiz = {"id": resultado.value[i].xmsbs_causaraizid, "nombre": resultado.value[i].xmsbs_name}; 
+                    listCausaRaiz.push(causaRaiz);
+                }
+            }
+        }
+        
+        function getCausaRaizEspecifica(){
+            //debugger;
+            var idDetalleOperacion = $("#selectDetalleOperacion").val();
+            let entityType = "xmsbs_causaraiztipificacion";
+            let query = "$select=xmsbs_causaraiztipificacionid,xmsbs_name,_xmsbs_detalledeoperacion_value,_xmsbs_causaraiz_value";
+            query += "&$filter=statecode eq 0 and _xmsbs_detalledeoperacion_value eq '" + idDetalleOperacion + "'";
+            let resultado = SDK.WEBAPI.retrieveMultipleRecords(globalEC, entityType, query, null, null, function () { });
+            
+            if (resultado && resultado.value.length > 0) {
+                for (var i = 0; i < resultado.value.length; ++i) {
+                    var causaRaiz = new Object();                
+                    causaRaiz = {"id": resultado.value[i]._xmsbs_causaraiz_value, "nombre": resultado.value[i]["_xmsbs_causaraiz_value@OData.Community.Display.V1.FormattedValue"]};
+                    listCausaRaiz.push(causaRaiz);
+                }
+            }
+        }
+        
+        function setCausaRaiz(){
+            //debugger;
+            getCausaRaizGeneral();
+            getCausaRaizEspecifica();
+            var selectCausaRaiz = $("#selectCausaRaiz");     
+   
+            $('#dvLoader').css("display", "block");
+            
+            if(listCausaRaiz.length > 0)
+            {
+                for (var i = 0; i < listCausaRaiz.length; ++i) {
+                    var option = document.createElement('option');
+                    option.innerHTML = listCausaRaiz[i].nombre;
+                    option.value = listCausaRaiz[i].id;
+                    selectCausaRaiz.append(option); 
+                }
+            }
+            else
+            {
+                $('#lblCausaRaiz').hide(); 
+                $('#selectCausaRaiz').hide(); 
+            }
+            
+            $('#dvLoader').css("display", "none"); 
+        }
+        
+        function VolverCasos(){
+            $('#divFiltros').hide();
+            $('#divCasos').show();
+            $('#divCierre').hide();
+        }
+        
+        function CerrarCasosMasivamenteBackup(){
+            //debugger;
+            var selectCausaRaiz = $("#selectCausaRaiz").val();
+            var selectTipoResolucion = $("#selectTipoResolucion").val();
+            var selectMotivoResolucion = $("#selectMotivoResolucion").val();
+
+            if ((selectCausaRaiz != null && selectCausaRaiz != undefined)
+                && (selectTipoResolucion != null && selectTipoResolucion != undefined)
+                && (selectMotivoResolucion != null && selectMotivoResolucion != undefined)) 
+            {
+                $('#dvLoader').css("display", "block");                                             
+                
+                var request = {
+                    ListIdCaso: listCasosSeleccionados,
+                    IdCausaRaiz: selectCausaRaiz,
+                    TipoResolucion: selectTipoResolucion,
+                    MotivoResolucion: selectMotivoResolucion,
+                    RespuestaPredefinida: respuestaPredefinida
+                };
+
+                post("/Caso/CloseCasosCierreMasivo", request, function (data) 
+                {
+                    //debugger;
+                    $('#dvLoader').css("display", "none");
+                    if (data.success) {
+                        openModal(data.message);
+                        setTimeout(function(){ location.reload(); }, 2000);                        
+                    }
+                    else {
+                        openModal(data.message);
+                    }
+                });
+            }
+            else {
+                alert("Favor seleccionar campos obligatorios antes de confirmar.");
+            }        
+        }   
+
+        function CerrarCasosMasivamente(){   
+            //debugger;
+            var selectCausaRaiz = $("#selectCausaRaiz").val();
+            var selectTipoResolucion = $("#selectTipoResolucion").val();
+            var selectMotivoResolucion = $("#selectMotivoResolucion").val();
+
+            if (selectTipoResolucion != null && selectTipoResolucion != undefined)
+            {
+                var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Cerrar Casos", subtitle:"La respuesta ha sido guardada. Se procedera a la ejecución del cierre masivo. ¿Desea Continuar?", text: "" };
+                var confirmOptions  = { height: 200, width: 260 };
+                Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
+                        function (success) {
+                        if(success.confirmed){
+                            //debugger;
+                            $('#dvLoader').css("display", "block");
+                
+                            var globalEC = Xrm.Utility.getGlobalContext();
+                            var entity = "incident";
+                            var objeto = {};
+                            
+                            if(selectCausaRaiz != null && selectCausaRaiz != undefined)
+                            {
+                                objeto["xmsbs_causaraiz@odata.bind"] = "/xmsbs_causaraizs(" + selectCausaRaiz + ")";
+                            }
+                            
+                            objeto["xmsbs_tipoderespuesta"] = selectTipoResolucion;
+                            
+                            if(selectMotivoResolucion != null && selectMotivoResolucion != undefined)
+                            {
+                                objeto["xmsbs_motivoresolucion"] = selectMotivoResolucion;
+                            }
+                            
+                            objeto["xmsbs_respuestacliente"] = respuestaPredefinida;
+                            objeto["xmsbs_cierremasivo"] = 2;                            
+            
+                            if(resultadoGestion == "0" || resultadoGestion == "1" )
+                            {
+                                objeto["xmsbs_naturalezarespuesta"] = resultadoGestion;
+                            }
+                            
+                            if(codigoRespuesta != null && codigoRespuesta != "" && codigoRespuesta != undefined)
+                            {
+                                objeto["xmsbs_codigorespuesta"] = codigoRespuesta;
+                            }
+                            
+                            for (var i = 0; i < listCasosSeleccionados.length; i++) {
+                               var resultado = SDK.WEBAPI.updateRecord(globalEC, listCasosSeleccionados[i], objeto, entity, null, null);
+                            }
+                            
+                            $('#dvLoader').css("display", "none");
+                            openModal("Los casos seleccionados se cerraran automaticamente o avanzaran dependiendo de su configuración");
+                            setTimeout(function(){ location.reload(); }, 5000); 
+                        }
+                        else{
+                            //Si cancela
+                        }
+                    },
+                    function (error) {
+                        //console.log(error.message);
+                    }
+                );             
+            }
+            else {
+                alert("Favor seleccionar campos obligatorios antes de confirmar.");
+            }        
+        }
+
+        function openModal(mensaje){
+            $("#pMensaje").html(mensaje);
+            $('#alertModal').modal("show");
+        }
+        
+        function AvanzarRespuestaPredefinida(){
+            getRespuestaPredefinida();
+            $('#divFiltros').hide();
+            $('#divCasos').hide();
+            $('#divCierre').hide();
+            $('#divRespuestaPredefinida').show();
+            
+            $('#dvLoader').show();
+            //$('#contenedorGlogal').hide();
+            $('#contenedorLista').hide();
+            $('#previsualizador').hide();
+            $('#previsualizador-textoLibre').hide();
+            $('#previewRespuestas').hide();
+            $('#btnGuardar').hide();
+        }
+        
+        function VolverResolucion(){         
+            $('#divFiltros').hide();
+            $('#divCasos').hide();
+            $('#divCierre').show();
+            $('#divRespuestaPredefinida').hide();
+            setDisabled("btnConfirmar", true);            
+        }
+        
+        function getRespuestaPredefinida(){          
+            idDetalleOperacion = $("#selectDetalleOperacion").val();
+            tipoResolucion = $("#selectTipoResolucion").val();
+            get("/RespuestaPredefinida/GetRespuestasPredefinidasCierreMasivo?idDetalleOperacion=" + idDetalleOperacion + "&tipoResolucion=" + tipoResolucion, function (data) {
+                $('#dvLoader').css("display", "block");
+                if (data.success) {              
+                    renderRespuestas(data);                    
+                    $('#dvLoader').css("display", "none");
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    openModal(data.message);
+                    VolverResolucion();
+                }
+            });
+        }
+        
+        function renderRespuestas(data){
+            //debugger;
+            if (data && data.success) {
+                //debugger;
+                if (data.respuestas.length > 0) {
+                    $("#listaRespuestas").empty();
+                    let tgtdiv = document.getElementById('listaRespuestas');
+                    let tbl = document.createElement('table');
+                    tbl.classList.add('tabla-respuestas');
+                    //let col = document.createElement('td');
+                    let filaCabecera = document.createElement('tr');
+                    filaCabecera.classList.add('fila-cabecera-respuestas');
+                    let col1Cabecera = document.createElement('td');
+                    col1Cabecera.innerHTML = 'Código';
+                    let col2Cabecera = document.createElement('td');
+                    col2Cabecera.innerHTML = 'Nombre';
+                    filaCabecera.append(col1Cabecera);
+                    filaCabecera.append(col2Cabecera);
+                    tbl.append(filaCabecera);
+
+
+                    for (var i = 0; i < data.respuestas.length; i++) {
+                        let respId = data.respuestas[i].id;
+                        let rw = document.createElement('tr');
+                        rw.classList.add('fila-respuesta');
+                        rw.id = respId;
+                        let td1 = document.createElement('td');
+                        td1.innerHTML = data.respuestas[i].nombre;
+                        let td2 = document.createElement('td');
+                        let spn = document.createElement('span');
+                        spn.title = stripHtml(data.respuestas[i].contenido);
+                        spn.innerHTML = data.respuestas[i].titulo;
+                        spn.classList.add('texto-nombre-respuesta');
+                        td2.append(spn);
+                        rw.append(td1);
+                        rw.append(td2);
+                        //rw.append(spn);
+                        rw.onclick = function () {
+                            //debugger;
+                            clickedRow(respId);
+                        };
+                        //col.appendChild(rw);
+                        tbl.appendChild(rw);
+                    }
+                    //tbl.appendChild(col);
+                    tgtdiv.appendChild(tbl);
+                }
+                else {
+                    $("#listaRespuestas").empty();
+                    let tgtdiv = document.getElementById('listaRespuestas');
+                    let tbl = document.createElement('table');
+                    tbl.classList.add('tabla-respuestas');
+
+                    let filaCabecera = document.createElement('tr');
+                    let col1Cabecera = document.createElement('td');
+                    col1Cabecera.innerHTML = 'No existen respuestas predefinidas para las condiciones actuales del caso.';
+
+                    filaCabecera.append(col1Cabecera);
+
+                    tbl.append(filaCabecera);
+                    tgtdiv.appendChild(tbl);
+                    
+                    setDisabled("btnConfirmar", false); 
+                }
+
+                $('#dvLoader').hide();
+                //$('#contenedorGlogal').show();
+                $('#contenedorLista').show();
+                $('#previsualizador').hide();
+                $('#previsualizador-textoLibre').hide();
+            }
+        }
+
+        function setCalendars(){
+            $('body').on('focus', '.cal-predefinida', function () {
+                $(this).datetimepicker({
+                    locale: 'es-es',
+                    format: 'L'
+                });
+            });
+        }
+        
+        function validarInputs(){            
+            let validado = true;
+            for (i = 0; i < listaCodigos.length; i++) {
+                let cod = listaCodigos[i];
+                let currentElem = document.getElementById(cod);
+                let currentVal = currentElem.value;
+                
+				//debugger;
+                if(currentVal == null || currentVal == undefined || currentVal == "")
+                {
+                    validado = false;
+                    mensajeError="No se permiten vacios."
+                    currentElem.focus();
+                    break;
+                }
+                else
+                {
+					validado = validarInput(currentElem, currentVal);
+					if (!validado)
+						break;
+                }
+            }
+            
+            return validado;
+        }
+        
+        function validarInput(currentElem, currentVal){
+			let _largoCurrentVal = currentVal.trim().length;
+			
+			if(currentElem.className == "txt-predefinida" && _largoCurrentVal > 0)
+			{                        
+				var re = new RegExp("^[A-Za-z0-9 _@$,.-ÁÉÍÓÚÑáéíóúñ-]*[A-Za-z0-9 _@$,.-ÁÉÍÓÚÑáéíóúñ-][A-Za-z0-9 _@$,.-ÁÉÍÓÚÑáéíóúñ-]*$");
+				let _regexValido = re.test(currentVal);
+				if(!_regexValido)
+				{
+					mensajeError="Posee caracteres inválidos."
+                    currentElem.value = "";
+                    currentElem.focus();
+					return false;
+				}                        
+			}
+			else if(currentElem.className == "txt-predefinidaNumber" && _largoCurrentVal > 0)
+			{                                       
+				var re = new RegExp("^[0-9,.]*$");
+				let _regexValido = re.test(currentVal);
+				if(!_regexValido)
+				{
+					mensajeError="Sólo se permite números."
+                    currentElem.value = "";
+                    currentElem.focus();
+					return false;
+				}                        
+			}
+			else if(_largoCurrentVal == 0)
+			{
+				mensajeError="No se permiten vacios."
+                currentElem.focus();
+				return false;
+			}
+			
+			return true;
+		}
+        
+        function placeholderInputs() {                       
+            for (i = 0; i < listaCodigos.length; i++) {
+                let cod = listaCodigos[i];
+                let currentElem = document.getElementById(cod);
+                let currentVal = currentElem.value;               	           
+                if(currentElem.className == "txt-predefinida") {                        
+                        currentElem.placeholder="Alfanumérico";              
+                }
+                else if(currentElem.className == "txt-predefinidaNumber") {                        
+                        currentElem.placeholder="Numérico";    
+                        currentElem.value = currentElem.value.replace("$","");
+                }  
+                else if(currentElem.className == "cal-predefinida") {                        
+                        currentElem.placeholder="Fecha";              
+                }                               									             
+            }                      
+        }        
+               
+        function clickedRowBackup(idRespuesta){
+            //debugger;
+            $('#contenedorLista').hide();
+            $('#dvLoader').show();
+            get("/RespuestaPredefinida/GetRespuestaPredefinidaByBaseRespuesta?idBaseRespuesta=" + idRespuesta, function (data) {
+                if (data && data.success) {
+                    //debugger;
+                    respuestaTextoLibre = data.esTextoLibre;
+                    if (!data.esTextoLibre) {
+                        let tgtdiv = document.getElementById('detalleRespuestas');
+                        let tgtPreview = document.getElementById('previewRespuestas');
+                        respuestaVacia = data.html;
+                        listaCodigos = data.listaCodigos;
+                        tgtdiv.innerHTML = data.html;
+
+                        $('#dvLoader').hide();
+                        $('#previsualizador').show();
+                        setCalendars();
+                        if (data.currentRespuesta && data.currentRespuesta.length > 5) {
+                            tgtPreview.innerHTML = data.currentRespuesta;
+                            $('#previewRespuestas').show();
+                            $('#btnGuardar').show();
+                        }
+                    }
+                    else {
+                        let tgtTA = document.getElementById('textoRespuestaLibre');
+                        if (data.currentRespuesta && data.currentRespuesta.length > 5) {
+                            tgtTA.value = data.currentRespuesta;
+                        }
+                        else {
+                            tgtTA.value = '';
+                        }
+                        $('#dvLoader').hide();
+                        $('#previsualizador-textoLibre').show();
+                        $('#btnGuardarTL').show();
+                    }
+                }
+            });
+        }
+        
+        function clickedRow(idRespuesta){
+            //debugger;
+            $('#contenedorLista').hide();
+            $('#dvLoader').show();
+            get("/RespuestaPredefinida/GetRespuestaPredefinidaByBaseRespuesta?idBaseRespuesta=" + idRespuesta, function (data) {
+                if (data && data.success) 
+                {
+                    //debugger;
+                    respuestaTextoLibre = data.esTextoLibre;
+                    if (!data.esTextoLibre) {
+                        let tgtdiv = document.getElementById('detalleRespuestas');
+                        let tgtPreview = document.getElementById('previewRespuestas');                       
+                        respuestaVacia = data.html;
+                        listaCodigos = data.listaCodigos;
+                        tgtdiv.innerHTML = data.html;
+
+                        $('#loading').hide();
+                        $('#previsualizador').show();
+                        setCalendars();
+                        placeholderInputs();
+                        if (data.currentRespuesta && data.currentRespuesta.length > 5) {
+                            tgtPreview.innerHTML = data.currentRespuesta;
+                            $('#previewRespuestas').show();
+                            $('#btnGuardar').show();
+                        }
+                    }
+                    else 
+                    {
+                        let tgtTA = document.getElementById('textoRespuestaLibre');
+                        if (data.currentRespuesta && data.currentRespuesta.length > 5) {
+                            tgtTA.value = data.currentRespuesta;
+                        }
+                        else {
+                            tgtTA.value = '';
+                        }
+                        $('#loading').hide();
+                        $('#previsualizador-textoLibre').show();
+                        $('#btnGuardarTL').show();
+                    }        
+                    
+                    if(data.respuesta != null)
+                    {
+                        //debugger;
+                        if(data.respuesta.resultadoGestion != null && data.respuesta.resultadoGestion != undefined)
+                        {
+                            resultadoGestion = data.respuesta.resultadoGestion;
+                        }
+                        
+                        if(data.respuesta.titulo != null && data.respuesta.titulo != "" && data.respuesta.titulo != undefined)
+                        {
+                            codigoRespuesta = data.respuesta.titulo;
+                        }
+                    }
+                }
+                $('#dvLoader').hide();
+            });
+        }
+        
+        function reemplazarElementosBackup(){
+            //debugger;
+            elementosReemplazados = true;
+            let tgtdiv = document.getElementById('detalleRespuestas');
+            let tgtPreview = document.getElementById('previewRespuestas');
+            for (i = 0; i < listaCodigos.length; i++) {
+                let cod = listaCodigos[i];
+                let currentElem = document.getElementById(cod);
+                let currentVal = currentElem.value;
+                let elem = {};
+                elem["codigo"] = cod;
+                elem["valor"] = currentVal;
+                diccionarioValoresCodigos.push(elem);
+                currentElem.outerHTML = currentVal;
+            }
+            //let btnResetear = document.getElementById("btnResetear");
+            //btnResetear.classList.remove('ocultar');
+            let cloned = tgtdiv.innerHTML;
+            let cleanedCloned = stripHtml(cloned);
+            tgtPreview.innerHTML = cleanedCloned;
+            tgtdiv.innerHTML = "";
+            tgtdiv.innerHTML = respuestaVacia;
+            $('#previewRespuestas').show();
+            $('#btnGuardar').show();
+        }
+        
+        function reemplazarElementos() {
+            //debugger;
+            mensajeError="No se permiten vacios o caracteres inválidos.";
+            let _inputsValidado = validarInputs();
+            if(_inputsValidado)
+            {
+                elementosReemplazados = true;
+                let tgtdiv = document.getElementById('detalleRespuestas');
+                let tgtPreview = document.getElementById('previewRespuestas');
+                for (i = 0; i < listaCodigos.length; i++) {
+                    let cod = listaCodigos[i];
+                    let currentElem = document.getElementById(cod);
+                    let currentVal = currentElem.value;
+                    let elem = {};
+                    elem["codigo"] = cod;
+                    elem["valor"] = currentVal;
+                    diccionarioValoresCodigos.push(elem);
+                    currentElem.outerHTML = currentVal;
+                }
+                
+                //let btnResetear = document.getElementById("btnResetear");
+                //btnResetear.classList.remove('ocultar');            
+            
+                let cloned = tgtdiv.innerHTML;
+                let cleanedCloned = stripHtml(cloned);
+                tgtPreview.innerHTML = cleanedCloned;
+                tgtdiv.innerHTML = "";
+                tgtdiv.innerHTML = respuestaVacia;
+                placeholderInputs();
+                $('#previewRespuestas').show();
+                $('#btnGuardar').show();
+            }
+            else
+            {
+               openModal(mensajeError);
+            }
+        }
+        
+        function resetearRespuesta(){
+            let tgtdiv = document.getElementById('detalleRespuestas');
+            let tgtPreview = document.getElementById('previewRespuestas');
+            tgtPreview.innerHTML = tgtdiv.innerHTML;
+            tgtdiv.innerHTML = "";
+            tgtdiv.innerHTML = respuestaVacia;
+        }
+        
+        function guardarRespuesta(){
+            if (!elementosReemplazados) {
+                reemplazarElementos();
+            }
+            
+            let tgtPreview = document.getElementById('previewRespuestas');
+            let resp = tgtPreview.innerHTML;
+
+            respuestaPredefinida = resp;
+            //openModal("La respuesta ha sido guardada.");
+            setDisabled("btnConfirmar", false); 
+            CerrarCasosMasivamente();
+        }
+        
+        function guardarRespuestaTL(){
+            let tgtTA = document.getElementById('textoRespuestaLibre');
+            let resp = tgtTA.value;
+            
+            respuestaPredefinida = resp;
+            //openModal("La respuesta ha sido guardada.");
+            setDisabled("btnConfirmar", false);
+            //AvanzarCierreCaso();
+            CerrarCasosMasivamente();
+        }
+        
+        function volver(){
+            $('#contenedorLista').show();
+            $('#previsualizador').hide();
+
+            $('#previewRespuestas').hide();
+            $('#btnGuardar').hide();
+        }
+        
+        function volverTL(){
+            $('#contenedorLista').show();
+            $('#previsualizador-textoLibre').hide();
+
+            //$('#previewRespuestas').hide();
+            $('#btnGuardarTL').hide();
+
+        }
+        
+        function cerrar(){
+            window.close();
+        }
+        
+        function stripHtml(html){
+            let tmp = document.createElement("DIV");
+            tmp.innerHTML = html;
+            let ret = tmp.textContent || tmp.innerText || "";
+            return ret;
+        }
+
+        
+        $(document).ready(function () {  
+            //debugger;
+            $('#divFiltros').show();
+            $('#divCasos').hide();
+            $('#divCierre').hide();
+            $('#divRespuestaPredefinida').hide();
+            
+            globalEC = Xrm.Utility.getGlobalContext();
+            
+            jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+                "date-eu-pre": function ( date ) {
+                    date = date.replace(" ", "");
+                     
+                    if ( ! date ) {
+                        return 0;
+                    }
+             
+                    var year;
+                    var eu_date = date.split(/[\.\-\/]/);
+             
+                    /*year (optional)*/
+                    if ( eu_date[2] ) {
+                        year = eu_date[2];
+                    }
+                    else {
+                        year = 0;
+                    }
+             
+                    /*month*/
+                    var month = eu_date[1];
+                    if ( month.length == 1 ) {
+                        month = 0+month;
+                    }
+             
+                    /*day*/
+                    var day = eu_date[0];
+                    if ( day.length == 1 ) {
+                        day = 0+day;
+                    }
+             
+                    return (year + month + day) * 1;
+                },
+             
+                "date-eu-asc": function ( a, b ) {
+                    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+                },
+             
+                "date-eu-desc": function ( a, b ) {
+                    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+                }
+            });
+            
+                        
+            setFiltros();
+            
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = today.getFullYear();
+            today = mm + '/' + dd + '/' + yyyy;
+            // apiToken = window.sessionStorage.getItem("LokiAuthToken");
+            
+            var defaultFechaInicio = new Date();
+            defaultFechaInicio.setDate(defaultFechaInicio.getDate() - 30);
+            dd = String(defaultFechaInicio.getDate()).padStart(2, '0');
+            mm = String(defaultFechaInicio.getMonth() + 1).padStart(2, '0'); //January is 0!
+            yyyy = defaultFechaInicio.getFullYear();
+            defaultFechaInicio = mm + '/' + dd + '/' + yyyy;
+            
+            $('#fechaDesde').datetimepicker({
+                locale: 'es-es',
+                format: 'L',
+                defaultDate: new Date(defaultFechaInicio) 
+            });
+            $('#fechaHasta').datetimepicker({
+                locale: 'es-es',
+                format: 'L',
+                //useCurrent: false,
+                defaultDate: new Date(today) 
+            });
+            $("#fechaDesde").on("dp.change", function (e) {
+               $('#fechaHasta').data("DateTimePicker").minDate(e.date);
+            });
+            $("#fechaHasta").on("dp.change", function (e) {
+               $('#fechaDesde').data("DateTimePicker").maxDate(e.date);
+            });
+            
+            
+            $("#selectTipoRequerimiento").change(function () {                
+                var filtro = "selectTipoRequerimiento";
+                changeFiltrosTipologia(filtro);                    
+            });
+
+            $("#selectProducto").change(function () {
+                //$('#dvLoader').css("display", "block");
+                //var selectTipoRequerimiento = $("#selectTipoRequerimiento").val();                
+                //var selectProducto = $("#selectProducto").val();                                
+                
+                //setTipoOperacion(selectTipoRequerimiento, selectProducto);  
+                //$('#dvLoader').css("display", "none");
+
+                var filtro = "selectProducto";
+                changeFiltrosTipologia(filtro);                    
+            });
+
+            $("#selectTipoOperacion").change(function () {
+                //$('#dvLoader').css("display", "block");
+                //var selectTipoOperacion = $("#selectTipoOperacion").val();                
+                //var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                
+                //var listDetalleOperacionAux = listDetalleOperacion.filter(x => x.idDependencia == selectTipoOperacion)
+                
+                //for (var i = 0; i < listDetalleOperacionAux.length; ++i) {
+                    //var option = document.createElement('option');
+                    //option.innerHTML = listDetalleOperacionAux[i].name;
+                    //option.value = listDetalleOperacionAux[i].id;
+                    //selectDetalleOperacion.append(option);
+                //}
+                
+                //setDisabled("selectDetalleOperacion", false);
+                //$('#dvLoader').css("display", "none");
+                
+                var filtro = "selectTipoOperacion";
+                changeFiltrosTipologia(filtro);
+            });
+
+            $("#selectDetalleOperacion").change(function () {
+                //$('#dvLoader').css("display", "block");
+                //var selectDetalleOperacion = $("#selectDetalleOperacion").val();
+                //setEtapas(selectDetalleOperacion);
+                //setEtapas("31e4ce3a-b472-eb11-b0b0-000d3a3b377d");
+                //$('#dvLoader').css("display", "none");
+                
+                var filtro = "selectDetalleOperacion";
+                changeFiltrosTipologia(filtro);
+            });
+            
+            $("#selectEtapas").change(function () {
+                setDisabled("btnConsultar", false); 
+            });        
+
+            $("#selectTipoResolucion").change(function () {
+                //getRespuestaPredefinida();     
+                setDisabled("btnAvanzarRespuestaPredefinida", false);        
+            });
+            $("#selectMotivoResolucion").change(function () {   
+               //setDisabled("btnAvanzarRespuestaPredefinida", false);          
+            });
+        });
+    </script>
+<meta><meta><meta><meta></head>
+<body>
+    <div class="data-container">       
+        <h3 class="d-flex justify-content-center" >Cierre Masivo de Casos</h3>
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="xmsbs_loading32gif">
+            </p>
+        </div>        
+        
+        <pre class="NoBorde">
+
+        </pre>
+        
+        <div id="divFiltros" class="container">   
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Tipo Requerimiento<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectTipoRequerimiento" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Producto<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectProducto" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Tipo Operación<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectTipoOperacion" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Detalle Operación<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectDetalleOperacion" class="form-control"></select>
+                </div>
+            </div>       
+
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Etapas<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectEtapas" class="form-control selectpicker">
+                        <option value="" disabled selected>Seleccionar Etapas</option>
+                    </select>                    
+                </div>
+            </div>  
+               
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label mr-4">Fecha Creación<span class="obligatorio"> *</span></label>
+                <div class='input-group date col-sm-4 mr-4' id='fechaDesde'>
+                    <input type="text" class="form-control"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+                
+                <div class='input-group date col-sm-4' id='fechaHasta'>
+                    <input type="text" class="form-control" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+                        
+            <div class="d-flex justify-content-center">
+                <button id="btnConsultar" type="button" class="btn btn-danger" onclick="GetCasosCierreMasivo()">Consultar</button>
+            </div>        
+        </div> 
+
+        <div id="divCasos" class="container">
+            <table id="tblCasos" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 10%"></th>
+                        <th scope="col" style="width: 10%">Respuesta Cliente</th>
+                        <th scope="col" style="width: 10%">Fecha Creación</th>
+                        <th scope="col" style="width: 10%">Estado SLA</th>
+                        <th scope="col" style="width: 12%">N° Correlativo</th>
+                        <th scope="col" style="width: 12%">Cliente</th>
+                        <th scope="col" style="width: 10%">Estado</th>
+                        <th scope="col" style="width: 10%">Razon Estado</th>                        
+                        <th scope="col" style="width: 12%">Etapa</th>
+                        <th scope="col" style="width: 12%">Unidad Resolutora</th>
+                        <th scope="col" style="width: 12%">Propietario</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+              
+            <div class="d-flex justify-content-center">
+                <button id="btnVolverFiltro" type="button" class="btn btn-danger mr-2" onclick="VolverFiltro()">Volver</button>
+                
+                <button id="btnAvanzarCierre" type="button" class="btn btn-danger" onclick="AvanzarCierre()">Avanzar</button>
+            </div>
+        </div>
+
+        <div id="divCierre" class="container">            
+            <div class="form-group row">
+                <label id="lblCausaRaiz" for="staticEmail" class="col-sm-2 col-form-label">Causa Raíz<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectCausaRaiz" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Tipo Resolución<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectTipoResolucion" class="form-control">
+                    <option value="" disabled="" selected="">Seleccione Tipo de Resolución</option>
+                    <option value="1">Se accede a lo requerido</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label id="lblMotivoResolucion" for="staticEmail" class="col-sm-2 col-form-label">Motivo Resolución<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectMotivoResolucion" class="form-control">
+                    <option value="" disabled="" selected="">Seleccione Motivo Resolución</option>
+                    <option value="657130000">Decisión Calidad</option>
+                    <option value="657130001">Decisión Comercial</option>
+                    <option value="657130002">Error Banco</option>
+                    <option value="657130003">Cobranza</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center">
+                <button id="btnVolverCasos" type="button" class="btn btn-danger mr-2" onclick="VolverCasos()">Volver</button>
+                
+                <button id="btnAvanzarRespuestaPredefinida" type="button" class="btn btn-danger mr-2" onclick="AvanzarRespuestaPredefinida()" disabled>Avanzar</button>
+            </div>                
+        </div>        
+        <div id="divRespuestaPredefinida" class="container">
+            <div id="contenedorLista">
+                <h3 class="titulo-cabecera-respuesta">Respuestas disponibles para el caso</h3>
+                <p>Seleccione de la lista de respuestas, aquella que se acomode a los requerimientos del caso:</p>
+                <div id="listaRespuestas">
+
+                </div>
+                <div id="botoneraLista">
+
+                </div>
+            </div>
+            <div id="previsualizador" style="position: relative">
+                <h3 class="titulo-cabecera-respuesta">Respuesta para completar</h3>
+                <div id="detalleRespuestas" class="vista-respuesta">
+
+                </div>
+                <h3 class="titulo-cabecera-respuesta">Previsualización de la respuesta</h3>
+                <div id="previewRespuestas" class="vista-respuesta">
+
+                </div>
+                <div id="botoneraDetalle" class=" padding-top">
+                    <button id="btnCerrar" type="button" class="btn btn-danger mr-2" onclick="volver()">Volver</button>
+                    <button id="btnReemplazar" type="button" class="btn btn-danger mr-2" onclick="reemplazarElementos()">Ver Respuesta</button>
+                    <button id="btnCerrar2" type="button" class="btn btn-danger mr-2" onclick="VolverResolucion()">Volver a resolución</button>
+                    <button id="btnGuardar" type="button" class="btn btn-danger" onclick="guardarRespuesta()">Guardar Respuesta</button>
+                </div>
+                <h4 class="obligatorio">* Considerar que la respuesta ingresada aplicará para todos los casos previamente seleccionados</h4>
+            </div>
+            
+            <div id="previsualizador-textoLibre">
+                <div class="textwrapper">
+                    <textarea id="textoRespuestaLibre" rows="5"></textarea>
+                </div>
+                <div id="botoneraDetalleTL" class=" padding-top">
+                    <button id="btnCerrarTL" type="button" class="btn btn-danger mr-2" onclick="volverTL()">Volver</button>
+                    <button id="btnCerrarTL2" type="button" class="btn btn-danger mr-2" onclick="VolverResolucion()">Volver a resolución</button>
+                    <button id="btnGuardarTL" type="button" class="btn btn-danger" onclick="guardarRespuestaTL()">Guardar Respuesta</button>
+                </div>
+            </div>
+        </div>
+        <!--<div id="divCerrarCasos" class="container">
+            <div class="d-flex justify-content-center">
+                <button id="btnVolverResolucion" type="button" class="btn btn-danger mr-2" onclick="VolverResolucion()">Volver</button>
+                
+                <button id="btnConfirmar" type="button" class="btn btn-danger" onclick="CerrarCasosMasivamente()" disabled>Confirmar Cierre Masivo</button>
+            </div>
+        </div>-->
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Mensaje</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="pMensaje"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>   
+</body></html>

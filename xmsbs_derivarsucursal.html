@@ -1,0 +1,406 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Derivar Unidad Resolutora</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <style>
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var apiToken = "";
+        var casoId = "";
+		var UsuarioEnSesionID = null;
+        var accionEtapaId = "";
+        var codigoSuceso = "";
+		var SaveFormDerSuc = false;
+
+                
+        function setDisabled(item, bool) 
+        {
+            if (bool) 
+                $("#" + item).prop('disabled', true);
+            else 
+                $("#" + item).prop('disabled', false);
+        }
+		
+        function getSucursalesIntegranteUR() {
+            let entityType = "xmsbs_sucursalintegranteurderivacions";
+            let query = "$select=xmsbs_sucursalintegranteurderivacionid,xmsbs_name&";
+			query += "$expand=xmsbs_integrantedelaur&";
+            query += "$filter=(statecode eq 0) and (xmsbs_integrantedelaur/statecode eq 0)&";
+			query += "$orderby=xmsbs_name asc";
+            let resultado = SDK.WEBAPI.retrieveMultipleRecords(window._formContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+        
+		function getSucursalIntegranteUR(SucursalIntegranteUR) {
+            let entityType = "xmsbs_sucursalintegranteurderivacions";
+            let query = "$select=xmsbs_sucursalintegranteurderivacionid,xmsbs_name,_xmsbs_sucursalcliente_value&";
+			query += "$expand=xmsbs_integrantedelaur($select=_xmsbs_usuario_value,_xmsbs_unidadresolutora_value),xmsbs_sucursalcliente($select=xmsbs_name)&";
+            query += "$filter=(xmsbs_sucursalintegranteurderivacionid eq " + SucursalIntegranteUR + ")";
+            let resultado = SDK.WEBAPI.retrieveMultipleRecords(window._formContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+		
+		function getEntityRecord(EntityLogicalName, EntityID, FieldsReturn) {
+            let entityType = EntityLogicalName + "s";
+            let query = "$select=" + FieldsReturn + "&";
+            query += "$filter=(" + EntityLogicalName + "id eq " + EntityID + ")";
+            let resultado = SDK.WEBAPI.retrieveMultipleRecords(window._formContext, entityType, query, null, null, function () { });
+            return resultado;
+        }		
+		
+        function setCmbSucursalIntUR(listSucursales) 
+        {
+			let LstSucursales = getSucursalesIntegranteUR();
+			if (!LstSucursales)
+				return;
+				
+			var selectSucursal = $("#selectSucursal").empty().append('<option value="" disabled selected>Seleccionar Sucursal</option>');	
+            for (var i = 0; i < LstSucursales.value.length; i++) {
+                var option = document.createElement('option');
+                option.innerHTML = LstSucursales.value[i].xmsbs_name.trim();
+                option.value = LstSucursales.value[i].xmsbs_sucursalintegranteurderivacionid;
+                selectSucursal.append(option);                
+            }
+        }
+                
+        function DerivarSucursal(idSucursalIntegranteUR, strObservacion)
+        {
+            debugger;
+			$('#dvLoader').css("display", "none");
+			
+			//setTimeout(function () {
+			
+			
+			let SucursalIntegranteUR = getSucursalIntegranteUR(idSucursalIntegranteUR);
+			
+			let UsuarioID = SucursalIntegranteUR.value[0].xmsbs_integrantedelaur._xmsbs_usuario_value;
+			let URID = SucursalIntegranteUR.value[0].xmsbs_integrantedelaur._xmsbs_unidadresolutora_value;
+			
+			let oUsuario = getEntityRecord("systemuser", UsuarioID, "fullname");
+			let oUR = getEntityRecord("xmsbs_unidadresolutora", URID, "xmsbs_name");
+			let Observacion = "(" + SucursalIntegranteUR.value[0].xmsbs_sucursalcliente.xmsbs_name + ") " + strObservacion;
+
+			// Actualiza el Caso, en los campos: UR y Observaciones.
+			JumpStartLibXRM.Fx.setLookupValue(window._executionContext, "xmsbs_ur", URID, oUR.value[0].xmsbs_name, "xmsbs_unidadresolutora");
+			JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionlectura", Observacion);
+			
+			// Asigna el caso al Usuario.
+			JumpStartLibXRM.Fx.setLookupValue(window._executionContext, "ownerid", UsuarioID, oUsuario.value[0].fullname, "systemuser");
+			
+			SaveFormDerSuc = false;
+			//window._formContext.data.entity.addOnPostSave(ExecWKF);
+			
+			let MensajeAdicional = "";
+			
+			if (UsuarioEnSesionID.toLowerCase() != UsuarioID.toLowerCase())
+				MensajeAdicional = " La ventana se cerrará.";
+			
+			
+			
+			// MUESTRA MENSAJE Y CIERRA EL FORMULARIO.
+			var alertStrings = { confirmButtonLabel: "Aceptar", title: "Derivación", text: "El caso ha sido derivado a la Sucursal: " + SucursalIntegranteUR.value[0].xmsbs_sucursalcliente.xmsbs_name + "." + MensajeAdicional};
+			var alertOptions = { height: 120, width: 260 };
+			Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+				function (success) {
+					//console.log("Alert dialog closed");
+					//JumpStartLibXRM.Fx.formSave(window._executionContext);
+					SaveFormDerSuc = true;
+					
+					// Crear un registro en "Observaciones"
+					CreaObservacion(Observacion);
+					
+					debugger;
+					Xrm.Utility.closeProgressIndicator();
+					JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+					
+					
+					//window._formContext.ui.close();
+					
+					/*
+						if (MensajeAdicional != "")
+						{
+							// Cierra ventana
+							//setTimeout(function () { Xrm.Utility.openEntityForm("incident", casoId); }, 1000);			
+							
+							// window.open("/main.aspx?etn=incident&pagetype=entitylist&web=true");
+					
+							var pageInput = { pageType: "entitylist", entityName: "incident" };
+							Xrm.Navigation.navigateTo(pageInput).then(function success() {},function error() {});
+						}
+					*/
+				},
+				function (error) {
+					Xrm.Utility.closeProgressIndicator();
+					//console.log(error.message);
+				}
+			); 			
+			
+			
+			
+			
+				//window.close();
+			//}, 2000);
+			
+
+			
+
+        }
+		
+		function CreaObservacion(strObservacion)
+		{
+			// Para la Observación del caso no se utiliza el WKF: [XMS - Caso] - Registra las observaciones del caso
+			// ya que ese WKF está sujeto a un cambio de etapa.
+			debugger;
+			let oCaso = getEntityRecord("incident", casoId, "xmsbs_numerocorrelativo,incidentid,_xmsbs_etapa_value");
+			
+			var data =
+				{
+					"xmsbs_name": oCaso.value[0].xmsbs_numerocorrelativo + " - " + NOW(),
+					"xmsbs_observadopor@odata.bind": "/systemusers(" + UsuarioEnSesionID + ")",
+					"xmsbs_etapa@odata.bind": "/xmsbs_etapas(" + oCaso.value[0]._xmsbs_etapa_value + ")",
+					"xmsbs_caso@odata.bind": "/incidents(" + casoId + ")",
+					"xmsbs_mensaje":strObservacion
+				}
+
+			Xrm.WebApi.createRecord("xmsbs_observaciones", data).then(
+				function success(result) {
+					console.log("Observación creada correctamente. ID: " + result.id);
+				},
+				function (error) {
+					console.log(error.message);
+				}
+			);		
+		}
+		
+		function NOW() {
+
+			var date = new Date();
+			var aaaa = date.getFullYear();
+			var dd = date.getDate();
+			var mm = (date.getMonth() + 1);
+
+			if (dd < 10)
+				dd = "0" + dd;
+
+			if (mm < 10)
+				mm = "0" + mm;
+
+			var cur_day = dd + "-" + mm + "-" + aaaa;
+
+			var hours = date.getHours()
+			var minutes = date.getMinutes()
+
+			if (hours < 10)
+				hours = "0" + hours;
+
+			if (minutes < 10)
+				minutes = "0" + minutes;
+
+			return cur_day + " " + hours + ":" + minutes;
+		}
+		
+		
+		function ExecWKF()
+		{
+			if (!SaveFormDerSuc)
+				return;
+		
+			// Ejecuta el WKF: [XMS - Caso] - Registra las observaciones del caso
+			// {953CF01E-FC92-4B56-BD6F-9B4BF84B4E70}
+			
+			debugger;
+			var entity = {
+			   "EntityId": casoId // accountId
+			};
+			 
+			var WorkflowId = "953CF01E-FC92-4B56-BD6F-9B4BF84B4E70";
+			 
+			var req = new XMLHttpRequest();
+			req.open("POST", Xrm.Page.context.getClientUrl() + "/api/data/v9.0/workflows(" + WorkflowId + ")/Microsoft.Dynamics.CRM.ExecuteWorkflow", true);
+			req.setRequestHeader("OData-MaxVersion", "4.0");
+			req.setRequestHeader("OData-Version", "4.0");
+			req.setRequestHeader("Accept", "application/json");
+			req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+			req.onreadystatechange = function() {
+			
+				debugger;
+				//window.close();	
+				//JumpStartLibXRM.Fx.formClose(window._executionContext);
+				JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+				
+				
+				//if (this.readyState === 4) {
+				//	debugger;
+				//	req.onreadystatechange = null;
+			 
+				//	if (this.status === 204) {
+				//		window.close();	
+				//		JumpStartLibXRM.Fx.formClose(window._executionContext);
+				//	} else {
+				//		// ERROR
+				//	}
+				//}
+			};
+			req.send(JSON.stringify(entity));
+			
+			SaveFormDerSuc = false;
+			
+			//Xrm.Utility.closeProgressIndicator();
+			//JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+
+
+		}
+
+		$(document).ready(function () {
+		
+            
+            //parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Derivar a Sucursal");
+            $('#dvLoader').css("display", "block");      
+            setDisabled("selectSucursal", true);             
+            setDisabled("txtObservacionCaso", true);
+            setDisabled("btnConfirmar", true);
+            
+			// ------------------------------
+            window._executionContext = parent.getContext();
+            window._formContext = window._executionContext.getFormContext();
+            baseUrl = parent.getAzureURL();
+            apiKey = parent.getApiKey(); 
+            //apiToken = window.sessionStorage.getItem("LokiAuthToken");
+
+            let _package = parent.getPackage();
+            if(_package)
+            {
+                if(_package.CasoId)
+                    casoId = _package.CasoId;
+                
+                if(_package.AccionEtapaId)
+                    accionEtapaId = _package.AccionEtapaId;
+                
+                if(_package.CodigoSuceso)
+                    codigoSuceso = _package.CodigoSuceso;
+					
+				if(_package.UsuarioId)
+					UsuarioEnSesionID = _package.UsuarioId;
+                
+				//if(_package.ExecutionContext)
+				//	window._executionContext = _package.ExecutionContext;
+				
+				//if(_package.FormContext)	
+				//	window._formContext = _package.FormContext;
+            }
+     
+            if (casoId.indexOf("{") > -1)
+                casoId = casoId.substring(1, 37);
+            if (UsuarioEnSesionID.indexOf("{") > -1)
+                UsuarioEnSesionID = UsuarioEnSesionID.substring(1, 37);
+            if (accionEtapaId.indexOf("{") > -1)
+                accionEtapaId = accionEtapaId.substring(1, 37);
+ 		
+			setCmbSucursalIntUR();
+			// ------------------------------
+		
+			$('#dvLoader').css("display", "none");
+			setDisabled("btnConfirmar", false);            
+			setDisabled("selectSucursal", false);
+			setDisabled("txtObservacionCaso", false);
+
+
+
+            $("#btnConfirmar").click(function () {
+                var selectSucursal = $("#selectSucursal").val();
+                var txtObservacionCaso = $("#txtObservacionCaso").val();
+                
+                if ((selectSucursal != null && selectSucursal != undefined && selectSucursal != "")
+                    && (txtObservacionCaso != null && txtObservacionCaso != undefined && txtObservacionCaso != "")) 
+				{
+                    debugger;
+                    $('#dvLoader').css("display", "block");
+                    txtObservacionCaso = txtObservacionCaso.replace(/(\r\n|\n|\r)/gm, " ");
+                    txtObservacionCaso = txtObservacionCaso.trim();
+					let _largoTxtObservacionCaso = txtObservacionCaso.length;
+					
+                    if(_largoTxtObservacionCaso > 0)
+                    {       
+                        DerivarSucursal(selectSucursal, txtObservacionCaso);
+                    }
+                    else
+                    {
+                        $('#dvLoader').css("display", "none");
+                        alert("Favor ingresar los campos obligatorios antes de confirmar.");
+                    }
+                }
+                else{
+                    alert("Favor seleccionar campos obligatorios antes de confirmar.");
+                }                
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="xmsbs_loading32gif">
+            </p>
+        </div>
+
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Sucursal<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectSucursal" class="form-control"></select>
+            </div>
+        </div>
+		
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="staticEmail">Observaciones<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <textarea class="form-control" id="txtObservacionCaso" maxlength="1000" rows="3"></textarea>
+            </div>
+        </div>			
+        
+        <div class="d-flex justify-content-center">
+            <button id="btnConfirmar" type="button" class="btn btn-danger">Confirmar</button>
+        </div>        
+    </div>
+</body></html>

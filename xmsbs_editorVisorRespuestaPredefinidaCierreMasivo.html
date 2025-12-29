@@ -1,0 +1,599 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Selector Editor Respuestas Predefinidas</title>
+    <link rel="stylesheet" href="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jqueryui1121css">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery351"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jqueryui1-12-1"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous"> 
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial;
+        }
+
+        #the-canvas {
+            border: 0px solid black;
+            direction: ltr;
+        }
+
+        .ocultar {
+            display: none;
+        }
+
+        .boton {
+            border: 0px;
+            padding-left: 15px;
+            background-color: #efefef;
+            padding-right: 15px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            cursor: pointer;
+            font-family: "Segoe UI", Arial;
+            font-weight: bold;
+            color: rgb(221, 8, 8);
+        }
+
+        .boton-menu {
+            background-color: #efefef;
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-size: 16px;
+            align-items: center;
+        }
+
+            .boton-menu:hover {
+                background-color: rgb(216, 216, 216);
+                border-bottom: 3px solid #DA0202;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+
+            .boton-menu svg {
+                color: #DA0202;
+                padding-right: 3px;
+            }
+            /*.boton-menu:hover svg {
+            color: white;
+        }*/
+
+            .boton-menu span {
+                color: #DA0202;
+                text-align: center;
+            }
+
+        .botones {
+            position: fixed;
+            top: 0;
+            margin-top: 10px;
+        }
+
+        .canvas {
+            margin-top: 45px;
+        }
+
+        .div-botonera {
+            text-align: right;
+            padding-right: 10px;
+            margin-right: 10px;
+        }
+
+        .col-mayor {
+            max-width: 70%;
+            min-width: 70%
+        }
+
+        .col-menor {
+            max-width: 30%;
+            min-width: 30%
+        }
+
+        .select-css {
+            font-size: 14px;
+            font-family: sans-serif;
+            font-weight: 400;
+            color: #444;
+            line-height: 1.3;
+            max-width: 95%;
+            min-width: 95%;
+            padding: .6em 1.4em .5em .8em;
+            width: 70%;
+            box-sizing: border-box;
+            margin-left: 5px;
+            border: 1px solid #aaa;
+            appearance: none;
+            background-color: #fff;
+        }
+            /* Hide arrow icon in IE browsers */
+            .select-css::-ms-expand {
+                display: none;
+            }
+            /* Hover style */
+            .select-css:hover {
+                border-color: #888;
+            }
+            /* Focus style */
+            .select-css:focus {
+                border-color: #aaa;
+                /* It'd be nice to use -webkit-focus-ring-color here but it doesn't work on box-shadow */
+                box-shadow: 0 0 1px 3px rgba(59, 153, 252, .7);
+                box-shadow: 0 0 0 3px -moz-mac-focusring;
+                color: #222;
+                outline: none;
+            }
+
+        #wrapper {
+            display: flex;
+        }
+
+        #col-mayor {
+            flex: 0 0 70%;
+        }
+
+        #col-menor {
+            flex: 1;
+        }
+
+        .etiqueta-meta {
+            margin-left: 5px;
+        }
+
+        .campo-texto {
+            margin-left: 5px;
+            max-width: 95%;
+            min-width: 95%;
+            line-height: 1.3;
+            padding: .6em 1.4em .5em .8em;
+            font-size: 14px;
+            font-family: sans-serif;
+            font-weight: 400;
+        }
+
+        .elemento-meta {
+            padding-bottom: 10px;
+            padding-left: 5px;
+        }
+
+        .titulo-cabecera-respuesta {
+            font-size: 18px;
+        }
+
+        .vista-respuesta {
+            background-color: #fff;
+            margin: 5px;
+            padding: 10px;
+            line-height: 2em;
+        }
+
+        .padding-top {
+            padding-top: 10px;
+        }
+
+        .body-respuesta-predefinida {
+            background-color: rgb(239, 239, 239);
+        }
+
+        .fila-respuesta {
+            cursor: pointer;
+            line-height: 2em;
+            text-align: left;
+            border-bottom: 1px solid grey;
+        }
+
+        tr.fila-respuesta td {
+            border-bottom: 1px solid grey;
+        }
+
+            tr.fila-respuesta td:hover {
+                border-bottom: 2px solid #DA0202;
+            }
+
+        .tabla-respuestas {
+            margin: 5px;
+            padding: 10px;
+            width: 100%;
+        }
+
+            .tabla-respuestas:hover span {
+                font-color: #DA0202;
+            }
+
+        .fila-cabecera-respuestas {
+            line-height: 2em;
+            background-color: #cccccc
+        }
+        textarea {
+            width: 100%;
+        }
+
+        .textwrapper {
+            margin: 5px 0;
+            padding: 3px;
+        }
+    </style>
+<meta></head>
+<body class="body-respuesta-predefinida">
+    <div id="loading">
+        <p style="text-align:center">
+            <img src="xmsbs_loading32gif">
+        </p>
+    </div>
+    <div id="contenedorGlogal">
+        <div id="contenedorLista">
+            <h3 class="titulo-cabecera-respuesta">Respuestas disponibles para el caso</h3>
+            <p>Seleccione de la lista de respuestas, aquella que se acomode a los requerimientos del caso:</p>
+            <div id="listaRespuestas">
+
+            </div>
+            <div id="botoneraLista">
+
+            </div>
+        </div>
+        <div id="previsualizador">
+            <h3 class="titulo-cabecera-respuesta">Respuesta para completar</h3>
+            <div id="detalleRespuestas" class="vista-respuesta">
+
+            </div>
+            <h3 class="titulo-cabecera-respuesta">Previsualización de la respuesta</h3>
+            <div id="previewRespuestas" class="vista-respuesta">
+
+            </div>
+            <div id="botoneraDetalle" class=" padding-top">
+                <!--<label class="boton-menu ocultar" id="btnResetear" onclick="resetearRespuesta()">Rehacer Respuesta</label>-->
+                <label class="boton-menu" id="btnCerrar" onclick="volver()">Volver</label>
+                <label class="boton-menu" id="btnReemplazar" onclick="reemplazarElementos()">Ver Respuesta</label>
+                <label class="boton-menu" id="btnGuardar" onclick="guardarRespuesta()">Guardar Respuesta</label>
+                <!--<label class="boton-menu" id="btnCerrar" onclick="cerrar()">Cerrar</label>-->
+                <!--<button class="boton-menu" onclick="reemplazarElementos()" id="verRespuesta">Ver Respuesta</button>
+                <button class="boton-menu" onclick="resetearRespuesta()" id="resetearRespuesta">Resetear Respuesta</button>-->
+            </div>
+        </div>
+        <div id="previsualizador-textoLibre">
+            <div class="textwrapper">
+                <textarea id="textoRespuestaLibre" rows="5"></textarea>
+            </div>
+                <div id="botoneraDetalleTL" class=" padding-top">
+                    <!--<label class="boton-menu ocultar" id="btnResetear" onclick="resetearRespuesta()">Rehacer Respuesta</label>-->
+                    <label class="boton-menu" id="btnCerrarTL" onclick="volverTL()">Volver</label>
+                    <label class="boton-menu" id="btnGuardarTL" onclick="guardarRespuestaTL()">Guardar Respuesta</label>
+                    <!--<label class="boton-menu" id="btnCerrarTL" onclick="cerrar()">Cerrar</label>-->
+                    <!--<button class="boton-menu" onclick="reemplazarElementos()" id="verRespuesta">Ver Respuesta</button>
+            <button class="boton-menu" onclick="resetearRespuesta()" id="resetearRespuesta">Resetear Respuesta</button>-->
+                </div>
+            </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Mensaje</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="pMensaje"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+        var apiKey;
+        var apiToken = "";
+        var urlBase;
+        var casoId;
+        var respuestaVacia;
+        var respuestaActual;
+        var listaCodigos;
+        var diccionarioValoresCodigos = [];
+        var respuestaTextoLibre;
+        var elementosReemplazados=false;
+
+        function apiGet(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+        function apiGetV2(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+        function apiPost(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                    //isLoading(false);
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+            //isLoading(true);
+        }
+        function apiPostV2(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                    //isLoading(false);
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+            //isLoading(true);
+        }
+
+        $(document).ready(function () {
+            $('#loading').show();
+            $('#contenedorGlogal').hide();
+            $('#contenedorLista').hide();
+            $('#previsualizador').hide();
+            $('#previsualizador-textoLibre').hide();
+            $('#previewRespuestas').hide();
+            $('#btnGuardar').hide();
+                        
+            parent.$("h1[data-id='defaultDialogChromeTitle']", parent.document).html("Editor Respuestas Predefinidas");
+            //debugger;
+            urlBase = parent.getAzureURL();
+            apiKey = parent.getApiKey();
+            //apiToken = window.sessionStorage.getItem("LokiAuthToken");
+
+            renderRespuestas(parent.getData());
+        });
+
+
+        function renderRespuestas(data) {
+            //debugger;
+            if (data && data.success) {
+                //debugger;
+                if (data.respuestas.length > 0) {
+                    let tgtdiv = document.getElementById('listaRespuestas');
+                    let tbl = document.createElement('table');
+                    tbl.classList.add('tabla-respuestas');
+                    //let col = document.createElement('td');
+                    let filaCabecera = document.createElement('tr');
+                    filaCabecera.classList.add('fila-cabecera-respuestas');
+                    let col1Cabecera = document.createElement('td');
+                    col1Cabecera.innerHTML = 'Código';
+                    let col2Cabecera = document.createElement('td');
+                    col2Cabecera.innerHTML = 'Nombre';
+                    filaCabecera.append(col1Cabecera);
+                    filaCabecera.append(col2Cabecera);
+                    tbl.append(filaCabecera);
+
+
+                    for (var i = 0; i < data.respuestas.length; i++) {
+                        let respId = data.respuestas[i].id;
+                        let rw = document.createElement('tr');
+                        rw.classList.add('fila-respuesta');
+                        rw.id = respId;
+                        let td1 = document.createElement('td');
+                        td1.innerHTML = data.respuestas[i].nombre;
+                        let td2 = document.createElement('td');
+                        let spn = document.createElement('span');
+                        spn.title = stripHtml(data.respuestas[i].contenido);
+                        spn.innerHTML = data.respuestas[i].titulo;
+                        spn.classList.add('texto-nombre-respuesta');
+                        td2.append(spn);
+                        rw.append(td1);
+                        rw.append(td2);
+                        //rw.append(spn);
+                        rw.onclick = function () {
+                            //debugger;
+                            clickedRow(respId);
+                        };
+                        //col.appendChild(rw);
+                        tbl.appendChild(rw);
+                    }
+                    //tbl.appendChild(col);
+                    tgtdiv.appendChild(tbl);
+                }
+                else {
+                    let tgtdiv = document.getElementById('listaRespuestas');
+                    let tbl = document.createElement('table');
+                    tbl.classList.add('tabla-respuestas');
+
+                    let filaCabecera = document.createElement('tr');
+                    let col1Cabecera = document.createElement('td');
+                    col1Cabecera.innerHTML = 'No existen respuestas predefinidas para las condiciones actuales del caso.';
+
+                    filaCabecera.append(col1Cabecera);
+
+                    tbl.append(filaCabecera);
+                    tgtdiv.appendChild(tbl);
+                }
+
+                $('#loading').hide();
+                $('#contenedorGlogal').show();
+                $('#contenedorLista').show();
+                $('#previsualizador').hide();
+                $('#previsualizador-textoLibre').hide();
+
+            }
+        }
+
+        function setCalendars() {
+            $('body').on('focus', '.cal-predefinida', function () {
+                $(this).datepicker();
+            });
+        }
+        function clickedRow(idRespuesta) {
+            //debugger;
+            let ruta = '/respuestaPredefinida/GetRespuestaPredefinidaByBaseRespuesta/' + idRespuesta;
+            $('#contenedorLista').hide();
+            $('#loading').show();
+            apiGet(ruta, function (data) {
+                if (data && data.success) {
+                    //debugger;
+                    respuestaTextoLibre = data.esTextoLibre;
+                    if (!data.esTextoLibre) {
+                        let tgtdiv = document.getElementById('detalleRespuestas');
+                        let tgtPreview = document.getElementById('previewRespuestas');
+                        respuestaVacia = data.html;
+                        listaCodigos = data.listaCodigos;
+                        tgtdiv.innerHTML = data.html;
+
+                        $('#loading').hide();
+                        $('#previsualizador').show();
+                        setCalendars();
+                        if (data.currentRespuesta && data.currentRespuesta.length > 5) {
+                            tgtPreview.innerHTML = data.currentRespuesta;
+                            $('#previewRespuestas').show();
+                            $('#btnGuardar').show();
+                        }
+                    }
+                    else {
+                        let tgtTA = document.getElementById('textoRespuestaLibre');
+                        if (data.currentRespuesta && data.currentRespuesta.length > 5) {
+                            tgtTA.value = data.currentRespuesta;
+                        }
+                        else {
+                            tgtTA.value = '';
+                        }
+                        $('#loading').hide();
+                        $('#previsualizador-textoLibre').show();
+                        $('#btnGuardarTL').show();
+                    }
+                }
+            });
+        }
+        function reemplazarElementos() {
+            //debugger;
+            elementosReemplazados = true;
+            let tgtdiv = document.getElementById('detalleRespuestas');
+            let tgtPreview = document.getElementById('previewRespuestas');
+            for (i = 0; i < listaCodigos.length; i++) {
+                let cod = listaCodigos[i];
+                let currentElem = document.getElementById(cod);
+                let currentVal = currentElem.value;
+                let elem = {};
+                elem["codigo"] = cod;
+                elem["valor"] = currentVal;
+                diccionarioValoresCodigos.push(elem);
+                currentElem.outerHTML = currentVal;
+            }
+            //let btnResetear = document.getElementById("btnResetear");
+            //btnResetear.classList.remove('ocultar');
+            let cloned = tgtdiv.innerHTML;
+            let cleanedCloned = stripHtml(cloned);
+            tgtPreview.innerHTML = cleanedCloned;
+            tgtdiv.innerHTML = "";
+            tgtdiv.innerHTML = respuestaVacia;
+            $('#previewRespuestas').show();
+            $('#btnGuardar').show();
+
+
+        }
+        function resetearRespuesta() {
+            let tgtdiv = document.getElementById('detalleRespuestas');
+            let tgtPreview = document.getElementById('previewRespuestas');
+            tgtPreview.innerHTML = tgtdiv.innerHTML;
+            tgtdiv.innerHTML = "";
+            tgtdiv.innerHTML = respuestaVacia;
+        }
+        function guardarRespuesta() {
+            if (!elementosReemplazados) {
+                reemplazarElementos();
+            }
+            
+            //debugger;
+            let tgtPreview = document.getElementById('previewRespuestas');
+            let resp = tgtPreview.innerHTML;
+
+            parent.setRespuestaPredefinidaCliente(resp);
+            openModal("La respuesta ha sido guardada, favor cerrar ventana.");
+            //window.top.close();
+        }
+        function guardarRespuestaTL() {
+            //debugger;
+            let tgtTA = document.getElementById('textoRespuestaLibre');
+            let resp = tgtTA.value;
+            
+            parent.setRespuestaPredefinidaCliente(resp);
+            openModal("La respuesta ha sido guardada, favor cerrar ventana.");
+            //window.top.close();
+        }
+        function volver() {
+            $('#contenedorLista').show();
+            $('#previsualizador').hide();
+
+            $('#previewRespuestas').hide();
+            $('#btnGuardar').hide();
+        }
+        function volverTL() {
+            $('#contenedorLista').show();
+            $('#previsualizador-textoLibre').hide();
+
+            //$('#previewRespuestas').hide();
+            $('#btnGuardarTL').hide();
+
+        }
+        function cerrar() {
+            window.close();
+        }
+        function stripHtml(html) {
+            let tmp = document.createElement("DIV");
+            tmp.innerHTML = html;
+            let ret = tmp.textContent || tmp.innerText || "";
+            return ret;
+        }
+
+        //function setRespuestaPredefinidaCliente(modelo) {
+            //debugger;
+            //let casoId = modelo.casoId;
+            //let textoRespuesta = modelo.respuesta;
+            //if (casoId.indexOf("{") > -1) {
+                //casoId = casoId.substring(1, 37);
+            //}
+            //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_respuestacliente", textoRespuesta);
+
+            //Guardamos el cambio
+            //JumpStartLibXRM.Fx.formSave(window._executionContext);
+        //}
+
+        function openModal(mensaje)
+        {
+            $("#pMensaje").html(mensaje);
+            $('#alertModal').modal("show");
+        }
+    </script>
+
+</body></html>

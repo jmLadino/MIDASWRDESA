@@ -1,0 +1,881 @@
+<!--<html>-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Editor de respuestas FormalesV2</title>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery341slim-min"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js" integrity="sha512-Z8CqofpIcnJN80feS2uccz+pXWgZzeKxDsDNMD/dJ6997/LSRY+W4NmEt9acwR+Gt9OHN0kkI1CTianCwoqcjQ==" crossorigin="anonymous"></script>
+    <script src="https://cdn.tiny.cloud/1/tei7hkp86it36xn2e0z8wf3dxwkvhk3pna08dqmd5na1g34x/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_formularioCaso"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript" ></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial;
+        }
+
+        #the-canvas {
+            border: 0px solid black;
+            direction: ltr;
+        }
+
+        .ocultar {
+            display: none;
+        }
+
+        .boton {
+            border: 0px;
+            padding-left: 15px;
+            background-color: #efefef;
+            padding-right: 15px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            cursor: pointer;
+            font-family: "Segoe UI", Arial;
+            font-weight: bold;
+            color: rgb(221, 8, 8);
+        }
+
+        .boton-menu {
+            background-color: #efefef;
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-size: 16px;
+            align-items: center;
+        }
+
+            .boton-menu:hover {
+                background-color: rgb(216, 216, 216);
+                border-bottom: 3px solid #DA0202;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+
+            .boton-menu svg {
+                color: #DA0202;
+                padding-right: 3px;
+            }
+            /*.boton-menu:hover svg {
+                color: white;
+            }*/
+
+            .boton-menu span {
+                color: #DA0202;
+                text-align: center;
+            }
+
+        .botones {
+            position: fixed;
+            top: 0;
+            margin-top: 10px;
+        }
+
+        .canvas {
+            margin-top: 45px;
+        }
+
+        .div-botonera {
+            text-align: right;
+            padding-right: 10px;
+            margin-right: 10px;
+        }
+
+        .col-mayor {
+            max-width: 70%;
+            min-width: 70%
+        }
+
+        .col-menor {
+            max-width: 30%;
+            min-width: 30%
+        }
+
+        .select-css {
+            font-size: 14px;
+            font-family: sans-serif;
+            font-weight: 400;
+            color: #444;
+            line-height: 1.3;
+            max-width: 95%;
+            min-width: 95%;
+            padding: .6em 1.4em .5em .8em;
+            width: 70%;
+            box-sizing: border-box;
+            margin-left: 5px;
+            border: 1px solid #aaa;
+            appearance: none;
+            background-color: #fff;
+        }
+            /* Hide arrow icon in IE browsers */
+            .select-css::-ms-expand {
+                display: none;
+            }
+            /* Hover style */
+            .select-css:hover {
+                border-color: #888;
+            }
+            /* Focus style */
+            .select-css:focus {
+                border-color: #aaa;
+                /* It'd be nice to use -webkit-focus-ring-color here but it doesn't work on box-shadow */
+                box-shadow: 0 0 1px 3px rgba(59, 153, 252, .7);
+                box-shadow: 0 0 0 3px -moz-mac-focusring;
+                color: #222;
+                outline: none;
+            }
+
+        #wrapper {
+            display: flex;
+        }
+
+        #col-mayor {
+            flex: 0 0 70%;
+        }
+
+        #col-menor {
+            flex: 1;
+        }
+
+        .etiqueta-meta {
+            margin-left: 5px;
+        }
+
+        .campo-texto {
+            margin-left: 5px;
+            max-width: 95%;
+            min-width: 95%;
+            line-height: 1.3;
+            padding: .6em 1.4em .5em .8em;
+            font-size: 14px;
+            font-family: sans-serif;
+            font-weight: 400;
+        }
+        .elemento-meta{
+            padding-bottom:10px;
+            padding-left: 5px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div id="loading">
+        <p style="text-align:center">
+            <img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />
+        </p>
+    </div>
+
+    <div id="contenedorEditor">
+        <div id="wrapper">
+            <div id="col-mayor">
+                <div id="tinymce">
+                    <textarea id="paste-from-word"></textarea>
+                </div>
+            </div>
+            <div id="col-menor">
+                <div id="SelectorPlantilla" class="elemento-meta">
+                    <label class="etiqueta-meta">Seleccione Plantilla</label>
+                    <select name="plantillas" id="plantillas" class="select-css" onchange="handleControls()">
+                    </select>
+                    
+                </div>
+                <div class="elemento-meta" id="##referenciaCasoSolicitante">
+                    <label class="etiqueta-meta">Referencia N° Caso</label><br />
+                    <input id="referenciaCasoSolicitante" type="text" class="campo-texto" onkeypress="return blockNoReferenciaChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##prefijoDestinatario">
+                    <label class="etiqueta-meta">Prefijo destinatario</label><br />
+                    <input id="prefijoDestinatario" type="text" class="campo-texto" onkeypress="return blockNoNamesChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##nombreDestinatario">
+                    <label class="etiqueta-meta">Nombre destinatario</label><br />
+                    <input id="nombreDestinatario" type="text" class="campo-texto" onkeypress="return blockNoNamesChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##cargoDestinatario">
+                    <label class="etiqueta-meta">Cargo destinatario</label><br />
+                    <input id="cargoDestinatario" type="text" class="campo-texto" onkeypress="return blockNoNamesChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##derivadoA">
+                    <label class="etiqueta-meta">Derivado a</label><br />
+                    <input id="derivadoA" type="text" class="campo-texto" onkeypress="return blockNoNamesChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##nombreContactoBanco">
+                    <label class="etiqueta-meta">Nombre contacto banco</label><br />
+                    <input id="nombreContactoBanco" type="text" class="campo-texto" onkeypress="return blockNoNamesChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##cargoContactoBanco">
+                    <label class="etiqueta-meta">Cargo contacto banco</label><br />
+                    <input id="cargoContactoBanco" type="text" class="campo-texto" onkeypress="return blockNoNamesChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##telefonoContactoBanco">
+                    <label class="etiqueta-meta">Telefono contacto banco</label><br />
+                    <input id="telefonoContactoBanco" type="text" class="campo-texto" onkeypress="return blockNoPhoneChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" />
+                    
+                </div>
+                <div class="elemento-meta" id="##emailContactoBanco">
+                    <label class="etiqueta-meta">Correo contacto banco</label><br />
+                    <input id="emailContactoBanco" type="text" class="campo-texto" style="max-width: 60%; min-width: 60%;" onkeypress="return blockNoEmailNameChar(event)" onselectstart="return false" onpaste="return true;" oncopy="return false" oncut="return false" ondrag="return false" ondrop="return false" autocomplete="off" /><span>@santander.cl</span>
+                    
+                </div>
+
+            </div>
+        </div>
+
+        <div id="botonera" class="div-botonera">
+            <p></p>
+            <button type="button" class="boton" onclick="cerrarEditor()">Cerrar</button>
+            <button type="button" class="boton" id="submit" onclick="guardarCRM()">Guardar</button>
+            <button type="button" class="boton" onclick="previsualizar()">Previsualizar</button>
+        </div>
+    </div>
+    <div id="contenedorPreview">
+        <div class="botones" id="botones" style="text-align: right;">
+
+            <label class="boton-menu" id="btnCerrar" onclick="cerrarPreview()">Volver al editor</label>
+            <label class="boton-menu" id="btnRetroceder" onclick="retrocederPagina()">Retroceder</label>
+            <label class="boton-menu" id="btnAvanzar" onclick="avanzarPagina()">Avanzar</label>
+
+
+        </div>
+        <div class="canvas" id="divCanvas">
+            <canvas id="the-canvas"></canvas>
+        </div>
+
+
+    </div>
+    <script>     
+        var apiKey = "";
+        var urlBase = "";
+        var apiToken = "";
+        var base64Content = null;
+        var BASE64_MARKER = ';base64,';
+        var _pdf = null;
+        var _paginaActual = 1;
+        var casoId = null;
+        var currentContent = null;
+        var plantillaSeleccionada=null;
+        var listadoPlantillas = [];
+        var camposObligatorios=[];
+        
+        var referenciaCasoSolicitante="";
+        var derivadoA="";
+        var nombreContactoBanco="";
+        var cargoContactoBanco="";
+        var telefonoContactoBanco="";
+        var emailContactoBanco="";
+        var prefijoDestinatario = "";
+        var nombreDestinatario = "";
+        var cargoDestinatario = "";
+                
+        $(document).ready(function () { 
+            debugger;            
+            parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Editor Respuestas Formales V2");
+            window._executionContext = parent.getContext();
+            window._formContext = window._executionContext.getFormContext();
+            urlBase = parent.getAzureURL();
+            apiKey = parent.getApiKey();
+           // apiToken = window.sessionStorage.getItem("LokiAuthToken");
+
+            let _package = parent.getPackage();
+            tinymce.init({
+                  selector: 'textarea#paste-from-word',
+                  height: 500,
+                  menubar: true,
+                  plugins: [
+                    'advlist autolink lists link image charmap print preview anchor',
+                    'searchreplace visualblocks advcode fullscreen',
+                    'insertdatetime media table powerpaste hr code'
+                  ],
+                  toolbar: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image code',
+                  powerpaste_allow_local_images: true,
+                  powerpaste_word_import: 'prompt',
+                  powerpaste_html_import: 'prompt',
+                  content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                    });
+            
+            if(_package)
+            {                
+                if(_package.Data)
+                {
+                    let package = _package.Data;
+                    casoId = package.casoId;
+                    currentContent = package.contenido;
+                    plantillaSeleccionada = package.plantillaSeleccionada;
+                    
+                    referenciaCasoSolicitante = package.referenciaCasoSolicitante;
+                    derivadoA = package.derivadoA;
+                    nombreContactoBanco = package.nombreContactoBanco;
+                    cargoContactoBanco = package.cargoContactoBanco;
+                    telefonoContactoBanco = package.telefonoContactoBanco;
+                    emailContactoBanco = package.emailContactoBanco;
+                    prefijoDestinatario = package.prefijoDestinatario;
+                    nombreDestinatario = package.nombreDestinatario;
+                    cargoDestinatario = package.cargoDestinatario;
+                    
+                    document.getElementById("referenciaCasoSolicitante").value = referenciaCasoSolicitante;
+                    document.getElementById("derivadoA").value = derivadoA;
+                    document.getElementById("nombreContactoBanco").value = nombreContactoBanco;
+                    document.getElementById("cargoContactoBanco").value = cargoContactoBanco;
+                    document.getElementById("telefonoContactoBanco").value = telefonoContactoBanco;
+                    document.getElementById("emailContactoBanco").value = emailContactoBanco;
+                    document.getElementById("prefijoDestinatario").value = prefijoDestinatario;
+                    document.getElementById("nombreDestinatario").value = nombreDestinatario;
+                    document.getElementById("cargoDestinatario").value = cargoDestinatario;
+                    
+                    let markupStr = currentContent;
+                   // $('#summernote').summernote('code', markupStr);  
+                      $("#paste-from-word").val(markupStr);
+                    //tinymce.activeEditor.setContent(markupStr);
+                    if(casoId)
+                    {
+                        loadDropDown(casoId);
+                    }
+                }
+            }
+        });
+                
+        var contenedor = this.document.getElementById("contenedorPreview");
+        contenedor.hidden = true;      
+  
+        $('#contenedorEditor').hide();
+
+      
+        
+        function apiGet(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+        function apiGetV2(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+        
+        function apiPost(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                    //isLoading(false);
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+            //isLoading(true);
+        }
+        function apiPostV2(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", urlBase + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+             xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                    //isLoading(false);
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+            //isLoading(true);
+        }
+        function handleControls() {
+            debugger;
+            hideControls();
+            camposObligatorios=[];
+            let sel = document.getElementById('plantillas');
+            this.plantillaSeleccionada = this.listadoPlantillas.find(a => a.id == sel.value);
+            let contenido = this.plantillaSeleccionada.contenido;
+            //let re = /(?:^|\W)##(\w+)(?!\w)/g, match, matches =[];
+            let campos = contenido.match(/(##[A-Za-z0-9_]+)(?:#[A-Za-z0-9_])*/g);
+            if (campos.length > 0) {
+                campos.forEach(c => {
+                    let el = document.getElementById(c);
+                    if (el) {
+                        camposObligatorios.push(el.id)
+                        if (el.style.display === 'none') {
+                            el.style.display = "block";
+                        }
+                        else {
+                            el.style.display = "none";
+                        }
+                    }
+                });
+            }
+        }
+        function hideControls() {
+            let ctlArray = ['##referenciaCasoSolicitante', '##prefijoDestinatario', '##nombreDestinatario', '##cargoDestinatario', '##derivadoA', '##nombreContactoBanco', '##cargoContactoBanco', '##telefonoContactoBanco', '##emailContactoBanco'];
+            ctlArray.forEach(el => {
+                let item = document.getElementById(el);
+                item.style.display = "none";
+            })
+        }
+        
+        function renderPDF(base64) {
+            debugger;
+            //var pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.worker.js';
+            var pdfData = atob(base64);
+            var loadingTask = pdfjsLib.getDocument({ data: pdfData });
+            loadingTask.promise.then(function (pdf) {
+                console.log('PDF loaded');
+                _pdf = pdf;
+                // Fetch the first page
+                //var pageNumber = 1;
+                let totalPaginas = _pdf.numPages;
+                resolverBotones(_paginaActual, totalPaginas);
+                pdf.getPage(_paginaActual).then(function (page) {
+                    console.log('Page loaded');
+
+                    var scale = 1.5;
+                    var viewport = page.getViewport({ scale: scale });
+
+                    // Prepare canvas using PDF page dimensions
+                    var canvas = document.getElementById('the-canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    // Render PDF page into canvas context
+                    var renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    var renderTask = page.render(renderContext);
+                    renderTask.promise.then(function () {
+                        console.log('Page rendered');
+                    });
+                });
+            }, function (reason) {
+                // PDF loading error
+                console.error(reason);
+            });
+        }
+        
+        function validarFormatoTelefonoRegex(telefono){
+          if(!telefono.match(/^((\+)56)?([9]{1})+([0-9]{7})$/)){
+            return false;
+          }
+          return true;
+        }
+        
+        function setInputFilter(textbox, inputFilter) {
+            ["input", "keydown", "keyup", "mousedown", "mouseup", "select", "contextmenu", "drop"].forEach(function (event) {
+                textbox.addEventListener(event, function () {
+                    if (inputFilter(this.value)) {
+                        this.oldValue = this.value;
+                        this.oldSelectionStart = this.selectionStart;
+                        this.oldSelectionEnd = this.selectionEnd;
+                    } else if (this.hasOwnProperty("oldValue")) {
+                        this.value = this.oldValue;
+                        this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+                    } else {
+                        this.value = "";
+                    }
+                });
+            });
+        }
+        
+        function avanzarPagina() {
+            debugger;
+            _paginaActual = _paginaActual + 1;
+            let totalPaginas = _pdf.numPages;
+            resolverBotones(_paginaActual, totalPaginas);
+            _pdf.getPage(_paginaActual).then(function (page) {
+                console.log('Page loaded');
+
+                var scale = 1.5;
+                var viewport = page.getViewport({ scale: scale });
+
+                // Prepare canvas using PDF page dimensions
+                var canvas = document.getElementById('the-canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                    console.log('Page rendered');
+                });
+            });
+        }
+
+        function retrocederPagina() {
+            debugger;
+            _paginaActual = _paginaActual - 1;
+            let totalPaginas = _pdf.numPages;
+            resolverBotones(_paginaActual, totalPaginas);
+            _pdf.getPage(_paginaActual).then(function (page) {
+                //console.log('Page loaded');
+
+                var scale = 1.5;
+                var viewport = page.getViewport({ scale: scale });
+
+                // Prepare canvas using PDF page dimensions
+                var canvas = document.getElementById('the-canvas');
+                var context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page into canvas context
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                var renderTask = page.render(renderContext);
+                renderTask.promise.then(function () {
+                    console.log('Page rendered');
+                });
+            });
+        }
+        
+        function resolverBotones(paginaActual, totalPaginas) {
+            debugger;
+            let botonRetroceder = document.getElementById("btnRetroceder");
+            let botonAvanzar = document.getElementById("btnAvanzar");
+            if (paginaActual === 1) {
+                botonRetroceder.hidden = true;
+            }
+            else {
+                botonRetroceder.hidden = false;
+            }
+            if (paginaActual === totalPaginas) {
+                botonAvanzar.hidden = true;
+            }
+            else {
+                botonAvanzar.hidden = false;
+            }
+        }
+        
+        function cerrarEditor() {
+            window.close();
+        }
+        
+        function cerrarPreview() {
+            $('#contenedorEditor').show();
+            $('#contenedorPreview').hide();
+        }
+
+
+        function convertDataURIToBinary(dataURI) {
+            debugger;
+            var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+            var base64 = dataURI.substring(base64Index);
+            console.log(base64);
+            var raw = window.atob(base64);
+            var rawLength = raw.length;
+            var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+            for (var i = 0; i < rawLength; i++) {
+                array[i] = raw.charCodeAt(i);
+            }
+            return array;
+        }
+
+        function getCode() { 
+            debugger;           
+            let markupStr = tinymce.activeEditor.getContent();
+            
+           // var searchRegExp = /<img\s.*?src=(?:'|")([^'">]+)(?:'|")/g;
+          //   var searchRegExp = /<img .*?>/g;
+            const replaceWith = '';
+            markupStr =markupStr.replaceAll("&lt;",'<');
+            markupStr =markupStr.replaceAll("&gt;",'>');
+            markupStr = markupStr.replace(/<\s*img .*?>/igm, replaceWith);
+            markupStr = markupStr.replace(/<\s*script.*?>.*?<\/\s*script>/igm, replaceWith);
+           // console.log(markupStr);
+           // $('#summernote').summernote('code', markupStr);  
+            return markupStr;
+
+        }
+        
+        function guardarCRM() {
+            debugger;
+            let sel = document.getElementById('plantillas');
+            let idPlantilla = sel.value;
+            let nombrePlantilla = sel.innerText;
+            let referenciaCasoSolicitante = document.getElementById('referenciaCasoSolicitante');
+            let derivadoA = document.getElementById('derivadoA');
+            let nombreContactoBanco = document.getElementById('nombreContactoBanco');
+            let cargoContactoBanco = document.getElementById('cargoContactoBanco');
+            let telefonoContactoBanco = document.getElementById('telefonoContactoBanco');
+            let emailContactoBanco = document.getElementById('emailContactoBanco');
+            let prefijoDestinatario = document.getElementById('prefijoDestinatario');
+            let nombreDestinatario = document.getElementById('nombreDestinatario');
+            let cargoDestinatario = document.getElementById('cargoDestinatario');
+            let datos = getCode();
+            let modelo = {
+                idPlantilla: idPlantilla,
+                nombrePlantilla: nombrePlantilla,
+                referenciaCasoSolicitante: referenciaCasoSolicitante.value,
+                derivadoA: derivadoA.value,
+                nombreContactoBanco: nombreContactoBanco.value,
+                cargoContactoBanco: cargoContactoBanco.value,
+                telefonoContactoBanco: telefonoContactoBanco.value,
+                emailContactoBanco: emailContactoBanco.value,
+                nombreDestinatario: nombreDestinatario.value,
+                prefijoDestinatario: prefijoDestinatario.value,
+                cargoDestinatario: cargoDestinatario.value,
+                casoId: casoId,
+                respuesta: datos
+            }
+            setRespuestaFormales(modelo);
+            window.close();
+        }
+        
+        function setRespuestaFormales(modelo)
+        {
+            debugger;
+            let fieldName = "xmsbs_plantillaelegida";
+            let id = modelo.idPlantilla;
+            let name = modelo.nombrePlantilla;
+            let entityType = "xmsbs_plantillashtml";
+            let res = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+            
+            let casoId = modelo.casoId;
+            let referenciaCasoSolicitante= modelo.referenciaCasoSolicitante;
+            let derivadoA = modelo.derivadoA;
+            let nombreContactoBanco = modelo.nombreContactoBanco;
+            let cargoContactoBanco = modelo.cargoContactoBanco;
+            let telefonoContactoBanco = modelo.telefonoContactoBanco;
+            let emailContactoBanco = modelo.emailContactoBanco;
+            let nombreDestinatario = modelo.nombreDestinatario;
+            let prefijoDestinatario = modelo.prefijoDestinatario;
+            let cargoDestinatario = modelo.cargoDestinatario;
+            
+            if (casoId.indexOf("{") > -1)
+            {
+                casoId = casoId.substring(1, 37);
+            }
+            
+            let metadatosRespuesta = Caso.buscarMetadatosRespuestaCaso(window._executionContext, casoId);
+            var objeto = {};
+                objeto["xmsbs_caso@odata.bind"] = "/incidents(" + casoId + ")";
+                objeto["xmsbs_nombrecontactosernac"] = nombreDestinatario;
+                objeto["xmsbs_referenciacasosolicitante"] = referenciaCasoSolicitante;
+                objeto["xmsbs_telefonocontactobanco"] = telefonoContactoBanco;
+                objeto["xmsbs_tomarcontactocargo"] = cargoContactoBanco;
+                objeto["xmsbs_tomarcontactonombre"] = nombreContactoBanco;
+                objeto["xmsbs_derivadoa"] = derivadoA;
+                objeto["xmsbs_correocontactobanco"] = emailContactoBanco;
+                objeto["xmsbs_prefijodestinatario"] = prefijoDestinatario;
+                objeto["xmsbs_cargodestinatario"] = cargoDestinatario;
+            
+                //Entidad
+                var entity = "xmsbs_metadatoscartaformaleses";
+                if(metadatosRespuesta.value.length==0){
+                //Creamos el objeto
+                
+                
+                //Creamos los registros de autorizadores
+                var resultado = SDK.WEBAPI.createRecord(window._executionContext, objeto, entity);
+                if (resultado != null)
+                {
+                    //alert("Se han creado los usuarios autorizadores");
+                }
+                else
+                {
+                    //alert("Ha ocurrido un error al crear los usuarios autorizadores del reverso y castigo");
+                }
+            }
+            else
+            {
+                let id = metadatosRespuesta.value[0].xmsbs_metadatoscartaformalesid;
+                var resultado = SDK.WEBAPI.updateRecord(window._executionContext, id ,objeto, entity, null, null);
+                if (resultado != null)
+                {
+                    //alert("Se han creado los usuarios autorizadores");
+                }
+                else
+                {
+                    //alert("Ha ocurrido un error al crear los usuarios autorizadores del reverso y castigo");
+                }
+            }
+        
+            JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_respuestacliente", modelo.respuesta);
+
+            //Guardamos el cambio
+            JumpStartLibXRM.Fx.formSave(window._executionContext);
+        }
+        
+        function previsualizar() {
+            debugger;           
+            let ruta = '/caso/PreviewRespuestaManualCaso';
+            let contenido = getCode();
+            let sel = document.getElementById('plantillas');
+            let referenciaCasoSolicitante = document.getElementById('referenciaCasoSolicitante');
+            let derivadoA = document.getElementById('derivadoA');
+            let nombreContactoBanco = document.getElementById('nombreContactoBanco');
+            let cargoContactoBanco = document.getElementById('cargoContactoBanco');
+            let telefonoContactoBanco = document.getElementById('telefonoContactoBanco');
+            let emailContactoBanco = document.getElementById('emailContactoBanco');
+            let prefijoDestinatario = document.getElementById('prefijoDestinatario');
+            let nombreDestinatario = document.getElementById('nombreDestinatario');
+            let cargoDestinatario = document.getElementById('cargoDestinatario');
+
+            let mdl = {
+                idIncident: casoId,
+                content: contenido,
+                idPlantilla: sel.value,
+                referenciaCasoSolicitante: referenciaCasoSolicitante.value,
+                derivadoA: derivadoA.value,
+                nombreContactoBanco: nombreContactoBanco.value,
+                cargoContactoBanco: cargoContactoBanco.value,
+                telefonoContactoBanco: telefonoContactoBanco.value,
+                emailContactoBanco: emailContactoBanco.value,
+                nombreDestinatario: nombreDestinatario.value,
+                prefijoDestinatario: prefijoDestinatario.value,
+                cargoDestinatario: cargoDestinatario.value
+            };
+            $('#loading').show();
+            $('#contenedorEditor').hide();
+            try {
+                apiPost(ruta, mdl, function (data) {
+                    //debugger;
+
+                    if (data && data.success) {
+
+                        debugger;
+                        //const linkSource = `data:application/pdf;base64,${data.respuestaPDFEmailBase64}`;
+                        //const downloadLink = document.createElement("a");
+                        //const fileName = "respuesta_formales.pdf";
+                        //downloadLink.href = linkSource;
+                        //downloadLink.download = fileName;
+                        //downloadLink.click();
+                        $('#loading').hide();
+                        $('#contenedorEditor').hide();
+                        $('#contenedorPreview').show();
+                        renderPDF(data.respuestaPDFEmailBase64);
+                    }
+                    else if ((data && !data.success))  {
+                            $('#loading').hide();
+                            Xrm.Utility.alertDialog(data.message);
+                            $('#contenedorEditor').show();
+                        }  
+                });
+              }
+            catch(err) {
+                    $('#loading').hide();
+                    Xrm.Utility.alertDialog(err.message);
+                    $('#contenedorEditor').show();
+            }
+            finally {
+                $('#loading').hide();
+            }
+        }
+        
+        function cerrarEditor() {
+            window.close();
+        }
+        
+        function cerrarPopup() {
+            window.close();
+        }
+        
+        function loadDropDown(casoId) {
+            debugger;
+            this.listadoPlantillas = [];
+            let ruta = '/respuestaPredefinida/GetPlantillasRespuesta/' + casoId;
+            apiGet(ruta, function (data) {
+                if (data && data.success) {
+                    debugger;
+                    this.listadoPlantillas = data.listPlantillas;
+                    let sel = document.getElementById('plantillas');
+                    for (var i = 0; i < data.listPlantillas.length; i++) {
+                        let opt = document.createElement('option');
+                        opt.value = data.listPlantillas[i].id;
+                        opt.innerText = data.listPlantillas[i].nombre;
+                        sel.appendChild(opt);
+                    }
+                    if (plantillaSeleccionada && plantillaSeleccionada.length > 0)
+                    {
+                        let plantillaId  = plantillaSeleccionada[0].id;
+                        if (plantillaId.indexOf("{") > -1) {
+                            plantillaId = plantillaId.substring(1, 37);
+                            sel.value = plantillaId.toLowerCase();
+                        }
+
+                    }
+                    if (sel.value) {
+                        handleControls();
+                    }
+                    $('#loading').hide();
+                    $('#contenedorEditor').show();
+                }
+            })
+        }
+
+        function blockSpecialChar(e){
+        var k;
+        document.all ? k = e.keyCode : k = e.which;
+        return ((k > 64 && k < 91) || (k > 96 && k < 123) || k == 8 || k == 32 || (k >= 48 && k <= 57));
+        }
+        function blockNoPhoneChar(e){
+        var k;
+        document.all ? k = e.keyCode : k = e.which;
+        return ( k == 43 || k == 45  || k == 8 || (k >= 48 && k <= 57));
+        }
+        function blockNoEmailNameChar(e){
+        var k;
+        document.all ? k = e.keyCode : k = e.which;
+        return ( (k > 64 && k < 91) || (k > 96 && k < 123) || (k >= 45 && k <= 46) || k == 95  || k == 8 || (k >= 48 && k <= 57));
+        }
+        function blockNoReferenciaChar(e){
+        var k;
+        document.all ? k = e.keyCode : k = e.which;
+        return ((k > 64 && k < 91) || (k > 96 && k < 123) || k == 8 || k == 32 || (k >= 48 && k <= 57) || (k >= 45 && k <= 47) || k == 95);
+        }
+        function blockNoNamesChar(e){
+        var k;
+        document.all ? k = e.keyCode : k = e.which;
+        return ((k > 64 && k < 91) || (k > 96 && k < 123) || k == 8 || k == 32 || k == 45 || spanishAccented(k) );
+        }
+
+        function spanishAccented(k){
+            return (k== 225 || k == 233 || k == 237 || k == 243 || k == 250 ||k == 193 ||k == 201 || k == 205 || k == 211 || k == 218 || k == 241 || k == 209 );
+        }
+    </script>
+</body>
+</html>

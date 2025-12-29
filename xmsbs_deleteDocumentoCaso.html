@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30=" crossorigin="anonymous"></script>
+
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_util"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_repositorioSucesos"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <style>
+        .ocultar {
+            display: none;
+        }
+
+        .texto-uploader {
+            font-family: Segoe UI;
+            font-size: 16px;
+        }
+
+        .boton-menu {
+            background-color: #efefef;
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-size: 16px;
+            align-items: center;
+        }
+
+            .boton-menu:hover {
+                background-color: rgb(216, 216, 216);
+                border-bottom: 3px solid #DA0202;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+
+            .boton-menu svg {
+                color: #DA0202;
+                padding-right: 3px;
+            }
+            /*.boton-menu:hover svg {
+                color: white;
+            }*/
+
+            .boton-menu span {
+                color: #DA0202;
+                text-align: center;
+            }
+    </style>
+</head>
+<body>
+
+    <label class="boton-menu" id="btnBorrar" onclick="deleteDocumento(event)">Eliminar Documento</label>
+    
+    <label class="boton-menu" id="btnDescargar" onclick="downloadDocumento(event)">Descargar Documento</label>
+
+   
+    <script>
+        var idIncident = null;
+        var idDocumento  = null;
+      //  var fileNetId = null;
+
+        $(document).ready(function () {
+            //debugger;
+        });
+
+        function setClientApiContext(xrm, formContext) {
+            //Optionally set Xrm and formContext as global variables on the page.
+            window.Xrm = xrm;
+            window._formContext = formContext;
+
+            //Add script logic here that uses xrm or the formContext.
+            idDocumento = window._formContext.data.entity.getId();
+            let caso = window._formContext.getAttribute("xmsbs_caso").getValue();
+            //console.log('Statecode: '+statecode);
+            idIncident = caso[0].id;
+            //debugger;
+            let resultado = getDatosCaso(window._formContext, idIncident);
+         //   let filenet = getDatosDocumento(window._formContext, idDocumento);
+         //   fileNetId = filenet.xmsbs_id;
+            if(resultado){
+                //debugger;
+                let statuscode = resultado.statuscode;
+                if(statuscode == 5 || statuscode == 6){
+                    let btn = document.getElementById('btnBorrar');
+                    btn.style.visibility='hidden';
+                }
+            }
+            
+            let statecode = window._formContext.getAttribute("statecode").getValue();
+            //let statecode = JumpStartLibXRM.Fx.getValueField(formContext, "statecode", null);
+            //if(statecode == 1)
+            //{
+            //}
+            //else
+            //{
+            //}
+        }
+        
+        function downloadDocumento(){
+            //debugger;
+            var alertStrings = { confirmButtonLabel: "Aceptar", text: "Se está obteniendo el archivo para descarga. Dependiendo del peso del archivo, está operación podría demorar varios segundos", title: "Descarga de Documento" };
+            var alertOptions = { height: 120, width: 260 };
+            openAlertaDescarga(alertStrings, alertOptions);
+            
+            let modelo = {
+                idIncident: idIncident,
+                idDocumento: idDocumento
+            };
+            let nombreArch = window._formContext.getAttribute("xmsbs_name").getValue();    
+            let idFileNet = window._formContext.getAttribute("xmsbs_id").getValue();
+            if (idDocumento.indexOf("{") > -1){idDocumento = idDocumento.substring(1, 37);}
+                
+                if (true)
+                {
+                    RepositorioSucesos.setMidasHost(window._formContext);
+                    RepositorioSucesos.setMidasHostBody(window._formContext);
+                    RepositorioSucesos.setFileNetConsultaHost(window._formContext);
+                    RepositorioSucesos.setFileNetConsultaBody(window._formContext);
+                    RepositorioSucesos.apiTokenMidas( function(data){                    
+                        if(data)
+                        {
+                           downloadBase64FileV2(data.access_token,idFileNet, nombreArch);                       
+                        }
+                        else{
+                            var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Error", subtitle: data.message };
+                            var confirmOptions = { height: 200, width: 260 };
+                            openConfirmDialog(confirmStrings, confirmOptions);
+                        }
+                    });
+                }
+                else
+                {
+                    let rutaAPI = '/Santander/GetDocumentoFileNet?idDocumento=' + idFileNet + '&nombreDocumento=' + nombreArch;
+                    RepositorioSucesos.setApiKey(window._formContext);
+                    RepositorioSucesos.setAzureURL(window._formContext);
+                    RepositorioSucesos.apiGet(rutaAPI, function(data){                   
+                        if(data && data.success==true)
+                        {
+                            downloadBase64File(data.documento, nombreArch);
+                        
+                        }
+                        else{
+                            var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Error", subtitle: data.message };
+                            var confirmOptions = { height: 200, width: 260 };
+                            openConfirmDialog(confirmStrings, confirmOptions);
+                        }
+                    });
+                }
+        }
+        
+        function downloadBase64File(contentBase64, filename){
+            //debugger;
+            var linkSource = '';
+            var nameFile = filename;
+            var extension = filename.split('.').pop();
+            extension = extension.toLowerCase();
+            
+            if(extension == "xlsx")
+            {
+                linkSource = 'data:application/vnd.ms-excel;base64,'+contentBase64;
+            }
+            else if(extension == "xls")
+            {
+                linkSource = 'data:application/vnd.ms-excel;base64,'+contentBase64;
+            }
+            else if(extension == "pdf")
+            {
+                linkSource = 'data:application/pdf;base64,'+contentBase64;
+            }
+            else if(extension == "jpg" || extension == "jpeg")
+            {
+                linkSource = 'data:image/jpeg;base64,'+contentBase64;
+            }
+            else if(extension == "png")
+            {
+                linkSource = 'data:image/png;base64,'+contentBase64;
+            }
+            
+            const downloadLink = document.createElement('a');
+            document.body.appendChild(downloadLink);
+            
+            downloadLink.href = linkSource;
+            downloadLink.target = '_self';
+            downloadLink.download = nameFile;
+            downloadLink.click();
+        }
+        
+       
+        function downloadBase64FileV2(token, idFileNet, filename){
+            //debugger;
+            var tipoMIME = '';
+            var nameFile = filename;
+            var extension = filename.split('.').pop();
+            extension = extension.toLowerCase();
+            
+            if(extension == "xlsx")
+            {
+                tipoMIME = 'application/vnd.ms-excel';
+            }
+            else if(extension == "xls")
+            {
+                tipoMIME = 'application/vnd.ms-excel';
+            }
+            else if(extension == "pdf")
+            {
+                tipoMIME = 'application/pdf';
+            }
+            else if(extension == "jpg" || extension == "jpeg")
+            {
+                tipoMIME = 'application/pdf';
+            }
+            else if(extension == "png")
+            {
+                tipoMIME = 'application/pdf';
+            }
+            
+          RepositorioSucesos.apiFileNetConsultaV1(token, idFileNet, tipoMIME, function(data) {
+                if (data) {
+                    downloadBase64File(data.Documento, filename);
+
+                } else {
+                    var confirmStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        subtitle: data.message
+                    };
+                    var confirmOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialog(confirmStrings, confirmOptions);
+                }
+            });
+        }
+       
+        function deleteDocumento() {
+            debugger;
+            
+            let propietario = window._formContext.getAttribute("xmsbs_subidopor").getValue();
+            if(!propietario){
+                var alertStrings = { confirmButtonLabel: "Aceptar", title: "Solicitar Eliminación", text: "Para eliminar este documento, favor solicítelo al equipo Soporte MIDAS."};
+                var alertOptions = { height: 120, width: 260 };
+                window.Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(function (success) {},function (error) {});
+                return;
+            }
+
+            // Si el caso está en otra etapa, entonces impide la eliminación
+            var incidentId = JumpStartLibXRM.Fx.getLookupValueId(window._formContext, "xmsbs_caso"); 
+            if (!incidentId) {return;} // error, no tiene caso relacionado.
+            
+            var oCaso = getDatosCaso(window._formContext, incidentId);
+            if(!oCaso) {return;} // error, no tiene caso relacionado.
+
+            var EtapaId = JumpStartLibXRM.Fx.getLookupValueId(window._formContext, "xmsbs_etapa"); 
+            if (!EtapaId) {return;} // error, no tiene etapa relacionada.
+            EtapaId = EtapaId.replace(/[{}]/g, "").toLowerCase();
+
+            if (oCaso._xmsbs_etapa_value != EtapaId){
+                var alertStrings = { confirmButtonLabel: "Aceptar", title: "Mensaje", text: "No puede eliminar el documento ya que el Caso está en una etapa diferente."};
+                var alertOptions = { height: 120, width: 260 };
+                window.Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(function (success) {},function (error) {});
+                return;
+            }
+
+            let idPropetario = propietario[0].id.replace(/[{}]/g, "").toLowerCase();
+            let userSettings = window.Xrm.Utility.getGlobalContext().userSettings;
+            let idUsuario = userSettings.userId.replace(/[{}]/g, "").toLowerCase();
+            let nombreUsuario = userSettings.userName;
+            
+            if(idPropetario != idUsuario){
+                var subidoPorName = JumpStartLibXRM.Fx.getLookupValueName(window._formContext, "xmsbs_subidopor", "");
+                var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Mensaje", subtitle: "No puede eliminar el documento ya que fue subido por " + subidoPorName + ". La eliminación sólo la puede realizar quien subió el documento." };
+                var confirmOptions = { height: 200, width: 260 };
+                openConfirmDialog(confirmStrings, confirmOptions);
+                return;
+            }
+
+            var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Eliminar Documento", subtitle:"Va a eliminar el documento de FileNet. ¿Desea Continuar?"};
+            var confirmOptions  = { height: 200, width: 260 };
+            window.Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
+                function (success) {
+                    if(success.confirmed)
+                    {
+                        //Si confirma
+                        //debugger;
+                        let modelo = {
+                            idIncident: idIncident,
+                            idDocumento: idDocumento
+                        };
+                        let rutaAPI = '/Caso/DeleteDocumentoCaso/';
+                        RepositorioSucesos.setApiKey(window._formContext);
+                        RepositorioSucesos.setAzureURL(window._formContext);
+                        RepositorioSucesos.apiPostSyncV2(rutaAPI, modelo, function(data){
+                            //debugger;
+                            if(data && data.success==true){
+                                var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Operación Exitosa", subtitle: data.message };
+                                var confirmOptions = { height: 200, width: 260 };
+                                openConfirmDialog2(confirmStrings, confirmOptions);
+                            }
+                            else{
+                                var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Error", subtitle: data.message };
+                                var confirmOptions = { height: 200, width: 260 };
+                                openConfirmDialog(confirmStrings, confirmOptions);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        //Si cancela
+                    }
+                },
+                function (error) {
+                    //console.log(error.message);
+                    _sucesoCancelado = true;
+                }
+            );
+        }
+        function openConfirmDialog(confirmStrings, confirmOptions) {
+            window.Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
+                function (success) {
+                    if (success.confirmed) {
+                        //Si confirma
+                        //JumpStartLibXRM.Fx.formSaveAndClose(window._formContext);
+                        JumpStartLibXRM.Fx.formSave(window._formContext);
+                    }
+                    else {
+                        //Si cancela
+                    }
+                },
+                function (error) {
+                    //console.log(error.message);
+                }
+            ); 
+        }
+        function openConfirmDialog2(confirmStrings, confirmOptions) {
+            window.Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
+                function (success) {
+                    if (success.confirmed) {
+                        //Si confirma
+                        JumpStartLibXRM.Fx.formClose(window._formContext);
+                    }
+                    else {
+                        //Si cancela
+                    }
+                },
+                function (error) {
+                    //console.log(error.message);
+                }
+            ); 
+        }
+        function openAlertaDescarga(alertStrings, alertOptions) {
+            window.Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                function (success) {
+                    //console.log("Alert dialog closed");
+                },
+                function (error) {
+                    //console.log(error.message);
+                }
+            );
+        }
+        function getDatosCaso(executionContext, idIncident){
+            var entityType = "incident";
+            var query = "statecode,statuscode,_xmsbs_etapa_value";
+            //var expand = "xmsbs_institucion($select=xmsbs_name,xmsbs_institucionid)";
+            //realizamos la consulta
+            var resultado = SDK.WEBAPI.retrieveRecord(executionContext, idIncident.replace(/[{}]/g, ""), entityType, query, null);
+            return resultado;
+        }
+
+        function getDatosDocumento(executionContext, idDocumento){
+            //Preparamos la consulta
+            var entityType = "xmsbs_documento";
+            var entityId = idDocumento;
+            if (entityId.indexOf("{") > -1){entityId = entityId.substring(1, 37);}
+            var query = "xmsbs_id";
+            //var expand = "xmsbs_institucion($select=xmsbs_name,xmsbs_institucionid)";
+            //realizamos la consulta
+            var resultado = SDK.WEBAPI.retrieveRecord(executionContext, entityId, entityType, query, null);
+            return resultado;
+        }
+        
+    </script>
+</body>
+</html>

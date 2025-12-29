@@ -1,0 +1,753 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery351"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jqueryui1-12-1"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_util"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webApi"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_repositorioSucesos"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <style>
+        .ocultar {
+            display: none;
+        }
+        
+        .subidaDocumento {
+            background-color: rgb(255, 255, 0) !important;
+            border-bottom: 3px solid #FFFF00 !important;
+            font-weight: bold;
+        }
+        
+        .texto-uploader {
+            font-family: Segoe UI;
+            font-size: 16px;
+        }
+        
+        .boton-menu {
+            background-color: #efefef;
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-weight: bold;
+            font-size: 16px;
+            align-items: center;
+            border-bottom: 3px solid #DA0202;
+        }
+        
+        .boton-menu:hover {
+            background-color: rgb(216, 216, 216);
+            border-bottom: 3px solid #DA0202;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .boton-menu svg {
+            color: #DA0202;
+            padding-right: 3px;
+        }
+        
+        .boton-menu span {
+            color: #DA0202;
+            text-align: center;
+        }
+    </style>
+    <meta>
+</head>
+
+<body onfocusout="parent.setEmailRange();" style="overflow-wrap: break-word;">
+    <!--    <label class="boton-menu ocultar" id="btnSubir" onclick="cargarDocumento(event)">Previsualizar</label>
+-->
+    <input type="file" id="actual-btn" hidden="">
+    <!--    <label class="boton-menu" for="actual-btn">Seleccione Archivo</label>
+-->
+    <label class="boton-menu" for="actual-btn" id="btnSubir" onclick="cargarDocumento(event)">Seleccione Archivo</label>
+    <span class="texto-uploader" id="file-chosen">No se ha seleccionado ningún archivo</span>
+    <script>
+        var idIncident = null;
+        var idDocumento = null;
+        var idTipoDocumento = null;
+        var idFilenet = null;
+        const actualBtn = document.getElementById('actual-btn');
+        var base64data;
+        var fileName = "";
+        var esExcel = false;
+        var file;
+        const fileChosen = document.getElementById('file-chosen');
+        actualBtn.addEventListener('change', function() {
+            if (this.files) {
+                fileChosen.textContent = this.files[0].name;
+                fileName = this.files[0].name;
+                file = this.files[0];
+                let btnSubir = document.getElementById('btnSubir');
+                btnSubir.classList.remove('ocultar');
+                //debugger;
+                let validFile = validate();
+                if (validFile) {
+                    btnSubir.classList.add('subidaDocumento');
+                    btnSubir.innerHTML = "Subiendo Archivo";
+                    //btnSubir.disabled = true;
+                    getBase64(file).then(
+                        data => {
+                            base64data = data;
+                            let validFile64 = validateBase64(base64data);
+                            if (validFile64) {
+                                if (false) {
+                                    uploadDocumento();
+                                } else {
+                                    uploadDocumentoDirectoBanco(base64data);
+                                }
+                            } else {
+                                MessageError();
+                            }
+                        }
+                    );
+                } else {
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        text: "No se pudo validar el documento, verifique el tamaño y la extensión."
+                    };
+                    var alertOptions = {
+                        height: 120,
+                        width: 260
+                    };
+                    Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                        function(success) {
+                            //console.log("Alert dialog closed");
+                        },
+                        function(error) {
+                            //console.log(error.message);
+                        }
+                    );
+                }
+            }
+        });
+        $(document).ready(function() {
+            //debugger;
+        });
+
+        function setClientApiContext(xrm, formContext) {
+            //debugger;
+            //Optionally set Xrm and formContext as global variables on the page.
+            window.Xrm = xrm;
+            window._formContext = formContext;
+            //Add script logic here that uses xrm or the formContext.
+            idDocumento = window._formContext.data.entity.getId();
+            let caso = window._formContext.getAttribute("xmsbs_caso").getValue();
+            if (caso != null && caso != "") {
+                idIncident = caso[0].id;
+            }
+        }
+
+        function cargarDocumento(event) {
+            //debugger;
+            file = actualBtn.files[0];
+            if (file != undefined) {
+                let validFile = validate();
+                if (validFile) {
+                    //Xrm.Utility.showProgressIndicator("Procesando");
+                    RepositorioSucesos.mostrarIndicadorProgreso("Procesando");
+                    getBase64(file).then(
+                        data => {
+                            base64data = data;
+                            let validFile64 = validateBase64(base64data);
+                            if (validFile64) {
+                                if (false) {
+                                    uploadDocumento();
+                                } else {
+                                    uploadDocumentoDirectoBanco(base64data);
+                                }
+                            } else {
+                                MessageError();
+                            }
+
+
+                        }
+                    );
+                } else {
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        text: "No se pudo validar el documento, verifique el tamaño y la extensión."
+                    };
+                    var alertOptions = {
+                        height: 120,
+                        width: 260
+                    };
+                    Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                        function(success) {
+                            //console.log("Alert dialog closed");
+                        },
+                        function(error) {
+                            //console.log(error.message);
+                        }
+                    );
+                }
+            }
+        }
+
+        function MessageError() {
+            var alertStrings = {
+                confirmButtonLabel: "Aceptar",
+                title: "Error",
+                text: "No se pudo validar el documento, verifique el tamaño y la extensión."
+            };
+            var alertOptions = {
+                height: 120,
+                width: 260
+            };
+            Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                function(success) {
+                    //console.log("Alert dialog closed");
+                },
+                function(error) {
+                    //console.log(error.message);
+                }
+            );
+        }
+
+        function validate() {
+            //debugger;
+            let fileUploader = document.getElementById("actual-btn");
+            let fileUploaderValue = fileUploader.value;
+            if (fileUploaderValue) {
+                let checkFile = fileUploaderValue.toLowerCase();
+                if (!checkFile.match(/(\.pdf|.xls|.xlsx|.jpg|.jpeg|.png)$/)) {
+                    return false;
+                } else {
+                    if (checkFile.match(/(\.xls|.xlsx)$/)) {
+                        esExcel = true;
+                    } else {
+                        esExcel = false;
+                    }
+                    let sz = fileUploader.files[0].size / 1024 / 1024;
+                    if (sz > 8) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+
+        function validateBase64(base64data) {
+            let _return = false;
+            let myArray = base64data.split(";");
+            let typeBase64 = "";
+            if (myArray.length > 1) {
+                if (myArray[1].includes(",")) {
+                    let myArray2 = myArray[1].split(",");
+                    if (myArray2.length > 1) {
+                        typeBase64 = myArray2[1].substr(0, 5);
+                    }
+                } else {
+                    typeBase64 = myArray[0].substr(0, 5);
+                }
+            }
+            switch (typeBase64.toUpperCase()) {
+                case "JVBER":
+                    // pdf
+                    _return = true;
+                    break;
+                case "LS1GY":
+                    // pdf
+                    _return = true;
+                    break;
+                case "UESDB":
+                    // excel
+                    _return = true;
+                    break;
+                case "IVBOR":
+                    // PNG
+                    _return = true;
+                    break;
+                case "/9J/4":
+                    // JPG / JPEG
+                    _return = true;
+                    break;
+                case "0M8R4":
+                    // .xls
+                    _return = true;
+                    break;
+                default:
+                    // no permitido
+                    _return = false;
+                    break;
+
+            }
+            return _return;
+        }
+
+        function previewDocumento(base64archivo) {
+            //debugger;
+            //console.log(base64archivo);
+            if (!esExcel) {
+                let package = {
+                    contenido: base64archivo,
+                    casoId: idIncident
+                }
+                let params = `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no, width=950,height=700,left=100,top=100`;
+                let domain = 'https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_previewDocumento';
+                var pop = window.open(domain, 'test', params);
+                let timer = setInterval(function() {
+                    var message = 'llegamos';
+                    console.log('blog.local:  sending message:  ' + message);
+                    pop.postMessage(package, domain); //send the message and target URI
+                }, 1000);
+                window.addEventListener('message', function(event) {
+                    if (event) {
+                        //debugger;
+                        clearInterval(timer);
+                    }
+                }, false);
+            } else {
+                var alertStrings = {
+                    confirmButtonLabel: "Aceptar",
+                    title: "Documento",
+                    subtitle: "El documento corresponde a un archivo excel, no se puede previsualizar. Va a subir el documento. ¿Desea Continuar?"
+                };
+                var alertOptions = {
+                    height: 200,
+                    width: 260
+                };
+                openConfirmDialogPreviewDocumento(alertStrings, alertOptions);
+            }
+        }
+
+        function uploadDocumento() {
+            // debugger;
+            if (idIncident != null && idIncident != "") {
+                var fileData = new FormData();
+                fileData.append("file", file);
+                if (idIncident.indexOf("{") > -1) {
+                    idIncident = idIncident.substring(1, 37);
+                }
+                if (idDocumento != null && idDocumento != "") {
+                    if (idDocumento.indexOf("{") > -1) {
+                        idDocumento = idDocumento.substring(1, 37);
+                    }
+                    idTipoDocumento = "00000000-0000-0000-0000-000000000000";
+                } else {
+                    idDocumento = "00000000-0000-0000-0000-000000000000";
+                    let tipoDocumento = window._formContext.getAttribute("xmsbs_tipodocumento").getValue();
+                    if (tipoDocumento != null && tipoDocumento != "") {
+                        idTipoDocumento = tipoDocumento[0].id;
+                        if (idTipoDocumento.indexOf("{") > -1) {
+                            idTipoDocumento = idTipoDocumento.substring(1, 37);
+                        }
+                    }
+                }
+                let rutaAPI = "/Caso/PostArchivo/" + idIncident + "/" + idDocumento + "/" + idTipoDocumento;
+                RepositorioSucesos.setApiKey(window._formContext);
+                RepositorioSucesos.setAzureURL(window._formContext);
+                RepositorioSucesos.apiPostFileSync(rutaAPI, fileData, function(data) {
+                    //apiPostFileSync(rutaAPI, fileData, function(data){
+                    //debugger;
+                    //Xrm.Utility.closeProgressIndicator();
+                    RepositorioSucesos.ocultarIndicadorProgreso();
+                    if (data && data.success == true) {
+                        var genIdAPI = "";
+                        genIdAPI = data.genId;
+
+                        if (genIdAPI != null && fileName != null && genIdAPI != "" && fileName != "") {
+                            let fechaAlta = new Date(data.fechaAlta);
+                            //let fechaCaducidad = new Date();
+                            //fechaCaducidad.setDate(fechaCaducidad.getDate() + 2555);
+                            //JumpStartLibXRM.Fx.setValueField(window._formContext, "xmsbs_name", fileName);
+                            JumpStartLibXRM.Fx.setValueField(window._formContext, "xmsbs_id", data.genId);
+                            JumpStartLibXRM.Fx.setValueField(window._formContext, "xmsbs_fechaalta", fechaAlta);
+                            //JumpStartLibXRM.Fx.setValueField(window._formContext, "xmsbs_fechacaducidad", fechaCaducidad);
+                            JumpStartLibXRM.Fx.setValueField(window._formContext, "statuscode", data.statusCode);
+
+                            //Almacenamos el usuario que subio el documento para la validación de eliminación
+                            let userSettings = window.Xrm.Utility.getGlobalContext().userSettings;
+                            let idUsuario = userSettings.userId;
+                            let nombreUsuario = userSettings.userName;
+                            var EntityType = "systemuser";
+                            JumpStartLibXRM.Fx.setLookupValue(window._formContext, "xmsbs_subidopor", idUsuario, nombreUsuario, EntityType);
+
+                            var alertStrings = {
+                                confirmButtonLabel: "Aceptar",
+                                title: "Operación Exitosa",
+                                subtitle: data.message
+                            };
+                            var alertOptions = {
+                                height: 200,
+                                width: 260
+                            };
+                            openConfirmDialogUploadDocumento(data.success, alertStrings, alertOptions);
+                        } else {
+                            var alertStrings = {
+                                confirmButtonLabel: "Aceptar",
+                                title: "Error",
+                                subtitle: "Estimado usuario, el servicio presenta intermitencia. Intente nuevamente más tarde"
+                            };
+                            var alertOptions = {
+                                height: 200,
+                                width: 260
+                            };
+                            openConfirmDialogUploadDocumento(false, alertStrings, alertOptions);
+                        }
+
+                    } else {
+                        var alertStrings = {
+                            confirmButtonLabel: "Aceptar",
+                            title: "Error",
+                            subtitle: data.message
+                        };
+                        var alertOptions = {
+                            height: 200,
+                            width: 260
+                        };
+                        openConfirmDialogUploadDocumento(data.success, alertStrings, alertOptions);
+                    }
+                    let btnSubir = document.getElementById('btnSubir');
+                    btnSubir.classList.remove('subidaDocumento');
+                    btnSubir.innerHTML = "Seleccione Archivo";
+                    //btnSubir.disabled = false;
+                });
+            }
+        }
+
+        function uploadDocumentoDirectoBanco(base64data) {
+            //debugger;
+            if (idIncident != null && idIncident != "") {
+                var fileData = new FormData();
+                fileData.append("file", file);
+                if (idIncident.indexOf("{") > -1) {
+                    idIncident = idIncident.substring(1, 37);
+                }
+                if (idDocumento != null && idDocumento != "") {
+                    if (idDocumento.indexOf("{") > -1) {
+                        idDocumento = idDocumento.substring(1, 37);
+                    }
+                    idTipoDocumento = "00000000-0000-0000-0000-000000000000";
+                } else {
+                    idDocumento = "00000000-0000-0000-0000-000000000000";
+                    let tipoDocumento = window._formContext.getAttribute("xmsbs_tipodocumento").getValue();
+                    if (tipoDocumento != null && tipoDocumento != "") {
+                        idTipoDocumento = tipoDocumento[0].id;
+                        if (idTipoDocumento.indexOf("{") > -1) {
+                            idTipoDocumento = idTipoDocumento.substring(1, 37);
+                        }
+                    }
+                }
+                uploadDocumentoDirectoBancoP2(idIncident, idDocumento, idTipoDocumento, base64data);
+            }
+        }
+
+        function uploadDocumentoDirectoBancoP2(idIncident, idDocumento, idTipoDocumento, base64data) {
+
+            // obtener nombre de archivo
+
+            fileUploaderValue = file.name;
+            // obtener base64 limpia
+            let myArray = base64data.split(";");
+            let Base64 = "";
+            if (myArray.length > 1) {
+                if (myArray[1].includes(",")) {
+                    let myArray2 = myArray[1].split(",");
+                    if (myArray2.length > 1) {
+                        Base64 = myArray2[1];
+                    }
+                } else {
+                    Base64 = myArray[0];
+                }
+            }
+
+
+            // llamar plugin action
+            var parameters = {};
+            parameters.Request_IdIncident = idIncident; // Edm.String
+            parameters.Request_IdDocument = idDocumento; // Edm.String
+            parameters.Request_IdTipoDocumento = idTipoDocumento; // Edm.String
+            parameters.Request_Filename = fileUploaderValue; // Edm.String
+            //parameters.Request_Base64 = Base64; //base 64
+            
+
+            var req = new XMLHttpRequest();
+            req.open("POST", window.Xrm.Utility.getGlobalContext().getClientUrl() + "/api/data/v9.2/xmsbs_FileNetUploadModel", true);
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("Accept", "application/json");
+            req.onreadystatechange = function() {
+                if (this.readyState === 4) {
+                    req.onreadystatechange = null;
+                    if (this.status === 200 || this.status === 204) {
+                        var result = JSON.parse(this.response);
+                        console.log(result);
+                        // Return Type: mscrm.xmsbs_FileNetUploadModelResponse
+                        // Output Parameters
+                        var response_filenetuploadmodel_success = result["Response_FileNetUploadModel_Success"]; // Edm.Boolean
+                        var response_filenetuploadmodel_message = result["Response_FileNetUploadModel_Message"]; // Edm.String
+                        var response_filenetuploadmodel_jsonobj = result["Response_FileNetUploadModel_JsonObj"]; // Edm.String
+                        if (response_filenetuploadmodel_success) {
+                            // replace ##contenidoBase64##
+                            let objJson = response_filenetuploadmodel_jsonobj.replace("##contenidoBase64##", Base64.replace("'", ""));
+                            //let objJson = response_filenetuploadmodel_jsonobj;
+                            uploadDocumentoDirectoBancoP3(objJson);
+                        }
+
+                    } else {
+                        console.log(this.responseText);
+                    }
+                }
+            };
+            req.send(JSON.stringify(parameters));
+        }
+
+
+        function uploadDocumentoDirectoBancoP3(objJson) {
+            RepositorioSucesos.setMidasHost(window._formContext);
+            RepositorioSucesos.setMidasHostBody(window._formContext);
+            RepositorioSucesos.setFileNetUploadHost(window._formContext);
+
+            RepositorioSucesos.apiTokenMidas(function(data1) {
+                if (data1 && data1.access_token !== "undefined" ) {
+                    RepositorioSucesos.apiFileNetUploadV1(data1.access_token, objJson, function(data2) {
+                        if (data2 && data2.IdDocumento !== "undefined" && data2.IdDocumento != "" && data2.IdDocumento.trim().length > 0) {
+                            // id filenet
+                            idFilenet = data2.IdDocumento;
+                            RepositorioSucesos.ocultarIndicadorProgreso();
+                            let fecha = Date.now();
+                            let fechaUTC = new Date().toISOString();
+                            
+
+                            var record = {};
+                            record.xmsbs_id = idFilenet;
+                            record.xmsbs_name = file.name;
+                            record.xmsbs_fechaalta = fechaUTC; // Date Time
+                            record.statuscode = 657130001; // Status
+
+                            window.Xrm.WebApi.updateRecord("xmsbs_documento", idDocumento, record).then(
+                                function success(result) {
+                                    uploadDocumentoDirectoBancoP4(idFilenet, fechaUTC);
+                                },
+                                function(error) {
+                                    var confirmStrings = {
+                                        confirmButtonLabel: "Aceptar",
+                                        title: "Error",
+                                        subtitle: data.message
+                                    };
+                                    var confirmOptions = {
+                                        height: 200,
+                                        width: 260
+                                    };
+                                    openConfirmDialog(confirmStrings, confirmOptions);
+                                }
+                            );
+                        } else {
+                            var confirmStrings = {
+                                confirmButtonLabel: "Aceptar",
+                                title: "Error",
+                                subtitle: data.message
+                            };
+                            var confirmOptions = {
+                                height: 200,
+                                width: 260
+                            };
+                            openConfirmDialog(confirmStrings, confirmOptions);
+                        }
+                    });
+                } else {
+                    var confirmStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        subtitle: "Estimado usuario, el servicio presenta intermitencia. Intente nuevamente más tarde"
+                    };
+                    var confirmOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialog(confirmStrings, confirmOptions);
+                }
+            });
+        }
+
+        function uploadDocumentoDirectoBancoP4(idfilenet, fecha) {
+            RepositorioSucesos.ocultarIndicadorProgreso();
+            if (idfilenet) {
+                var genIdAPI = "";
+                genIdAPI = idfilenet;
+                fileName = file.name;
+
+                if (genIdAPI != null && fileName != null && genIdAPI != "" && fileName != "") {
+                    let fechaAlta = new Date(fecha);
+                    JumpStartLibXRM.Fx.setValueField(window._formContext, "xmsbs_id", genIdAPI);
+                    JumpStartLibXRM.Fx.setValueField(window._formContext, "xmsbs_fechaalta", fechaAlta);
+                    JumpStartLibXRM.Fx.setValueField(window._formContext, "statuscode", 657130001);
+
+                    //Almacenamos el usuario que subio el documento para la validación de eliminación
+                    let userSettings = window.Xrm.Utility.getGlobalContext().userSettings;
+                    let idUsuario = userSettings.userId;
+                    let nombreUsuario = userSettings.userName;
+                    var EntityType = "systemuser";
+                    JumpStartLibXRM.Fx.setLookupValue(window._formContext, "xmsbs_subidopor", idUsuario, nombreUsuario, EntityType);
+
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Operación Exitosa",
+                        subtitle: "El documento se ha asociado exitosamente al caso"
+                    };
+                    var alertOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialogUploadDocumento(true, alertStrings, alertOptions);
+                } else {
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        subtitle: "Estimado usuario, el servicio presenta intermitencia. Intente nuevamente más tarde"
+                    };
+                    var alertOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialogUploadDocumento(false, alertStrings, alertOptions);
+                }
+
+            } else {
+                var alertStrings = {
+                    confirmButtonLabel: "Aceptar",
+                    title: "Error",
+                    subtitle: data.message
+                };
+                var alertOptions = {
+                    height: 200,
+                    width: 260
+                };
+                openConfirmDialogUploadDocumento(data.success, alertStrings, alertOptions);
+            }
+            let btnSubir = document.getElementById('btnSubir');
+            btnSubir.classList.remove('subidaDocumento');
+            btnSubir.innerHTML = "Seleccione Archivo";
+
+        }
+
+        function uploadDocumentoBackUp() {
+            //debugger;            
+            let modelo = {
+                idIncident: idIncident,
+                base64Content: base64data,
+                idDocumento: idDocumento,
+                fileName: fileName
+            };
+            let rutaAPI = '/Caso/UploadDocumentoCaso/';
+            RepositorioSucesos.setApiKey(window._formContext);
+            RepositorioSucesos.setAzureURL(window._formContext);
+            RepositorioSucesos.apiPostSync(rutaAPI, modelo, function(data) {
+                debugger;
+                if (data && data.success == true) {
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Operación Exitosa",
+                        subtitle: data.message
+                    };
+                    var alertOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialog(alertStrings, alertOptions);
+                } else {
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        subtitle: data.message
+                    };
+                    var alertOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialog(alertStrings, alertOptions);
+                }
+            });
+        }
+
+        function openConfirmDialog(confirmStrings, confirmOptions) {
+            //debugger;
+            window.Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
+                function(success) {
+                    if (success.confirmed) {
+                        //debugger;
+                        //Si confirma
+                        JumpStartLibXRM.Fx.formSaveAndClose(window._formContext);
+                        //JumpStartLibXRM.Fx.formSave(window._formContext);
+                    } else {
+                        //Si cancela
+                    }
+                },
+                function(error) {
+                    //console.log(error.message);
+                }
+            );
+        }
+
+        function openConfirmDialogPreviewDocumento(confirmStrings, confirmOptions) {
+            window.Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
+                function(success) {
+                    if (success.confirmed) {
+                        //Si confirma
+                        uploadDocumento();
+                    } else {
+                        //Si cancela
+                    }
+                },
+                function(error) {
+                    //console.log(error.message);
+                }
+            );
+        }
+
+        function openConfirmDialogUploadDocumento(resultado, confirmStrings, confirmOptions) {
+            //debugger;
+            window.Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
+                function(success) {
+                    if (success.confirmed) {
+                        //debugger;
+                        //Si confirma
+                        if (resultado) {
+                            JumpStartLibXRM.Fx.formSaveAndClose(window._formContext);
+                        }
+                        //JumpStartLibXRM.Fx.formSave(window._formContext);
+                    } else {
+                        //Si cancela
+                    }
+                },
+                function(error) {
+                    //console.log(error.message);
+                }
+            );
+        }
+
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function apiPostFileSync(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:58839" + url, false);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", "56C3D9E6-E5B6-4B76-816F-5741FA0420BE");
+            xhr.onreadystatechange = function(data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            };
+            xhr.send(params);
+        }
+    </script>
+</body>
+
+</html>

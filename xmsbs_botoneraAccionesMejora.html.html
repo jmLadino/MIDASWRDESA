@@ -1,0 +1,462 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+<!--    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>-->
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jquery351"></script>
+<!--    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30=" crossorigin="anonymous"></script>-->
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_jqueryui1-12-1"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_repositorioSucesos"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_accionValidator"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_util"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_formularioCaso"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/FortAwesome/Font-Awesome@5.14.0/css/all.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/js/all.min.js"></script>
+    <style>
+        @import url("https://use.fontawesome.com/releases/v5.14.0/css/all.css");
+
+        .ocultar {
+            display: none;
+        }
+
+        .obligatorio {
+            font-weight: bold;
+            color: red;
+        }
+
+        .mr-1 {
+            margin-right: 10px;
+        }
+
+        .parent {
+            align-items: center;
+            border: 0px solid black;
+            display: flex;
+            justify-content: center;
+        }
+
+        .boton {
+            border: 0px;
+            padding-left: 15px;
+            background-color: #efefef;
+            padding-right: 15px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            cursor: pointer;
+            font-family: "Segoe UI", Arial;
+            font-weight: bold;
+            font-size: 14px;
+            color: rgb(221, 8, 8);
+        }
+
+        .icono-boton {
+            margin-right: 5px;
+        }
+
+        .separaciones {
+            margin-right: 5px;
+            margin-left: 5px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        .combo-acciones {
+            width: 80%;
+            font-family: Segoe UI;
+            padding: 5px;
+            border: 1px solid #f3eeee;
+        }
+
+        .boton-accion {
+            border: 0px;
+            padding-left: 10px;
+            background-color: #efefef;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            cursor: pointer;
+            font-family: "Segoe UI", Arial;
+            font-weight: bold;
+            font-size: 14px;
+            color: rgb(221, 8, 8);
+        }
+
+        .boton-menu {
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-size: 16px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+            .boton-menu:hover {
+                background-color: rgb(216, 216, 216);
+                border-bottom: 3px solid #DA0202;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+
+            .boton-menu svg {
+                color: #DA0202;
+                padding-right: 3px;
+            }
+            /*.boton-menu:hover svg {
+                color: white;
+            }*/
+
+            .boton-menu span {
+                color: #DA0202;
+                text-align: center;
+            }
+        /*.boton-menu:hover span {
+                color: white;
+            }*/
+        .parent {
+            padding-top: 50px;
+        }
+
+        .wizard-progress {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            position: relative;
+        }
+
+            .wizard-progress .step {
+                display: table-cell;
+                text-align: center;
+                vertical-align: top;
+                overflow: visible;
+                position: relative;
+                /*font-size: 14px;
+                color: #fff;
+                font-weight: bold;*/
+            }
+
+                .wizard-progress .step:not(:last-child):before {
+                    content: '';
+                    display: block;
+                    position: absolute;
+                    left: 50%;
+                    top: 37px;
+                    background-color: #fff;
+                    height: 6px;
+                    width: 100%;
+                }
+
+                .wizard-progress .step .node {
+                    display: inline-block;
+                    border: 6px solid #fff;
+                    background-color: #fff;
+                    border-radius: 18px;
+                    height: 18px;
+                    width: 18px;
+                    position: absolute;
+                    top: 25px;
+                    left: 50%;
+                    margin-left: -18px;
+                }
+
+                .wizard-progress .step.complete:before {
+                    background-color: #DD0808;
+                }
+
+                .wizard-progress .step.skipped:before {
+                    background-color: #DD0808;
+                }
+
+                .wizard-progress .step.complete .node {
+                    border-color: #DD0808;
+                    background-color: #DD0808;
+                }
+
+                    .wizard-progress .step.complete .node:before {
+                        font-family: "Font Awesome 5 Free";
+                        content: "\f00c";
+                    }
+
+                .wizard-progress .step.in-progress:before {
+                    background: #fff;
+                }
+
+                .wizard-progress .step.in-progress .node {
+                    border-color: #DD0808;
+                }
+
+        .texto-paso {
+            font-family: Segoe UI;
+            font-size: 16px;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var listaAccionesEtapa = [];
+        var idIncident = null;
+        var documentosCaso = [];
+                  
+
+        $(document).ready(function () {
+            debugger;
+            if (window.Xrm == null || typeof(window.Xrm) == "undefined" )
+            {            
+              //call reload
+             //Caso.reLoadBotonera();
+            }
+        });
+
+        function setClientApiContext(xrm, executionContext, formContext, dt) {
+            //debugger;
+            let seccion = window.parent.document.querySelectorAll("[data-id='general_section_botonera']")[0];
+            seccion.setAttribute('style', 'background-color: #cccccc; padding-bottom: 1px !important;');         
+            window.Xrm = xrm;
+            window._executionContext = executionContext;
+            window._formContext = formContext;
+            idIncident = formContext.data.entity.getId();  
+            documentosCaso = buscarDocumentosCaso(executionContext, idIncident); 
+            let temp = buscarBotoneraAccionsObj(idIncident.replace(/[{}]/g, ""));
+            Xrm.WebApi.online.retrieveRecord("incident", idIncident.replace(/[{}]/g, ""), "?$select=xmsbs_botoneraaccionesobj").then(
+                function success(result) {
+                    var xmsbs_botoneraaccionesobj = result["xmsbs_botoneraaccionesobj"];
+                    dt = JSON.parse(xmsbs_botoneraaccionesobj);
+                    loadButtons(dt)
+                  
+                },
+                function(error) {
+                    loadButtons(dt);
+                  
+                }
+            );
+            
+        }
+        function buscarDocumentosCaso(executionContext, idIncident) {
+            let entityType = "xmsbs_documento";
+            let query = "$select=xmsbs_documentoid,xmsbs_obligatoriedad,xmsbs_id,xmsbs_name,xmsbs_caso";
+            query += "&$filter=_xmsbs_caso_value eq '" + idIncident + "'";
+            let resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+        
+        function buscarBotoneraAccionsObj(idIcident) {
+            //debugger;
+            var xmsbs_botoneraaccionesobj = null;
+            var req = new XMLHttpRequest();
+            req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/incidents(" + idIcident + ")?$select=xmsbs_botoneraaccionesobj", false);
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.setRequestHeader("Accept", "application/json");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
+            req.onreadystatechange = function() {
+                if (this.readyState === 4) {
+                    req.onreadystatechange = null;
+                    if (this.status === 200) {
+                        var result = JSON.parse(this.response);
+                        var xmsbs_botoneraaccionesobj = result["xmsbs_botoneraaccionesobj"];
+                        } 
+                    else {
+                        Xrm.Utility.alertDialog(this.statusText);
+                        }
+                    }
+             };
+            req.send();
+            return xmsbs_botoneraaccionesobj;
+        }
+     
+        function loadButtons(data) {
+            //debugger;
+            var divBotones = document.getElementById('botones');
+            if (data.success) {
+                buildProgressBar(data.listEtapa);
+                $('#loading').hide();
+                listaAccionesEtapa = data.listAccionesEtapa;
+                let elemento = '';
+                for (var i = 0; i < data.listAccionesEtapa.length; i++) {
+                    elemento += '<div class="boton-menu" onclick="getAccion(this)" id="' + data.listAccionesEtapa[i].id + '"><div><i class="far fa-check-circle"></i></div><span>' + data.listAccionesEtapa[i].nombre + '</span></div>';
+                }
+                divBotones.innerHTML = elemento;
+                let doc = window.parent.document.getElementById('WebResource_botoneraAccionesMejora');
+                doc.style.height = '126px';
+            }
+            else {
+                console.log(data);
+            }
+        }
+     
+        function buildProgressBar(listEtapa) {
+            //debugger;
+            let currentIdEtapa = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "xmsbs_etapa", null);
+            currentIdEtapa = currentIdEtapa.replace('{', '');
+            currentIdEtapa = currentIdEtapa.replace('}', '');
+            currentIdEtapa = currentIdEtapa.toLowerCase();
+            let etapaActual = listEtapa.find(x => x.id == currentIdEtapa);
+
+            let divProgreso = document.getElementById('stepContainer');
+            for (var i = 0; i < listEtapa.length; i++) {
+                if (listEtapa[i].seVisualizaEtapa) {
+                    let divNombre = document.createElement('div');
+                    let spanNombre = document.createElement('span');
+                    spanNombre.innerText = listEtapa[i].nombre;
+                    spanNombre.className = 'texto-paso';
+                    divNombre.append(spanNombre);
+                    divNombre.className = getNombreClase(etapaActual, listEtapa[i]);
+                    let divNodo = document.createElement('div');
+                    divNodo.className = 'node';
+                    divNombre.append(divNodo);
+                    divProgreso.append(divNombre);
+                }
+            }
+        }
+
+        function getNombreClase(etapaActual, itemEtapa) {
+            //debugger;
+            if (itemEtapa.estadoEtapa === 1) {
+                return 'step complete';
+            }
+            else if (itemEtapa.estadoEtapa === 2) {
+                return 'step in-progress';
+            }
+            else if (itemEtapa.estadoEtapa === 4) {
+                return 'step skipped';
+            }
+            else {
+                return 'step';
+            }         
+        }
+
+        function getAccion(_codigo) {
+            //debugger;
+            var accion = listaAccionesEtapa.find(x => x.id == _codigo.id);
+            if (accion) {
+                resolveModelo(accion);
+            }
+        }
+
+        function resolveModelo(accion) {
+            debugger;
+            var arraySucesos = [];
+            for (var i = 0; i < accion.accion.listSucesos.length; i++) {
+                var suceso = {
+                    codigoSuceso: accion.accion.listSucesos[i].codigo,
+                    dependencia: accion.accion.listSucesos[i].dependencia
+                }            
+                arraySucesos.push(suceso);
+            }
+
+            var modelo = {
+                sucesos: arraySucesos,
+                codigoAccion: accion.accion.codigo,
+                casoId: idIncident,
+                accionEtapaId: accion.id,
+                accionEtapaNombre: accion.nombre,
+                tieneNotificacion: accion.tieneNotificacion
+            }
+            
+            if (arraySucesos.find(x => x.codigoSuceso === 'SUC0001')) {
+                //debugger;
+                let validaDocumentos = AccionValidator.validateDocumentos(documentosCaso.value, window._formContext);
+                if (!validaDocumentos.success) {
+                    var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Error de Validación", subtitle: validaDocumentos.message };
+                    var confirmOptions = { height: 200, width: 260 };
+                    openConfirmDialog(confirmStrings, confirmOptions);
+
+                }
+                else {
+                    let validado = AccionValidator.validateAccion(accion, window._formContext);
+                    if (validado.success === true) {
+                       // Xrm.Utility.showProgressIndicator("Procesando la Accion ...");
+                        RepositorioSucesos.executeSucesosAccion(window._executionContext, window._formContext, modelo);
+                    }
+                    else {
+                        var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Error de Validación", subtitle: validado.message };
+                        var confirmOptions = { height: 200, width: 260 };
+                        openConfirmDialog(confirmStrings, confirmOptions);
+                    }
+                }
+            }
+            else {
+                let validado = AccionValidator.validateAccion(accion, window._formContext);               
+                if (validado.success === true) {
+                    RepositorioSucesos.executeSucesosAccion(window._executionContext, window._formContext, modelo);
+                }
+                else {
+                    var confirmStrings = { confirmButtonLabel: "Aceptar", title: "Error de Validación", subtitle: validado.message };
+                    var confirmOptions = { height: 200, width: 260 };
+                    openConfirmDialog(confirmStrings, confirmOptions);
+                }
+            }
+        }
+
+        function openConfirmDialog(confirmStrings, confirmOptions){
+            window.Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
+                function (success) {
+                    if (success.confirmed) {
+                    }
+                    else {
+                    }
+                },
+                function (error) {
+                    console.log(error.message);
+                }
+            );
+        }
+    
+  </script>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+    <meta>
+</head>
+<body>
+    <div class="parent" id="loading">
+        <p style="text-align:center">
+<!--<img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />-->
+                Cargando Botonera de Acciones ....
+        </p>
+    </div>
+    <div id="contenedor">
+        <div id="stepContainer" class="wizard-progress">
+
+        </div>
+
+        <div class="parent" id="botones"></div>
+    </div>
+
+</body>
+</html>

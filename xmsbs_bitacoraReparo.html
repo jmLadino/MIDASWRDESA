@@ -1,0 +1,450 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Bitácora de Reparo</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <style>
+        .ocultar {
+            display: none;
+        }
+
+        .obligatorio {
+            font-weight: bold;
+            color: red;
+        }
+
+        .mr-1 {
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var apiToken = "";
+        var idIncident = null;
+        var idUsuario = null;
+        var idAccionEtapa = null;
+        var codigoSuceso = "";
+        var error = "";
+		var StockAdquirenciaId = null;
+		var NuevoStock = null;
+		
+		var UsuarioAdminID = "d43af6f7-e875-eb11-a812-000d3ab23035"; // (DESA) Dynamics_CRM_MIDAS_CL_DEV
+		//var UsuarioAdminID = "a533cb3f-6583-eb11-a812-000d3abd3579"; // (HOMO y PROD) Dynamics_CRM_MIDAS_CL_DEV		
+
+
+        function get(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+        
+        function getV2(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+
+
+        function post(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+        function postV2(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+
+        function setDisabled(item, bool) 
+        {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+
+        function setCodigosReparo(data) 
+        {
+            var selectCodigoReparo = $("#selectCodigoReparo").empty().append('<option value="" disabled selected>Seleccione un Código</option>');
+
+            for (var i = 0; i < data.listER.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = data.listER[i].name;
+                option.value = data.listER[i].id;
+                selectCodigoReparo.append(option);
+            }
+            
+            $('#dvLoader').css("display", "none");         
+            setDisabled("selectCodigoReparo", false); 
+            setDisabled("txtObservacionCaso", false);  
+            setDisabled("btnCrear", false); 
+            
+        }
+		
+		function clickBotonConfirmar() 
+        {
+            debugger;
+			error = "";
+			var selectCodigoReparo = $("#selectCodigoReparo").val();
+			var txtObservacionCaso = $("#txtObservacionCaso").val();
+
+			if ((selectCodigoReparo != null && selectCodigoReparo != undefined && selectCodigoReparo != "")
+				&& (txtObservacionCaso != null && txtObservacionCaso != undefined && txtObservacionCaso != "")) {
+				$('#dvLoader').css("display", "block");
+				txtObservacionCaso = txtObservacionCaso.replace(/(\r\n|\n|\r)/gm, " ");
+				txtObservacionCaso = txtObservacionCaso.trim();
+				let _largoTxtObservacionCaso = txtObservacionCaso.length;
+				
+				if(_largoTxtObservacionCaso > 0)
+				{       
+					debugger;
+					// si se asignó correctamente, entonces actualiza el registro extensión del caso y lo marca con el Tipo de Asignación: Por Reparo (657130003)
+					var xmsbs_extensioncaso = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_extensioncaso", null);
+					if (xmsbs_extensioncaso)
+					{
+						var objeto = {};
+						objeto["xmsbs_tipodeasignacion"] = 657130003;
+						var resultado = SDK.WEBAPI.updateRecordImpersonate(window._executionContext, xmsbs_extensioncaso[0].id.replace(/[{}]/g, ""), objeto, "xmsbs_extensioncaso", UsuarioAdminID, null, null);
+					}
+					
+					ExecuteSuceso(selectCodigoReparo, txtObservacionCaso);
+				}
+				else
+				{
+					$('#dvLoader').css("display", "none");
+					alert("Favor ingresar los campos obligatorios antes de confirmar.");
+					setDisabled("btnCrear", false); 
+				}                    
+			}
+			else {
+				alert("Favor ingresar los campos obligatorios antes de confirmar.");
+				setDisabled("btnCrear", false); 
+			}
+		}
+
+        function ExecuteSuceso(selectCodigoReparo, txtObservacionCaso)
+        {
+            //debugger;
+            post("/Caso/EjecutarSuceso/" + idIncident + "/" + idAccionEtapa + "/" + codigoSuceso + "", "", function (data) 
+            {                
+                $('#dvLoader').css("display", "none");
+                debugger;
+                if (data.success)
+                {
+                    var _idURDestino = data.suC0001.ur.id.toString();
+                    var _idUsuarioDestino = data.suC0001.propietario.id.toString();
+                        
+                    var requestBitacoraReparo = {
+                        IdIncident: idIncident,
+                        IdUsuario: idUsuario,
+                        IdCodigoReparo: selectCodigoReparo,
+                        Observacion: txtObservacionCaso,
+                        IdUsuarioDestino: _idUsuarioDestino,
+                        IdURDestino: _idURDestino
+                    };
+                    
+                    //debugger;
+                    post("/Caso/CrearBitacoraReparo", requestBitacoraReparo, function (data) {
+                        //debugger;
+                        if (data.success) {                            
+                            //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionesdevisacion", txtObservacionCaso);                                
+                            //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionlectura", txtObservacionCaso);                                
+                        }
+                        else {
+                            error = data.message;
+                        }
+                    });
+                    
+                    setTimeout(function () {
+                        //debugger;
+                        //actualizar etapa
+                        var fieldName = "xmsbs_etapa";
+                        var id = data.suC0001.etapa.id;
+                        var name = data.suC0001.etapa.name;
+                        var entityType = data.suC0001.etapa.logicalName;
+                        var etapa = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                        
+                        //actualizar Acción 
+                        var fieldName = "xmsbs_accion";
+                        var id = data.suC0001.accion.id;
+                        var name = data.suC0001.accion.name;
+                        var entityType = data.suC0001.accion.logicalName;
+                        var flujo = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                        
+                        //actualizar propietario
+                        var fieldName = "ownerid";
+                        var id = data.suC0001.propietario.id;
+                        var name = data.suC0001.propietario.name;
+                        var entityType = data.suC0001.propietario.logicalName;
+                        var propietario = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                        
+                        //actualizar ROL
+                        if(data.suC0001.rol != null){
+                            if(data.suC0001.rol.name != ""){
+                                var fieldName = "xmsbs_rol";
+                                var id = data.suC0001.rol.id;
+                                var name = data.suC0001.rol.name;
+                                var entityType = data.suC0001.rol.logicalName;
+                                var propietario = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                            }
+                        }
+                        
+                        //actualizar UR 
+                        var fieldName = "xmsbs_ur";
+                        var id = data.suC0001.ur.id;
+                        var name = data.suC0001.ur.name;
+                        var entityType = data.suC0001.ur.logicalName;
+                        var flujo = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                                            
+                        //actualizar Razón para el estado
+                        JumpStartLibXRM.Fx.setValueField(window._executionContext, "statuscode", data.suC0001.estado);
+                        
+                        //se borra la respuesta ingresada
+                        JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_respuestacliente", null);
+                        //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_tipoderespuesta", null);
+                        
+                        
+                        JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionesdevisacion", txtObservacionCaso); 
+                        
+						debugger;
+						// disminuye stock adquirencia.
+						if (StockAdquirenciaId){
+							var objeto = {};
+							objeto["xmsbs_cantidad"] = NuevoStock;
+							var resultado = SDK.WEBAPI.updateRecordImpersonate(window._executionContext, StockAdquirenciaId.replace(/[{}]/g, ""), objeto, "xmsbs_stockadquirencias", UsuarioAdminID, null, null);
+							if(resultado == "OK"){
+								var FullDateNow = JumpStartLibXRM.Fx.getDateNOW_ddmmaaaa_hhmmss();
+								JumpStartLibXRM.Fx.setFormNotification(window._executionContext, "WARNING", "Se actualiza el Stock a: " + NuevoStock + " unidades. (última lectura: " + FullDateNow + ")", "NOT_StockAdquirencia");
+							}
+							else{
+								JumpStartLibXRM.Fx.setFormNotification(window._executionContext, "ERROR", "Error al actualizar Stock. Informe al Administrador.", "NOT_StockAdquirencia");
+							}
+						}
+
+                         //debugger;
+                        //Validamos si el nuevo usuario es igual al actual para cerrar o refrescar
+                        var currentUserId = JumpStartLibXRM.Fx.getUserId();
+                        if (currentUserId.indexOf("{") > -1){currentUserId = currentUserId.substring(1, 37);}
+                        var newUserID = data.suC0001.propietario.id;
+                        if (newUserID.indexOf("{") > -1){newUserID = newUserID.substring(1, 37);}
+                        
+                        if(currentUserId.toLowerCase() == newUserID.toLowerCase()){
+                            //Son iguales, hacemos el refresco normal
+                            var alertStrings = { confirmButtonLabel: "Aceptar", title: "Reparo", text: "El caso ha sido enviado a reparo. La ventana se cerrará"};
+                            var alertOptions = { height: 120, width: 260 };
+                            Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                                function (success) {
+                                    //console.log("Alert dialog closed");
+                                    Xrm.Utility.closeProgressIndicator();
+                                    JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+                                },
+                                function (error) {
+                                Xrm.Utility.closeProgressIndicator();
+                                    //console.log(error.message);
+                                }
+                            ); 
+                        }
+                        else{
+                            //Son distintos, alertamos que se cerrará la ventana y cerramos
+                            var alertStrings = { confirmButtonLabel: "Aceptar", title: "Cambio de responsable", text: "El caso pasó a gestión de un nuevo usuario. La ventana se cerrará"};
+                            var alertOptions = { height: 120, width: 260 };
+                            Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                                function (success) {
+                                    //console.log("Alert dialog closed");
+                                    Xrm.Utility.closeProgressIndicator();
+                                    JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+                                },
+                                function (error) {
+                                Xrm.Utility.closeProgressIndicator();
+                                    //console.log(error.message);
+                                }
+                            );                            
+                        }
+                        
+                        window.close();
+                    }, 2000);
+                }
+                else
+                {
+                    error = data.message;
+					alert("Error al procesar reparo. " + error);
+					window.close();
+                }
+            }); 
+        }
+
+        $(document).ready(function () {
+            //debugger;
+            //parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Reparar Caso");
+            $('#dvLoader').css("display", "block");      
+            setDisabled("selectCodigoReparo", true);             
+            setDisabled("txtObservacionCaso", true);             
+            setDisabled("btnCrear", true);
+            
+            window._executionContext = parent.getContext();
+            window._formContext = window._executionContext.getFormContext();
+            baseUrl = parent.getAzureURL();
+            apiKey = parent.getApiKey(); 
+            //apiToken = window.sessionStorage.getItem("LokiAuthToken");
+
+            let _package = parent.getPackage();
+            
+            if(_package)
+            {
+                if(_package.CasoId)
+                {
+                    idIncident = _package.CasoId;
+                }
+                
+                if(_package.UsuarioId)
+                {
+                    idUsuario = _package.UsuarioId;
+                }
+                
+                if(_package.AccionEtapaId)
+                {
+                    idAccionEtapa = _package.AccionEtapaId;
+                }
+                
+                if(_package.CodigoSuceso)
+                {
+                    codigoSuceso = _package.CodigoSuceso;
+                }
+                
+                if(_package.Data)
+                {
+                    setCodigosReparo(_package.Data);
+                }
+				
+				if (_package.StockAdquirenciaId)
+					StockAdquirenciaId = _package.StockAdquirenciaId;
+				if (_package.NuevoStock)
+					NuevoStock = _package.NuevoStock;
+            }
+    
+            if (idIncident.indexOf("{") > -1)
+            {
+                idIncident = idIncident.substring(1, 37);
+            }
+            
+            if (idUsuario.indexOf("{") > -1)
+            {
+                idUsuario = idUsuario.substring(1, 37);
+            }
+            
+            if (idAccionEtapa.indexOf("{") > -1)
+            {
+                idAccionEtapa = idAccionEtapa.substring(1, 37);
+            }
+ 
+            $('#dvLoader').css("display", "none"); 
+            setDisabled("btnCrear", false);
+        });
+    </script>
+<meta><meta></head>
+<body>
+    <div class="container">
+        <div class="parent" id="dvLoader">
+        <p style="text-align:center">
+            <img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />
+        </p>
+        </div>
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Código de Reparo</label>
+            <div class="col-sm-9">
+                <select id="selectCodigoReparo" class="form-control"></select>
+            </div>
+        </div>
+        
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="staticEmail">Observaciones<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <textarea class="form-control" id="txtObservacionCaso" maxlength="1000" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <button id="btnCrear" type="button" class="btn btn-danger" onclick="this.disabled=true;clickBotonConfirmar()">Confirmar</button>
+        </div>
+    </div>
+
+</body></html>

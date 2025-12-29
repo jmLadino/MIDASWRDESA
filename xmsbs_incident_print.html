@@ -1,0 +1,697 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Imprimir Caso</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="../WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="../WebResources/xmsbs_webAPI"></script>
+    <script src="../WebResources/xmsbs_formularioCaso"></script>
+    <script src="../WebResources/xmsbs_jsBotonesRibbonCaso"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
+    <style>
+        /* Estilos para la imagen */
+        .header-image {
+            text-align: center;
+        }
+        
+        /* Estilos para los títulos de secciones */
+        .section-title {
+            border: 2px solid red;
+            padding: 5px;
+            margin-bottom: 10px;
+			margin-top: 20px;
+			font-weight: bold;
+        }
+        /* Estilos para el botón de imprimir */
+        .print-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+		
+		
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+			padding: 5px;
+        }
+        
+        .detail-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            white-space: nowrap; /* Evita el ajuste de línea */
+        }
+        
+        .detail-item:nth-child(odd) {
+            margin-right: 20px; /* Espacio entre columnas */
+        }
+        
+        .detail-title {
+            font-weight: bold;
+        }
+		
+		
+        /* Estilos para el detalle en 2 columnas */
+        .detail-2-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 10px;
+            margin-bottom: 10px;
+        }
+		/* Estilos para las filas del detalle */
+        .detail2-row {
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        .detail2-value {
+            margin-top: 5px;
+        }
+		
+		
+        /* Estilos CSS para la grilla */
+        .grilla {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .grilla td, .grilla th {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .grilla th {
+            background-color: #f2f2f2;
+        }
+
+        .grilla tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+		
+		.left-image {
+		  float: left;
+		  margin-right: 10px;
+		}
+
+		.right-image {
+		  float: right;
+		  margin-left: 10px;
+		}
+		
+		
+		
+		.container2Col {
+		  display: flex;
+		  flex-wrap: wrap;
+		  padding-left:5px;
+		}
+
+		.column {
+		  width: 25%;
+		  /*padding: 5px;*/
+		  /*margin-bottom: 10px;*/
+		  padding-left: 5px;
+		  box-sizing: border-box;
+		  border-bottom: 1px solid lightgray;
+		}
+
+		.title {
+		  width: 25%;
+		  font-weight: bold;
+		}
+
+		.merged-column {
+		  width: 75%;
+		}	
+
+
+        /* Estilos CSS para la sección de detalle de texto */
+        .detalle-texto {
+            margin-top: 10px;
+            /*border: 1px solid #ddd;*/
+            padding: 5px;
+        }
+    </style>
+
+    <script type="text/javascript">
+		var Ambiente = "midaschiledesa";
+		
+        function setDisabled(item, bool){
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+
+        $(document).ready(function () {
+            debugger;
+            $('#dvLoader').css("display", "none");
+
+			//var IncidentID = "a44f6b48-cd5a-ed11-9562-000d3adf789c";
+			//var IncidentID = "ea139a78-2156-ed11-bba2-000d3adf7204";
+            window._executionContext = window.parent.getExecutionContext();
+            window._formContext = window.parent.getExecutionFormContext();			
+			var IncidentID = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+			//var IncidentID = getUrlParameter('guid');
+			
+
+			DatosCaso(IncidentID);
+			BitacorasdeEtapa(IncidentID);
+			BitacorasdeObservacion(IncidentID);
+			RespuestaAlCliente(IncidentID);
+		});
+		
+		function getUrlParameter(name) {
+		  name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+		  var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+		  var results = regex.exec(location.search);
+		  return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+		}		
+		
+		$("#btnImprimir").click(function () {
+			$('#dvLoader').css("display", "block");
+			setDisabled("btnImprimir", true);
+
+			 var printContents = document.getElementById("ContentIncident").innerHTML;
+			 var originalContents = document.body.innerHTML;
+
+			 document.body.innerHTML = printContents;
+
+			 window.print();
+
+			 document.body.innerHTML = originalContents;
+			 $('#dvLoader').css("display", "none");
+			 window.close();
+		});
+		
+		function DatosCaso(IncidentID){
+		
+			var incidentUrl = "https://" + Ambiente + ".crm2.dynamics.com/api/data/v9.2/incidents?" + 
+			"$select="+
+				"incidentid,title,xmsbs_numerocorrelativo,_xmsbs_creadopor_value,xmsbs_solucionesperada,_xmsbs_segmentocliente_value," +
+				"xmsbs_tipodocumento,xmsbs_rut,xmsbs_telefonocelular,_xmsbs_subsegmentocliente_value,_xmsbs_sucursalcliente_value," +
+				"xmsbs_nombrecliente,xmsbs_apellidopaterno,xmsbs_apellidomaterno,xmsbs_clientesantander,xmsbs_emailcliente," +
+				"xmsbs_ejecutivocliente,_parentcaseid_value,xmsbs_ingresadooor,createdon,prioritycode,_xmsbs_tipoderequerimiento_value," +
+				"statuscode,_xmsbs_puntodecontacto_value,_xmsbs_producto_value,_xmsbs_tipodeoperacion_value,_xmsbs_detalledeoperacion_value," +
+				"xmsbs_fechacomprometida,xmsbs_tipoderespuesta,xmsbs_origenreclamo,xmsbs_preferenciasdecontacto,xmsbs_numerooperacion," +
+				"xmsbs_fecha1g,xmsbs_texto1g,xmsbs_texto2g,xmsbs_texto3g,xmsbs_texto4g,xmsbs_texto5g,xmsbs_texto6g,xmsbs_texto9g," +
+				"xmsbs_texto10g,xmsbs_picklist1g_texto,xmsbs_picklist2g_texto,xmsbs_picklist3g_texto,statecode" +
+			"&$expand=xmsbs_cliente($select=address1_line1),parentcaseid($select=xmsbs_numerocorrelativo)" + 
+			"&$filter=(incidentid eq " + IncidentID + ") and (xmsbs_cliente/contactid ne null)";
+				
+			// Realizar la llamada oData
+			$.ajax({
+				type: "GET",
+				url: incidentUrl,
+				headers: {
+					"Accept": "application/json",
+					"Content-Type": "application/json; charset=utf-8",
+					"OData-MaxVersion": "4.0",
+					"OData-Version": "4.0",
+					"Prefer": "odata.include-annotations=*"
+				},
+				success: function(data) {
+					var record = data.value[0];
+					
+					// ANTECEDENTES DEL CLIENTE
+					$("#xmsbs_segmentocliente").text((record["_xmsbs_segmentocliente_value"] ? record["_xmsbs_segmentocliente_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#xmsbs_fullnamecliente").text(record["xmsbs_nombrecliente"] + " " + record["xmsbs_apellidopaterno"] + " " + record["xmsbs_apellidomaterno"]) ;
+					
+					debugger;
+					if (record["xmsbs_tipodocumento"] == 1)
+						$("#xmsbs_tipodocumento").text("Nacional");
+					else if (record["xmsbs_tipodocumento"] == 2)
+						$("#xmsbs_tipodocumento").text("Extranjero");
+						
+					$("#xmsbs_rut").text(record["xmsbs_rut"]);
+					$("#contact_address1_line1").text((record["xmsbs_cliente"] ? record["xmsbs_cliente"]["address1_line1"] : ""));
+					$("#xmsbs_subsegmentocliente").text((record["_xmsbs_subsegmentocliente_value"] ? record["_xmsbs_subsegmentocliente_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#xmsbs_ejecutivocliente").text(record["xmsbs_ejecutivocliente"]);
+					$("#xmsbs_telefonocelular").text(record["xmsbs_telefonocelular"]);
+					$("#xmsbs_sucursalcliente").text((record["_xmsbs_sucursalcliente_value"] ? record["_xmsbs_sucursalcliente_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#xmsbs_emailcliente").text(record["xmsbs_emailcliente"]);
+					
+					
+					// ANTECEDENTES DEL REQUERIMIENTO
+					debugger;
+					$("#parentcaseid").text((record["parentcaseid"] ? record["parentcaseid"]["xmsbs_numerocorrelativo"] : ""));
+					$("#xmsbs_numerocorrelativo").text(record["xmsbs_numerocorrelativo"]);
+					$("#xmsbs_creadopor").text((record["_xmsbs_creadopor_value"] ? record["_xmsbs_creadopor_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#createdon_solofecha").text(formatOnlyDate(record["createdon"]));
+					
+					debugger;
+					if (record["prioritycode"]== 1)
+						$("#prioritycode").text("Alta");
+					else if (record["prioritycode"] == 2)
+						$("#prioritycode").text("Normal");
+					else if (record["prioritycode"] == 3)
+						$("#prioritycode").text("Baja");
+					
+					$("#xmsbs_tipoderequerimiento").text((record["_xmsbs_tipoderequerimiento_value"] ? record["_xmsbs_tipoderequerimiento_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					
+					if (record["statuscode"] == 1)
+						$("#statuscode").text("En Ingreso");
+					else if (record["statuscode"] == 2)
+						$("#statuscode").text("En Gestión");					
+					else if (record["statuscode"] == 3)
+						$("#statuscode").text("En Reparo");					
+					else if (record["statuscode"] == 4)
+						$("#statuscode").text("Visado");					
+					else if (record["statuscode"] == 5)
+						$("#statuscode").text("Finalizado");
+					else if (record["statuscode"] == 6)
+						$("#statuscode").text("Terminado sin gestión");
+					else if (record["statuscode"] == 657130000)
+						$("#statuscode").text("En Visación");
+					else if (record["statuscode"] == 657130001)
+						$("#statuscode").text("En Cierre");
+					else if (record["statuscode"] == 657130002)
+						$("#statuscode").text("En espera de documentos");
+					else if (record["statuscode"] == 657130003)
+						$("#statuscode").text("Terminado RA");
+					else if (record["statuscode"] == 657130004)
+						$("#statuscode").text("Cerrado sin documentos");
+					else if (record["statuscode"] == 657130005)
+						$("#statuscode").text("Eliminado");
+					else if (record["statuscode"] == 657130006)
+						$("#statuscode").text("En Reinsistencia");
+					else if (record["statuscode"] == 657130007)
+						$("#statuscode").text("Cerrado Masivamente");
+					else if (record["statuscode"] == 1000)
+						$("#statuscode").text("Información proporcionada");
+					else if (record["statuscode"] == 2000)
+						$("#statuscode").text("Combinado");
+					
+					//$("#statuscode").text(record["statuscode"]);
+					
+					$("#xmsbs_puntodecontacto").text((record["_xmsbs_puntodecontacto_value"] ? record["_xmsbs_puntodecontacto_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#xmsbs_producto").text((record["_xmsbs_producto_value"] ? record["_xmsbs_producto_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#xmsbs_tipodeoperacion").text((record["_xmsbs_tipodeoperacion_value"] ? record["_xmsbs_tipodeoperacion_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#xmsbs_detalledeoperacion").text((record["_xmsbs_detalledeoperacion_value"] ? record["_xmsbs_detalledeoperacion_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#xmsbs_fechacomprometida").text(formatOnlyDate(record["xmsbs_fechacomprometida"]));
+					if (record["xmsbs_tipoderespuesta"] == 1)
+						$("#xmsbs_tipoderespuesta").text("Se accede a lo requerido");
+					else if (record["xmsbs_tipoderespuesta"] == 2)
+						$("#xmsbs_tipoderespuesta").text("No se accede a lo requerido");
+					
+					// INFORMACIÓN SOLICITADA AL CLIENTE
+					
+					if (record["_xmsbs_detalledeoperacion_value"] == "d4a03cd8-cb09-ed11-82e5-000d3add02c2")
+					{
+						// DO-1152: INCENDIO Y SISMO --> FS543: Flujo Standard S/R - SEG - Denuncia Incendio/Sismo
+						// d4a03cd8-cb09-ed11-82e5-000d3add02c2
+					
+						$("#DO1152").show();
+						
+						//N° Operación
+						$("#xmsbs_numerooperacion").text(record["xmsbs_numerooperacion"]);
+						//Fecha del Siniestro
+						$("#xmsbs_fecha1g").text(formatOnlyDate(record["xmsbs_fecha1g"]));
+						//Nombre del Denunciante
+						$("#xmsbs_texto1g").text(record["xmsbs_texto1g"]);
+						//Rut del Denunciante
+						$("#xmsbs_texto2g").text(record["xmsbs_texto2g"]);
+						//Teléfono Celular
+						$("#xmsbs_texto3g").text(record["xmsbs_texto3g"]);
+						//Teléfono Particular
+						$("#xmsbs_texto4g").text(record["xmsbs_texto4g"]);
+						//Dirección E-mail
+						$("#xmsbs_texto5g").text(record["xmsbs_texto5g"]);
+						//Dirección Envío Correspondencia
+						$("#xmsbs_texto6g").text(record["xmsbs_texto6g"]);
+						//Dirección Bien Siniestrado
+						$("#xmsbs_texto9g").text(record["xmsbs_texto9g"]);
+						//Comuna Bien Siniestrado
+						$("#xmsbs_texto10g").text(record["xmsbs_texto10g"]);
+						//Propiedad
+						$("#xmsbs_picklist1g_texto").text(record["xmsbs_picklist1g_texto"]);						
+					}
+					else if (record["_xmsbs_detalledeoperacion_value"] == "8e3f4bd4-082e-ed11-9db1-002248a01933")
+					{
+						// DO-1354: EVAL. POLIZA - REEMPLAZO Y DESPACHO --> FS716: Flujo Personas Standard - SEG - Reemplazo y Despacho
+						// 8e3f4bd4-082e-ed11-9db1-002248a01933
+					
+						$("#DO1354").show();
+
+						//N° Operación	
+						$("#xmsbs_numerooperacion2").text(record["xmsbs_numerooperacion"]);
+						// Póliza Particular (Original)	
+						$("#xmsbs_picklist1g_texto2").text(record["xmsbs_picklist1g_texto"]);
+						//Certificado Pago al Contado	
+						$("#xmsbs_picklist2g_texto").text(record["xmsbs_picklist2g_texto"]);
+						// Adjunta Tasación	
+						$("#xmsbs_picklist3g_texto").text(record["xmsbs_picklist3g_texto"]);
+						// N° Requerimiento (Aprobación Póliza)	
+						$("#xmsbs_texto1g2").text(record["xmsbs_texto1g"]);
+						//Producto del Cliente	
+						$("#xmsbs_texto3g2").text(record["xmsbs_texto3g"]);						
+					}
+					
+					// CAUSA RAIZ
+					$("#xmsbs_origenreclamo").text(record["xmsbs_origenreclamo"]);
+					
+					// CANAL DE NOTIFICACIÓN Y/O RESPUESTA AL CLIENTE
+					var PreferenciaContacto = "";
+					if (record["xmsbs_preferenciasdecontacto"])
+					{
+						const ArrayPreferenciaContacto = [];
+						if (record["xmsbs_preferenciasdecontacto"].includes("657130000"))
+							ArrayPreferenciaContacto.push("Cliente no requiere notificación");
+						if (record["xmsbs_preferenciasdecontacto"].includes("657130001"))
+							ArrayPreferenciaContacto.push("E-mail");
+						if (record["xmsbs_preferenciasdecontacto"].includes("657130002"))
+							ArrayPreferenciaContacto.push("PUSH");
+						if (record["xmsbs_preferenciasdecontacto"].includes("657130003"))
+							ArrayPreferenciaContacto.push("SMS");
+							
+						PreferenciaContacto = ArrayPreferenciaContacto.join(", ");
+					}
+					
+					$("#xmsbs_preferenciasdecontacto").text(PreferenciaContacto);
+					
+					
+					$("#createdon").text(formatDate(record["createdon"]));
+					$("#xmsbs_creadopor2").text((record["_xmsbs_creadopor_value"] ? record["_xmsbs_creadopor_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					
+					$("#xmsbs_solucionesperada").text(record["xmsbs_solucionesperada"]);
+					
+					// 
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					console.log(textStatus + ": " + errorThrown);
+				}
+			});
+		}
+		
+		function BitacorasdeEtapa(IncidentID) {
+			var relatedRecordsUrl = "https://" + Ambiente + ".crm2.dynamics.com/api/data/v9.2/xmsbs_bitacoraetapas?"+
+			"$select=xmsbs_bitacoraetapaid,xmsbs_name,_xmsbs_ur_value,_xmsbs_etapa_value,_xmsbs_accion_value,_ownerid_value,xmsbs_fechafinreal,createdon,xmsbs_tipodeasignacion"+
+			"&$filter=(_xmsbs_caso_value eq "+IncidentID+")" +
+			"&$orderby=createdon";
+			
+			$.ajax({
+				type: "GET",
+				url: relatedRecordsUrl,
+				headers: {
+					"Accept": "application/json",
+					"Content-Type": "application/json; charset=utf-8",
+					"OData-MaxVersion": "4.0",
+					"OData-Version": "4.0",
+					"Prefer": "odata.include-annotations=*"
+				},
+				success: function(data) {
+					debugger;
+					// Construir la grilla de registros relacionados
+					var gridHtml = "<table class='grilla'>";
+					gridHtml += "<tr>"+
+								"<th>Nr.</th>" + 
+								"<th>Etapa</th>"+ 
+								"<th>Acción</th>"+ 
+								"<th>Fecha Inicio</th>"+ 
+								"<th>Fecha Término</th>"+ 
+								"<th>Usuario</th>"+ 
+								"<th>Unidad</th>"+ 
+								"</tr>";
+					
+					var i=0;
+
+					data.value.forEach(function(record) {
+						i++;
+						gridHtml += "<tr>";
+						gridHtml += "<td>" + i + "</td>";
+						gridHtml += "<td>" + (record["_xmsbs_etapa_value"] ? record["_xmsbs_etapa_value@OData.Community.Display.V1.FormattedValue"] : "") + "</td>";
+						gridHtml += "<td>" + (record["_xmsbs_accion_value"] ? record["_xmsbs_accion_value@OData.Community.Display.V1.FormattedValue"] : "") + "</td>";
+						gridHtml += "<td>" + formatDate(record["createdon"]) + "</td>";
+						gridHtml += "<td>" + formatDate(record["xmsbs_fechafinreal"]) + "</td>";
+						gridHtml += "<td>" + (record["_ownerid_value"] ? record["_ownerid_value@OData.Community.Display.V1.FormattedValue"] : "") + "</td>";
+						gridHtml += "<td>" + (record["_xmsbs_ur_value"] ? record["_xmsbs_ur_value@OData.Community.Display.V1.FormattedValue"] : "") + "</td>";
+						gridHtml += "</tr>";
+					});
+
+					gridHtml += "</table>";
+
+					// Mostrar la grilla en el elemento HTML correspondiente
+					$("#gridBitacorasdeEtapa").html(gridHtml);
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					console.log(textStatus + ": " + errorThrown);
+				}
+			});
+		}
+	
+		function BitacorasdeObservacion(IncidentID) {
+			var relatedRecordsUrl = "https://" + Ambiente + ".crm2.dynamics.com/api/data/v9.2/xmsbs_observacioneses?$select=xmsbs_mensaje,createdon,_xmsbs_etapa_value,_xmsbs_observadopor_value&$filter=(_xmsbs_caso_value eq "+IncidentID+")"+
+			"&$orderby=createdon";
+
+			$.ajax({
+				type: "GET",
+				url: relatedRecordsUrl,
+				headers: {
+					"Accept": "application/json",
+					"Content-Type": "application/json; charset=utf-8",
+					"OData-MaxVersion": "4.0",
+					"OData-Version": "4.0",
+					"Prefer": "odata.include-annotations=*"
+				},
+				success: function(data) {
+					debugger;
+					var gridHtml = "<table class='grilla'>";
+					gridHtml += "<tr>"+
+								"<th>Nr.</th>" + 					
+								"<th>Fecha de cración</th>" + 
+								"<th>Observado por</th>"+ 
+								"<th>Mensaje</th>"+ 
+								"<th>Etapa</th>"+ 
+								"</tr>";
+					var i=0;
+					data.value.forEach(function(record) {
+						i++;
+						gridHtml += "<tr>";
+						gridHtml += "<td>" + i + "</td>";
+						gridHtml += "<td>" + formatDate(record.createdon) + "</td>";
+						gridHtml += "<td>" + (record["_xmsbs_observadopor_value"] ? record["_xmsbs_observadopor_value@OData.Community.Display.V1.FormattedValue"] : "") + "</td>";
+						gridHtml += "<td>" + record.xmsbs_mensaje + "</td>";
+						gridHtml += "<td>" + (record["_xmsbs_etapa_value"] ? record["_xmsbs_etapa_value@OData.Community.Display.V1.FormattedValue"] : "") + "</td>";
+						gridHtml += "</tr>";
+					});
+
+					gridHtml += "</table>";
+
+					// Mostrar la grilla en el elemento HTML correspondiente
+					$("#gridBitacoraObservaciones").html(gridHtml);
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					console.log(textStatus + ": " + errorThrown);
+				}
+			});
+		}
+		
+		function RespuestaAlCliente(IncidentID) {
+			var RespClienteUrl = "https://" + Ambiente + ".crm2.dynamics.com/api/data/v9.2/xmsbs_respuestacasos?"+
+				"$select=xmsbs_respuestacasoid,xmsbs_respuestacliente,_ownerid_value,xmsbs_naturalezarespuesta,createdon" + 
+				"&$filter=(_xmsbs_caso_value eq "+IncidentID+")" +
+				"&$orderby=createdon desc&$top=1";
+		
+			$.ajax({
+				type: "GET",
+				url: RespClienteUrl,
+				headers: {
+					"Accept": "application/json",
+					"Content-Type": "application/json; charset=utf-8",
+					"OData-MaxVersion": "4.0",
+					"OData-Version": "4.0",
+					"Prefer": "odata.include-annotations=*"
+				},
+				success: function(data) {
+					debugger;
+					var record = data.value[0];
+					
+					$("#RespCliente_createdon").text(formatDate(record["createdon"]));
+					$("#RespCliente_ownerid").text((record["_ownerid_value"] ? record["_ownerid_value@OData.Community.Display.V1.FormattedValue"] : ""));
+					$("#RespCliente_respuestacliente").text(record["xmsbs_respuestacliente"]);
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					console.log(textStatus + ": " + errorThrown);
+				}
+			});		
+		
+		
+		}
+		
+		// Función para formatear la fecha en "dd/mm/aaaa hh:mm"
+		function formatDate(date) {
+			if (!date)
+				return "";
+		
+			var d = new Date(date);
+			var day = d.getDate();
+			var month = d.getMonth() + 1;
+			var year = d.getFullYear();
+			var hours = d.getHours();
+			var minutes = d.getMinutes();
+
+			// Agregar un 0 inicial si es necesario
+			day = (day < 10) ? "0" + day : day;
+			month = (month < 10) ? "0" + month : month;
+			hours = (hours < 10) ? "0" + hours : hours;
+			minutes = (minutes < 10) ? "0" + minutes : minutes;
+
+			return day + "/" + month + "/" + year + " " + hours + ":" + minutes;
+		}
+		
+		// Función para formatear la fecha en "dd/mm/aaaa"
+		function formatOnlyDate(date) {
+			if (!date)
+				return "";
+				
+			var d = new Date(date);
+			var day = d.getDate();
+			var month = d.getMonth() + 1;
+			var year = d.getFullYear();
+
+			// Agregar un 0 inicial si es necesario
+			day = (day < 10) ? "0" + day : day;
+			month = (month < 10) ? "0" + month : month;
+
+			return day + "/" + month + "/" + year;
+		}		
+    </script>
+</head>
+<body>
+    <div class="container">
+	
+        <div ID="ContentIncident">
+		
+        <div class="d-flex justify-content-center">
+			<div class="print-button">
+				<button id="btnImprimir" type="button" class="btn btn-danger" onclick="this.style.display = 'none'; window.print(); window.close();">Imprimir</button>
+			</div>            
+        </div>	
+		
+		
+			<div class="header-image">
+				<img src="../WebResources/xmsbs_logomidas" alt="MIDAS" width="220px" height="100px" class="left-image">
+				<img src="../WebResources/xmsbs_logosantander" alt="Santander" width="400px" height="90px" class="right-image">
+			</div>
+			
+			<div style="clear: both;"></div>
+			
+			<div class="section-title">Datos del Cliente</div>
+			
+              <div class="container2Col">
+                <div class="column title">Nombre</div><div class="column merged-column" colspan="3" id="xmsbs_fullnamecliente"></div>
+
+				<div class="column title">Segmento</div><div class="column" id="xmsbs_segmentocliente"></div>
+				<div class="column title">Subsegmento</div><div class="column" id="xmsbs_subsegmentocliente"></div>
+				<div class="column title">Tipo Documento</div><div class="column" id="xmsbs_tipodocumento"></div>
+				<div class="column title">RUT</div><div class="column" id="xmsbs_rut"></div>
+				<div class="column title">Dirección</div><div class="column" id="contact_address1_line1"></div>
+				<div class="column title">Fono contacto</div><div class="column" id="xmsbs_telefonocelular"></div>
+				<div class="column title">Sucursal origen</div><div class="column" id="xmsbs_sucursalcliente"></div>
+				<div class="column title">Ejecutivo</div><div class="column" id="xmsbs_ejecutivocliente"></div>
+              </div>
+			  
+			<div class="section-title">Canal de Notificación y/o Respuesta al CLIENTE</div>
+
+              <div class="container2Col">
+				<div class="column title">Preferencia de Contacto</div><div class="column" id="xmsbs_preferenciasdecontacto"></div>
+				<div class="column title">EMail</div><div class="column" id="xmsbs_emailcliente"></div>						
+              </div>			  
+
+			
+			<div class="section-title">Antecedentes del requerimiento</div>
+			
+              <div class="container2Col">
+                <div class="column title">Requerimiento Padre Nro.</div><div class="column merged-column" colspan="3" id="parentcaseid"></div>
+				
+				
+				<div class="column title">N° Correlativo</div><div class="column merged-column" colspan="3" id="xmsbs_numerocorrelativo"></div>
+                <div class="column title">Solicitado por</div><div class="column merged-column" colspan="3">Por el mismo cliente</div>
+                <div class="column title">Ingresado por</div><div class="column merged-column" colspan="3" id="xmsbs_creadopor"></div>
+                <div class="column title">Fecha de ingreso</div> <div class="column merged-column" colspan="3" id="createdon_solofecha"></div>
+                <div class="column title">Prioridad</div> <div class="column merged-column" colspan="3" id="prioritycode"></div>
+                <div class="column title">Tipo de requerimiento</div> <div class="column merged-column" colspan="3" id="xmsbs_tipoderequerimiento"></div>
+                <div class="column title">Estado requerimiento</div> <div class="column merged-column" colspan="3" id="statuscode"></div>
+                <div class="column title">Punto de contacto</div> <div class="column merged-column" colspan="3" id="xmsbs_puntodecontacto"></div>
+                <div class="column title">Producto/Servicio</div> <div class="column merged-column" colspan="3" id="xmsbs_producto"></div>
+                <div class="column title">Tipo de operación</div> <div class="column merged-column" colspan="3" id="xmsbs_tipodeoperacion"></div>
+                <div class="column title">Detalle de operación</div> <div class="column merged-column" colspan="3" id="xmsbs_detalledeoperacion"></div>
+                <div class="column title">Fecha comprometida</div> <div class="column merged-column" colspan="3" id="xmsbs_fechacomprometida"></div>
+                <div class="column title">Resultado de la gestión</div> <div class="column merged-column" colspan="3" id="xmsbs_tipoderespuesta"></div>
+              </div>
+
+			<div class="section-title">Causa Raiz</div>
+              <div class="container2Col">
+                <div class="column title">Origen del Reclamo</div><div class="column merged-column" colspan="3" id="xmsbs_origenreclamo"></div>
+			  </div>
+
+			<div class="section-title">Información solicitada al cliente</div>
+
+			<div id="DO1152" style="display: none;">
+              <div class="container2Col">
+				<div class="column title">N° Operación</div><div class="column merged-column" colspan="3" id="xmsbs_numerooperacion"></div>
+				<div class="column title">Fecha del Siniestro</div><div class="column merged-column" colspan="3" id="xmsbs_fecha1g"></div>
+				<div class="column title">Nombre del Denunciante</div><div class="column merged-column" colspan="3" id="xmsbs_texto1g"></div>
+				<div class="column title">Rut del Denunciante</div><div class="column merged-column" colspan="3" id="xmsbs_texto2g"></div>
+				<div class="column title">Teléfono Celular</div><div class="column merged-column" colspan="3" id="xmsbs_texto3g"></div>
+				<div class="column title">Teléfono Particular</div><div class="column merged-column" colspan="3" id="xmsbs_texto4g"></div>
+				<div class="column title">Dirección E-mail</div><div class="column merged-column" colspan="3" id="xmsbs_texto5g"></div>
+				<div class="column title">Dirección Envío Correspondencia</div><div class="column merged-column" colspan="3" id="xmsbs_texto6g"></div>
+				<div class="column title">Dirección Bien Siniestrado</div><div class="column merged-column" colspan="3" id="xmsbs_texto9g"></div>
+				<div class="column title">Comuna Bien Siniestrado</div><div class="column merged-column" colspan="3" id="xmsbs_texto10g"></div>
+				<div class="column title">Propiedad</div><div class="column merged-column" colspan="3" id="xmsbs_picklist1g_texto"></div>
+              </div>
+			</div>
+			
+			<div id="DO1354" style="display: none;">
+              <div class="container2Col">
+				<div class="column title">N° Operación</div><div class="column merged-column" colspan="3" id="xmsbs_numerooperacion2"></div>
+				<div class="column title">Póliza Particular (Original)</div><div class="column merged-column" colspan="3" id="xmsbs_picklist1g_texto2"></div>
+				<div class="column title">Certificado Pago al Contado</div><div class="column merged-column" colspan="3" id="xmsbs_picklist2g_texto"></div>
+				<div class="column title">Adjunta Tasación</div><div class="column merged-column" colspan="3" id="xmsbs_picklist3g_texto"></div>
+				<div class="column title">N° Requerimiento (Aprobación Póliza)</div><div class="column merged-column" colspan="3" id="xmsbs_texto1g2"></div>
+				<div class="column title">Producto del Cliente</div><div class="column merged-column" colspan="3" id="xmsbs_texto3g2"></div>
+              </div>
+			</div>			  
+
+			<div class="section-title">¿Qué solución espera el cliente?</div>
+				<div class="container2Col">
+					<div class="column title" id="createdon"></div><div class="column">&nbsp;</div>
+					<div class="column title" id="xmsbs_creadopor2"></div><div class="column">&nbsp;</div>
+				</div>
+				
+				<div class="detalle-texto">
+					<p id="xmsbs_solucionesperada"></p>
+				</div>
+
+			<div class="section-title">Respuesta al cliente</div>
+				<div class="container2Col">
+					<div class="column title" id="RespCliente_createdon"></div><div class="column">&nbsp;</div>
+					<div class="column title" id="RespCliente_ownerid"></div><div class="column">&nbsp;</div>
+				</div>
+				
+				<div class="detalle-texto">
+					<p id="RespCliente_respuestacliente"></p>
+				</div>
+			
+			<div class="section-title">Seguimiento requerimiento</div>
+			
+				<div id="gridBitacorasdeEtapa"></div>
+
+			<div class="section-title">Historial de observaciones del requerimiento</div>
+			
+				<div id="gridBitacoraObservaciones"></div>
+
+		</div>
+
+    </div>
+</body>
+</html>

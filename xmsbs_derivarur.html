@@ -1,0 +1,312 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Derivar Unidad Resolutora</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <style>
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var apiToken = "";
+        var casoId = "";
+        var accionEtapaId = "";
+        var codigoSuceso = "";
+
+        function get(url, successFunction) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+
+        function getV2(url, successFunction) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+
+        function post(url, successFunction) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            //xhr.send(JSON.stringify(params));
+            xhr.send();
+        }
+        function postV2(url, successFunction) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            //xhr.send(JSON.stringify(params));
+            xhr.send();
+        }
+                
+        function setDisabled(item, bool) 
+        {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+        
+       
+        function setUR(listUR) 
+        {
+            var selectUR = $("#selectUR").empty().append('<option value="" disabled selected>Seleccionar UR</option>');
+            for (var i = 0; i < listUR.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = listUR[i].name;
+                option.value = listUR[i].id;
+                selectUR.append(option);                
+            }
+        }
+                
+        function derivarUR(idUR)
+        {
+            var data = null;
+            var URL = "/Caso/EjecutarDerivacionUR/" + casoId + "/" + accionEtapaId + "/" + idUR + "/" + codigoSuceso;
+            
+            var service = new XMLHttpRequest();
+            if (service != null)
+            {
+                service.open("POST", baseUrl + URL, false);
+                service.setRequestHeader("X-Requested-Width", "XMLHttpRequest");
+                service.setRequestHeader("Accept", "application/json,text/javascript, */*");
+                service.setRequestHeader("AuthApi", apiKey);
+               // service.setRequestHeader("TokenApi", apiToken);
+                service.send(null);
+                if (service.response != "") 
+                {
+                    data = JSON.parse(service.response);
+                }
+            }         
+                        
+            if (data.success) 
+            {            
+                debugger;
+                //actualizar etapa
+                var fieldName = "xmsbs_etapa";
+                if(data.suC0018.etapa)
+                {
+                    var id = data.suC0018.etapa.id;
+                    var name = data.suC0018.etapa.name;
+                    var entityType = data.suC0018.etapa.logicalName;
+                    JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                }
+                
+                //actualizar Acción 
+                var fieldName = "xmsbs_accion";
+                if(data.suC0018.accion)
+                {
+                    var id = data.suC0018.accion.id;
+                    var name = data.suC0018.accion.name;
+                    var entityType = data.suC0018.accion.logicalName;
+                    JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                }               
+                
+                //actualizar propietario
+                var fieldName = "ownerid";
+                if(data.suC0018.propietario)
+                {
+                    var id = data.suC0018.propietario.id;
+                    var name = data.suC0018.propietario.name;
+                    var entityType = data.suC0018.propietario.logicalName;
+                    JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                }                
+                
+                //actualizar UR 
+                var fieldName = "xmsbs_ur";
+                if(data.suC0018.ur)
+                {
+                    var id = data.suC0018.ur.id;
+                    var name = data.suC0018.ur.name;
+                    var entityType = data.suC0018.ur.logicalName;
+                    var flujo = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                }                
+                
+                //actualizar Razón para el estado
+                JumpStartLibXRM.Fx.setValueField(window._executionContext, "statuscode", data.suC0018.estado);
+                
+                var entityFormOptions = {};
+                entityFormOptions["entityName"] = window._formContext.data.entity.getEntityName();
+                entityFormOptions["entityId"] = casoId;
+                
+                //Guardamos el cambio y refrescamos el formulario
+                //window._formContext.data.entity.save();
+                //let timer = setInterval(function () {
+                    //Xrm.Utility.openEntityForm(window._formContext.data.entity.getEntityName(), casoId);
+                //}, 3000);
+                
+                 window._formContext.data.save().then( 
+                    function success(result) {
+                        // Open the form
+                        Xrm.Utility.openEntityForm(window._formContext.data.entity.getEntityName(), casoId);
+                    }
+                );
+            }
+            else 
+            {
+                alert(data.message);
+            }
+        }  
+
+        $(document).ready(function () {
+            parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Derivar a Unidad Resolutora");
+            $('#dvLoader').css("display", "block");
+            setDisabled("btnConfirmar", true);            
+            setDisabled("selectUR", true);
+
+            window._executionContext = parent.getContext();
+            window._formContext = window._executionContext.getFormContext();
+            baseUrl = parent.getAzureURL();
+            apiKey = parent.getApiKey();
+           // apiToken = window.sessionStorage.getItem("LokiAuthToken");    
+            
+            let _package = parent.getPackage();
+            
+            if(_package)
+            {
+                if(_package.CasoId)
+                {
+                    casoId = _package.CasoId;
+                }
+                
+                if(_package.AccionEtapaId)
+                {
+                    accionEtapaId = _package.AccionEtapaId;
+                }
+                
+                if(_package.CodigoSuceso)
+                {
+                    codigoSuceso = _package.CodigoSuceso;
+                }
+                
+                if(_package.Data)
+                {
+                    setUR(_package.Data.listER);
+                    $('#dvLoader').css("display", "none");
+                    setDisabled("btnConfirmar", false);            
+                    setDisabled("selectUR", false);
+                }
+            }
+
+            $("#btnConfirmar").click(function () {
+                var selectUR = $("#selectUR").val();
+                
+                if((selectUR != null && selectUR != undefined))
+                {   
+                    debugger;
+                    $('#dvLoader').css("display", "block");
+                    derivarUR(selectUR);
+                    $('#dvLoader').css("display", "none");
+                    window.close();
+                }
+                else
+                {
+                    alert("Favor seleccionar campos obligatorios antes de confirmar.");
+                }                
+            });
+        });
+    </script>
+<meta><meta></head>
+<body>
+    <div class="container">
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />
+            </p>
+        </div>
+
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Unidad Resolutora<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectUR" class="form-control"></select>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center">
+            <button id="btnConfirmar" type="button" class="btn btn-danger">Confirmar</button>
+        </div>        
+    </div>
+</body></html>

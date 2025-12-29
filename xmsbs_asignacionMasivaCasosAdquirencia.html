@@ -1,0 +1,1249 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Asignación Masiva de Casos</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">    
+    
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_util"></script>    
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/locale/es.js"></script>
+    
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_checkboxjs" type="text/javascript"></script>
+    <!--<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>-->
+
+    <link href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css" rel="stylesheet" type="text/css">   
+    <!--<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />-->
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_checkboxcss" type="text/css"></script>    
+    <style>
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        thead th {
+            background-color: rgb(221, 8, 8);
+            color: white;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }       
+
+        .NoBorde {
+            border-style: none;
+        }        
+    </style>
+    <script type="text/javascript">
+        var parametroApiKey = "AuthApi";
+        var parametroAzure = "AzureURL";
+        //var baseUrl = "http://localhost:58839/";
+        var baseUrl = "https://chld2weuapppmidas001.csbsand.cl.corp/";
+        //var baseUrl = "https://chli2weuapppmidas001.csbsanh.cl.corp/";
+        //var baseUrl = "https://chlp2weuapppmidas001.csbsan.cl.corp/";        
+        var apiKey = "56C3D9E6-E5B6-4B76-816F-5741FA0420BE";
+        var apiToken = "";
+        var urlCRM = "";
+        var error = "";
+        var listCasos = [];
+        var listCasosSeleccionados = [];
+        var listPropietariosCasos = [];
+        var listTipoRequerimiento = null;
+        var listProducto = null;
+        var listTipoOperacion = null;
+        var listDetalleOperacion = null;
+        var listUR = null;        
+        var listIntegrantesUR = null;
+        var tabla = null;
+        var idDetalleOperacion = null;
+        var tipoResolucion = null;
+        var dataRespuestaPredefinida = null;
+        var respuestaPredefinida = "";
+        var casosConRespuesta = false;
+        var respuestaVacia;
+        var respuestaActual;
+        var listaCodigos;
+        var diccionarioValoresCodigos = [];
+        var respuestaTextoLibre;
+        var elementosReemplazados=false;
+        var idUR = null;
+        var idIntegranteUR = null;
+        var esTipificacion = false;
+
+        function get(url, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+
+        function getV2(url, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+
+        function post(url, params, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+        function postV2(url, params, successFunction){
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+                
+        function setDisabled(item, bool){
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }  
+
+        function setCasos(data){
+            $('#dvLoader').css("display", "block");
+            if (data.success) 
+            {
+                if (data.listCaso.length > 0)
+                {
+                    listCasos = data.listCaso;
+                    var html = template(data.listCaso);    
+                    $("#tbody").html(html);
+                    tabla = $('#tblCasos').DataTable({ 
+                        "language": {
+                            "sProcessing":     "Procesando...",
+                            "sLengthMenu":     "Mostrar _MENU_ registros",
+                            "sZeroRecords":    "No se encontraron resultados",
+                            "sEmptyTable":     "Ningún dato disponible en esta tabla",
+                            "sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                            "sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
+                            "sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
+                            "sSearch":         "Buscar:",
+                            "sInfoThousands":  ",",
+                            "sdvLoaderRecords": "Cargando...",
+                            "oPaginate": {
+                                "sFirst":    "Primero",
+                                "sLast":     "Último",
+                                "sNext":     "Siguiente",
+                                "sPrevious": "Anterior"
+                            },
+                            "oAria": {
+                                "sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
+                                "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                            },
+                            "buttons": {
+                                "copy": "Copiar",
+                                "colvis": "Visibilidad"
+                            }
+                        },
+                        select: {
+                            "style": "multi"
+                        },
+                        "info": false,
+                        "columnDefs": [                            
+                            {
+                                "targets": [0],
+                                "checkboxes": {
+                                   "selectRow": true
+                                },
+                                "searchable": false,
+                                "orderable": false
+                            }
+                        ],
+                        "order": [[1, "asc"]]
+                    });
+                }
+                
+                $('#dvLoader').css("display", "none");
+            }
+            else 
+            {
+                $('#dvLoader').css("display", "none");
+                openModal(data.message);
+            }
+        }
+        
+        function template(data){
+            //debugger;
+            var html = '';
+            $.each(data, function (index, item) {
+                html += '<tr>';
+                html += '<td>' + item.id + '</td>';
+                html += '<td>' + item.etiquetaEstado + '</td>';
+                html += '<td>' + item.numeroCorrelativo + '</td>';
+                html += '<td>' + item.cliente.name + '</td>';
+                html += '<td>' + item.rut + '</td>';                        
+                html += '<td>' + item.etiquetaRazonEstado + '</td>';
+                html += '<td>' + item.fechaCreacion + '</td>';
+                html += '<td>' + item.detalleTipologia.name + '</td>';
+                html += '<td>' + item.propietario.name + '</td>';
+                html += '</tr>';
+            });
+
+            return html;
+        }
+
+        function GetMantenedoresTipologia(){  
+            $('#dvLoader').css("display", "block");          
+            setDisabled("selectBusqueda", true); 
+            get("/MantenedorWeb/GetMantenedoresAsignacionMasiva/adquirencia", function (data) {                
+                if (data.success) 
+                {                         
+                    listTipoRequerimiento = data.listTipoRequerimiento;
+                    listProducto = data.listProducto;
+                    listTipoOperacion = data.listTipoOperacion;
+                    listDetalleOperacion = data.listDetalleOperacion;                   
+                    
+                    setDisabled("selectBusqueda", false); 
+                    $('#dvLoader').css("display", "none");
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    openModal(data.message);
+                }
+            });
+        }
+                
+        function inicializarFiltros(){ 
+            //debugger;           
+            var selectBusqueda = $("#selectBusqueda").val();
+            
+            if(selectBusqueda == 0)
+            {
+                esTipificacion = true;
+                var selectTipoRequerimiento = $("#selectTipoRequerimiento").empty().append('<option value="" disabled selected>Seleccione Tipo de Requerimiento</option>');
+                var selectProducto = $("#selectProducto").empty().append('<option value="" disabled selected>Seleccione Producto</option>');
+                var selectTipoOperacion = $("#selectTipoOperacion").empty().append('<option value="" disabled selected>Seleccione Tipo de Operación</option>');
+                var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                var selectURTipologia = $("#selectURTipologia").empty().append('<option value="" disabled selected>Seleccione Unidad Resolutora</option>');   
+
+                setDisabled("selectTipoRequerimiento", false); 
+                setDisabled("selectProducto", true); 
+                setDisabled("selectTipoOperacion", true); 
+                setDisabled("selectDetalleOperacion", true);
+                setDisabled("selectURTipologia", true);
+                setDisabled("btnConsultarTipologia", true);
+                
+                setTipoRequerimiento();
+                
+                $('#divFiltrosBusqueda').hide();
+                $('#divFiltrosUsuario').hide();
+                $('#divFiltrosTipologia').show();                
+            }
+            else if(selectBusqueda == 1)
+            {
+                esTipificacion = false;
+                var selectURUsuario = $("#selectURUsuario").empty().append('<option value="" disabled selected>Seleccione Unidad Resolutora</option>');
+                var selectIntegranteURUsuario = $("#selectIntegranteURUsuario").empty().append('<option value="" disabled selected>Seleccione Integrante Unidad Resolutora</option>');
+                
+                setDisabled("selectURUsuario", false); 
+                setDisabled("selectIntegranteURUsuario", true); 
+                setDisabled("btnConsultarUsuario", true);
+                
+                $('#divFiltrosBusqueda').hide();
+                $('#divFiltrosTipologia').hide();
+                $('#divFiltrosUsuario').show();
+            }
+
+            getURUsuario();
+        }
+
+        function setTipoRequerimiento(){  
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            var selectTipoRequerimiento = $("#selectTipoRequerimiento"); 
+            
+            for (var i = 0; i < listTipoRequerimiento.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = listTipoRequerimiento[i].name;
+                option.value = listTipoRequerimiento[i].id;
+                selectTipoRequerimiento.append(option);
+            }                    
+                    
+            $('#dvLoader').css("display", "none");
+        }
+        
+        function setProducto(idTipoRequerimiento){  
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            var selectProducto = $("#selectProducto");
+            
+            //var listProductoAux = listProducto.filter(x => x.idDependencia == idTipoRequerimiento);
+            
+            for (var i = 0; i < listProducto.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = listProducto[i].name;
+                option.value = listProducto[i].id;
+                selectProducto.append(option);
+            }
+            
+            $('#dvLoader').css("display", "none");
+        }
+        
+        function setTipoOperacion(idTipoRequerimiento, idProducto){ 
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            if((idTipoRequerimiento != null && idTipoRequerimiento != undefined) && (idProducto != null && idProducto != undefined))
+            {
+                var selectTipoOperacion = $("#selectTipoOperacion");
+            
+                var listTipoOperacionAux = listTipoOperacion.filter(x => x.idDependencia == idTipoRequerimiento && x.idDependencia2 == idProducto);
+                
+                for (var i = 0; i < listTipoOperacionAux.length; ++i) {
+                    var option = document.createElement('option');
+                    option.innerHTML = listTipoOperacionAux[i].name;
+                    option.value = listTipoOperacionAux[i].id;
+                    selectTipoOperacion.append(option);
+                }
+            }
+            else
+            {
+                openModal("Para obtener los tipos de operación, debe seleccionar Tipo de Requerimiento y Producto previamente.");
+            }
+                         
+            $('#dvLoader').css("display", "none");
+        }
+        
+        function setDetalleOperacion(idTipoOperacion){  
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            var selectDetalleOperacion = $("#selectDetalleOperacion");
+            
+            var listDetalleOperacionAux = listDetalleOperacion.filter(x => x.idDependencia == idTipoOperacion);
+            
+            for (var i = 0; i < listDetalleOperacionAux.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = listDetalleOperacionAux[i].name;
+                option.value = listDetalleOperacionAux[i].id;
+                selectDetalleOperacion.append(option);
+            }
+            
+            $('#dvLoader').css("display", "none");
+        }
+        
+        function changeFiltrosTipologia(filtro){  
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            
+            if(filtro == "selectTipoRequerimiento")
+            {
+                var selectTipoRequerimiento = $("#selectTipoRequerimiento").val(); 
+                
+                var selectProducto = $("#selectProducto").empty().append('<option value="" disabled selected>Seleccione Producto</option>');
+                var selectTipoOperacion = $("#selectTipoOperacion").empty().append('<option value="" disabled selected>Seleccione Tipo de Operación</option>');
+                var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                var selectURTipologia = $("#selectURTipologia").empty().append('<option value="" disabled selected>Seleccione Unidad Resolutora</option>');   
+
+                setDisabled("selectProducto", true); 
+                setDisabled("selectTipoOperacion", true); 
+                setDisabled("selectDetalleOperacion", true);
+                setDisabled("selectURTipologia", true);
+                setDisabled("btnConsultarTipologia", true);   
+
+                setProducto(selectTipoRequerimiento); 
+                setDisabled("selectProducto", false); 
+            }
+            else if(filtro == "selectProducto")
+            {
+                var selectTipoRequerimiento = $("#selectTipoRequerimiento").val();                
+                var selectProducto = $("#selectProducto").val();
+                
+                var selectTipoOperacion = $("#selectTipoOperacion").empty().append('<option value="" disabled selected>Seleccione Tipo de Operación</option>');
+                var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                var selectURTipologia = $("#selectURTipologia").empty().append('<option value="" disabled selected>Seleccione Unidad Resolutora</option>');   
+
+                setDisabled("selectTipoOperacion", true); 
+                setDisabled("selectDetalleOperacion", true);
+                setDisabled("selectURTipologia", true);
+                setDisabled("btnConsultarTipologia", true);  
+                                
+                setTipoOperacion(selectTipoRequerimiento, selectProducto);
+                setDisabled("selectTipoOperacion", false); 
+            }
+            else if(filtro == "selectTipoOperacion")
+            {
+                var selectTipoOperacion = $("#selectTipoOperacion").val();
+                
+                var selectDetalleOperacion = $("#selectDetalleOperacion").empty().append('<option value="" disabled selected>Seleccione Detalle de Operación</option>');
+                var selectURTipologia = $("#selectURTipologia").empty().append('<option value="" disabled selected>Seleccione Unidad Resolutora</option>');   
+
+                setDisabled("selectDetalleOperacion", true);
+                setDisabled("selectURTipologia", true);
+                setDisabled("btnConsultarTipologia", true); 
+                
+                setDetalleOperacion(selectTipoOperacion);                
+                setDisabled("selectDetalleOperacion", false);
+            }
+            else if(filtro == "selectDetalleOperacion")
+            {
+                setUR();
+                setDisabled("selectURTipologia", false);
+            }
+            
+            $('#dvLoader').css("display", "none");
+        }
+                
+        function getURUsuario(){
+            //debugger;
+            var idUsuario = JumpStartLibXRM.Fx.getUserId();
+            //var idUsuario = "840a08f6-e976-eb11-b1ab-000d3ab8d6b8"; //usuario de prueba
+            //var idUsuario = "5fbc48ac-0177-eb11-b1ab-000d3ab8d6b8"; //usuario de prueba
+            
+            if (idUsuario.indexOf("{") > -1)
+            {
+                idUsuario = idUsuario.substring(1, 37);
+            }
+            
+            $('#dvLoader').css("display", "block");
+            get("/Usuario/GetUsuarioResponsableOrBackUpUR/" + idUsuario + "/adquirencia", function (data) {                
+                if (data.success) 
+                {                          
+                    listUR = data.listUR;
+                    setUR();
+                    $('#dvLoader').css("display", "none");
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    openModal(data.message);
+                    volverFiltroTipoBusqueda();
+                }
+            }); 
+        }
+        
+        function setUR(){
+            //debugger;
+            var selectUR = null;
+            
+            if(esTipificacion)
+            {
+                selectUR = $("#selectURTipologia");
+            }
+            else
+            {
+                selectUR = $("#selectURUsuario");
+            }       
+   
+            $('#dvLoader').css("display", "block");
+            
+            for (var i = 0; i < listUR.length; ++i) {
+                var option = document.createElement('option');
+                option.innerHTML = listUR[i].name;
+                option.value = listUR[i].id;
+                selectUR.append(option);
+            }  
+            
+            $('#dvLoader').css("display", "none");            
+        }
+        
+        function setURAsignar(){
+            //debugger;
+            var selectUR = $("#selectURAsignar");     
+   
+            $('#dvLoader').css("display", "block");
+            
+            var _UR = listUR.find(x => x.id == idUR);
+            
+            var option = document.createElement('option');
+            option.innerHTML = _UR.name;
+            option.value = _UR.id;
+            selectUR.append(option);  
+            
+            setDisabled("selectURAsignar", true);
+            setIntegrantesURUsuarioAsignar(idUR);
+            $('#dvLoader').css("display", "none");            
+        }
+        
+        function getIntegrantesUR(idUR){
+            $('#dvLoader').css("display", "block");
+            var _UR = $("#selectURTipologia option:selected").text();
+            get("/MantenedorWeb/GetUsuariosIntegrantesUR/" + idUR, function (data) {                
+                if (data.success) 
+                {            
+                    if(data.listER.length > 1)
+                    {
+                        listIntegrantesUR = data.listER;
+                        setDisabled("btnConsultarTipologia", false);
+                    }
+                    else
+                    {
+                        setDisabled("btnConsultarTipologia", true);
+                        openModal("La unidad resolutora " + _UR + ", solo cuenta con un integrante. No se puede proceder con la asignación masiva.");
+                    }
+                    
+                    $('#dvLoader').css("display", "none");
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    openModal(data.message);
+                }
+            });
+        }
+        
+        function setIntegrantesURUsuario(idUR){
+            $('#dvLoader').css("display", "block");
+            var _UR = $("#selectURUsuario option:selected").text();
+            var selectIntegranteURUsuarioAux = $("#selectIntegranteURUsuario").empty().append('<option value="" disabled selected>Seleccione Integrante Unidad Resolutora</option>');
+            var selectIntegranteURUsuario = $("#selectIntegranteURUsuario"); 
+            get("/MantenedorWeb/GetUsuariosIntegrantesUR/" + idUR, function (data) {                
+                if (data.success) 
+                {                     
+                    if(data.listER.length > 1)
+                    {
+                        listIntegrantesUR = data.listER;
+                        for (var i = 0; i < listIntegrantesUR.length; ++i) {
+                            var option = document.createElement('option');
+                            option.innerHTML = listIntegrantesUR[i].name;
+                            option.value = listIntegrantesUR[i].id;
+                            selectIntegranteURUsuario.append(option);
+                        }                    
+                        
+                        setDisabled("btnConsultarUsuario", false);
+                        setDisabled("selectIntegranteURUsuario", false); 
+                        $('#dvLoader').css("display", "none");
+                    }
+                    else
+                    {
+                        $('#dvLoader').css("display", "none");
+                        openModal("La unidad resolutora " + _UR + ", solo cuenta con un integrante. No se puede proceder con la asignación masiva.");
+                    }
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    openModal(data.message);
+                }
+            });
+        }
+        
+        function setIntegrantesURUsuarioAsignar(idUR){
+            //debugger;
+            var idUsuario = JumpStartLibXRM.Fx.getUserId();         
+            if (idUsuario.indexOf("{") > -1)
+            {
+                idUsuario = idUsuario.substring(1, 37);
+            }
+            idUsuario = idUsuario.toLowerCase();
+            $('#dvLoader').css("display", "block");
+            var selectIntegranteURUsuarioAsignar = $("#selectIntegranteURAsignar"); 
+            
+            if (listIntegrantesUR != null) 
+            {         
+                for (var i = 0; i < listIntegrantesUR.length; ++i) 
+                {
+                    //debugger;
+                    var _idIntegranteUR = listIntegrantesUR[i].id;
+                    if (_idIntegranteUR != idUsuario) 
+                    {
+                        var _propietario = listPropietariosCasos.filter(x => x.propietarioId == _idIntegranteUR);
+                        if(_propietario.length == 0)
+                        {
+                            var option = document.createElement('option');
+                            option.innerHTML = listIntegrantesUR[i].name;
+                            option.value = _idIntegranteUR;
+                            selectIntegranteURUsuarioAsignar.append(option);
+                        }
+                    }
+                }                   
+                
+                setDisabled("selectIntegranteURAsignar", false);  
+                $('#dvLoader').css("display", "none");
+            }
+            else {
+                $('#dvLoader').css("display", "none");
+                openModal(data.message);
+            }
+        }
+
+        function formatFecha(fecha){  
+            var auxFecha = fecha.split("/");
+            return auxFecha[1].toString() + "/" + auxFecha[0].toString() + "/" + auxFecha[2].toString();
+        }
+        
+        function GetCasosAsignar(){  
+            //debugger;
+            var selectTipoRequerimiento = $("#selectTipoRequerimiento").val();
+            var selectProducto = $("#selectProducto").val();
+            var selectTipoOperacion = $("#selectTipoOperacion").val();
+            var selectDetalleOperacion = $("#selectDetalleOperacion").val();            
+            var fechaDesde = $("#fechaDesde").find("input").val();
+            var fechaHasta = $("#fechaHasta").find("input").val();
+
+            var selectUR = null;
+            var selectIntegranteUR = null;
+        
+            if(esTipificacion)
+            {
+                selectUR = $("#selectURTipologia").val();
+                
+                if ((selectTipoRequerimiento != null && selectTipoRequerimiento != undefined)
+                    && (selectProducto != null && selectProducto != undefined)
+                    && (selectTipoOperacion != null && selectTipoOperacion != undefined)
+                    && (selectDetalleOperacion != null && selectDetalleOperacion != undefined)
+                    && (selectUR != null && selectUR != undefined)
+                    && (fechaDesde != null && fechaDesde != undefined && fechaDesde != "")
+                    && (fechaHasta != null && fechaHasta != undefined && fechaHasta != "")) 
+                {
+                    $('#dvLoader').css("display", "block");
+                    
+                    fechaDesde = formatFecha(fechaDesde);
+                    fechaHasta = formatFecha(fechaHasta);
+
+                    var request = {
+                        FiltroEsTipificacion: esTipificacion,
+                        IdTipoRequerimiento: selectTipoRequerimiento,
+                        IdProductoServicio: selectProducto,
+                        IdTipoOperacion: selectTipoOperacion,
+                        IdDetalleOperacion: selectDetalleOperacion,
+                        IdUR: selectUR,
+                        IdUsuarioUR: null,
+                        FechaDesde: fechaDesde,
+                        FechaHasta: fechaHasta,
+                        Institucion: "adquirencia"
+                    };
+
+                    post("/Caso/GetCasosAsignar", request, function (data) 
+                    {       
+                        $('#dvLoader').css("display", "none");
+                        if (data.success) {                        
+                            setCasos(data);    
+                            AvanzarListaCasos();
+                        }
+                        else {
+                            openModal(data.message);
+                        }
+                    });
+                }
+                else {
+                    openModal("Favor seleccionar campos obligatorios antes de confirmar.");
+                } 
+            }
+            else
+            {
+                selectUR = $("#selectURUsuario").val();
+                selectIntegranteUR = $("#selectIntegranteURUsuario").val();
+                
+                if ((selectUR != null && selectUR != undefined)
+                    && (selectIntegranteUR != null && selectIntegranteUR != undefined)) 
+                {
+                    $('#dvLoader').css("display", "block");
+                    
+                    fechaDesde = formatFecha(fechaDesde);
+                    fechaHasta = formatFecha(fechaHasta);
+
+                    var request = {
+                        FiltroEsTipificacion: esTipificacion,
+                        IdTipoRequerimiento: null,
+                        IdProductoServicio: null,
+                        IdTipoOperacion: null,
+                        IdDetalleOperacion: null,
+                        IdUR: selectUR,
+                        IdUsuarioUR: selectIntegranteUR,
+                        FechaDesde: "",
+                        FechaHasta: "",
+                        Institucion: "adquirencia"
+                    };
+
+                    post("/Caso/GetCasosAsignar", request, function (data) 
+                    {       
+                        $('#dvLoader').css("display", "none");
+                        if (data.success) {                        
+                            setCasos(data);    
+                            AvanzarListaCasos();
+                        }
+                        else {
+                            openModal(data.message);
+                        }
+                    });
+                }
+                else {
+                    openModal("Favor seleccionar campos obligatorios antes de confirmar.");
+                } 
+            }   
+        }
+        
+        function VolverFiltro(){
+            tabla.destroy();
+            $('#divFiltrosBusqueda').hide();
+            
+            if(esTipificacion)
+            {
+                $('#divFiltrosUsuario').hide();
+                $('#divFiltrosTipologia').show();
+            }
+            else
+            {
+                $('#divFiltrosTipologia').hide();
+                $('#divFiltrosUsuario').show();
+            }            
+            
+            $('#divCasos').hide();
+            $('#divAsignar').hide();
+        }
+        
+        function AvanzarAsignar(){
+            //debugger;
+            listCasosSeleccionados = [];
+            listPropietariosCasos = [];
+            var rows_selected = tabla.column(0).checkboxes.selected();
+            
+            $.each(rows_selected, function(index, rowId){
+                //debugger;
+                var _Caso = listCasos.filter(x => x.id == rowId);
+            
+                if(_Caso != null)
+                {
+                    var propietarioCaso = new Object();                
+                    propietarioCaso = {"propietarioId": _Caso[0].propietario.id};                
+                    
+                    listPropietariosCasos.push(propietarioCaso);
+                }
+                
+                listCasosSeleccionados.push(rowId);
+            });
+
+            if(listCasosSeleccionados.length > 0)
+            { 
+                var selectIntegranteURAsignar = $("#selectIntegranteURAsignar").empty().append('<option value="" disabled selected>Seleccione Integrante Unidad Resolutora</option>'); 
+                setURAsignar();
+                $('#divFiltrosBusqueda').hide();
+                $('#divFiltrosTipologia').hide();
+                $('#divFiltrosUsuario').hide();
+                $('#divCasos').hide();
+                $('#divAsignar').show();                                
+                setDisabled("btnAsignar", true);                
+            }
+            else
+            {
+                openModal("Debe seleccionar al menos un registro para proceder con la asignación masiva de casos");                                
+            }  
+        }
+        
+        function AvanzarListaCasos(){
+            $('#divFiltrosBusqueda').hide();
+            $('#divFiltrosTipologia').hide();
+            $('#divFiltrosUsuario').hide();
+            $('#divCasos').show();
+            $('#divAsignar').hide();
+            listCasosSeleccionados = [];
+            listPropietariosCasos = []; 
+        }
+        
+        function CerrarCasosMasivamente(){
+            //debugger;
+            var selectCausaRaiz = $("#selectCausaRaiz").val();
+            var selectTipoResolucion = $("#selectTipoResolucion").val();
+            var selectMotivoResolucion = $("#selectMotivoResolucion").val();
+
+            if ((selectCausaRaiz != null && selectCausaRaiz != undefined)
+                && (selectTipoResolucion != null && selectTipoResolucion != undefined)
+                && (selectMotivoResolucion != null && selectMotivoResolucion != undefined)) 
+            {
+                $('#dvLoader').css("display", "block");                                             
+                
+                var request = {
+                    ListIdCaso: listCasosSeleccionados,
+                    IdCausaRaiz: selectCausaRaiz,
+                    TipoResolucion: selectTipoResolucion,
+                    MotivoResolucion: selectMotivoResolucion,
+                    RespuestaPredefinida: respuestaPredefinida
+                };
+
+                post("/Caso/CloseCasosCierreMasivo", request, function (data) 
+                {
+                    //debugger;
+                    $('#dvLoader').css("display", "none");
+                    if (data.success) {
+                        openModal(data.message);
+                        setTimeout(function(){ location.reload(); }, 2000);                        
+                    }
+                    else {
+                        openModal(data.message);
+                    }
+                });
+            }
+            else {
+                alert("Favor seleccionar campos obligatorios antes de confirmar.");
+            }        
+        }       
+
+        function openModal(mensaje){
+            $("#pMensaje").html(mensaje);
+            $('#alertModal').modal("show");
+        }
+        function setCalendars(){
+            $('body').on('focus', '.cal-predefinida', function () {
+                $(this).datetimepicker({
+                    locale: 'es-es',
+                    format: 'L'
+                });
+            });
+        } 
+
+        function volverFiltroTipoBusqueda(){
+            $('#divFiltrosBusqueda').show();
+            $('#divFiltrosTipologia').hide();
+            $('#divFiltrosUsuario').hide();
+            
+            $("#selectBusqueda").empty().append('<option value="" disabled selected>Seleccione un Tipo de Búsqueda</option>');
+            var selectBusqueda = $("#selectBusqueda");
+            
+            var option0 = document.createElement('option');
+            option0.innerHTML = "Tipología";
+            option0.value = 0;
+            selectBusqueda.append(option0);
+            
+            var option1 = document.createElement('option');
+            option1.innerHTML = "Usuario";
+            option1.value = 1;
+            selectBusqueda.append(option1);
+        }
+        
+        function cerrar(){
+            window.close();
+        }
+        
+        function stripHtml(html){
+            let tmp = document.createElement("DIV");
+            tmp.innerHTML = html;
+            let ret = tmp.textContent || tmp.innerText || "";
+            return ret;
+        }
+        
+        function AsignarCasos(){
+            //debugger;
+            $('#dvLoader').css("display", "block");
+            var selectURAsignar = $("#selectURAsignar").val();
+            var selectIntegranteURAsignar = $("#selectIntegranteURAsignar").val();
+                
+            if ((selectURAsignar != null && selectURAsignar != undefined)
+                && (selectIntegranteURAsignar != null && selectIntegranteURAsignar != undefined))  
+            {
+                var request = {
+                    IdUsuario: selectIntegranteURAsignar,
+                    IdUR: selectURAsignar,
+                    ListCaso: listCasosSeleccionados
+                };
+
+                post("/Caso/AsignarCasoMasivo", request, function (data) 
+                {                    
+                    $('#dvLoader').css("display", "none");
+                    if (data.success) {
+                        setDisabled("btnAsignar", true); 
+                        openModal(data.message);
+                        setTimeout(function(){ location.reload(); }, 5000);                        
+                    }
+                    else {
+                        openModal(data.message);
+                    }
+                });
+            }
+            else
+            {
+                openModal("Favor seleccionar campos obligatorios antes de confirmar.");
+            }
+        }
+        
+        $(document).ready(function () {  
+            //debugger;
+            $('#dvLoader').css("display", "none");
+            $('#divFiltrosBusqueda').show();
+            $('#divFiltrosTipologia').hide();
+            $('#divFiltrosUsuario').hide();
+            $('#divCasos').hide();
+            $('#divAsignar').hide();
+                       
+            GetMantenedoresTipologia();
+ 
+            jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+                "date-eu-pre": function ( date ) {
+                    date = date.replace(" ", "");
+                     
+                    if ( ! date ) {
+                        return 0;
+                    }
+             
+                    var year;
+                    var eu_date = date.split(/[\.\-\/]/);
+             
+                    /*year (optional)*/
+                    if ( eu_date[2] ) {
+                        year = eu_date[2];
+                    }
+                    else {
+                        year = 0;
+                    }
+             
+                    /*month*/
+                    var month = eu_date[1];
+                    if ( month.length == 1 ) {
+                        month = 0+month;
+                    }
+             
+                    /*day*/
+                    var day = eu_date[0];
+                    if ( day.length == 1 ) {
+                        day = 0+day;
+                    }
+             
+                    return (year + month + day) * 1;
+                },
+             
+                "date-eu-asc": function ( a, b ) {
+                    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+                },
+             
+                "date-eu-desc": function ( a, b ) {
+                    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+                }
+            });
+
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = today.getFullYear();
+            today = mm + '/' + dd + '/' + yyyy;
+            //apiToken = window.sessionStorage.getItem("LokiAuthToken");
+            
+            var defaultFechaInicio = new Date();
+            defaultFechaInicio.setDate(defaultFechaInicio.getDate() - 30);
+            dd = String(defaultFechaInicio.getDate()).padStart(2, '0');
+            mm = String(defaultFechaInicio.getMonth() + 1).padStart(2, '0'); //January is 0!
+            yyyy = defaultFechaInicio.getFullYear();
+            defaultFechaInicio = mm + '/' + dd + '/' + yyyy;
+            
+            $('#fechaDesde').datetimepicker({
+                locale: 'es-es',
+                format: 'L',
+                defaultDate: new Date(defaultFechaInicio) 
+            });
+            $('#fechaHasta').datetimepicker({
+                locale: 'es-es',
+                format: 'L',
+                //useCurrent: false,
+                defaultDate: new Date(today) 
+            });
+            $("#fechaDesde").on("dp.change", function (e) {
+               $('#fechaHasta').data("DateTimePicker").minDate(e.date);
+            });
+            $("#fechaHasta").on("dp.change", function (e) {
+               $('#fechaDesde').data("DateTimePicker").maxDate(e.date);
+            });
+            
+            $("#selectBusqueda").change(function () {  
+                inicializarFiltros();
+            });
+
+            $("#selectTipoRequerimiento").change(function () {  
+                //var selectTipoRequerimiento = $("#selectTipoRequerimiento").val();  
+                //setProducto(selectTipoRequerimiento); 
+                //setDisabled("selectProducto", false); 
+ 
+                var filtro = "selectTipoRequerimiento";
+                changeFiltrosTipologia(filtro);
+            });
+
+            $("#selectProducto").change(function () {
+                //$('#dvLoader').css("display", "block");
+                //var selectTipoRequerimiento = $("#selectTipoRequerimiento").val();                
+                //var selectProducto = $("#selectProducto").val();
+                //setTipoOperacion(selectTipoRequerimiento, selectProducto);
+                //setDisabled("selectTipoOperacion", false); 
+                //$('#dvLoader').css("display", "none");
+ 
+                var filtro = "selectProducto";
+                changeFiltrosTipologia(filtro);
+            });
+
+            $("#selectTipoOperacion").change(function () {
+                //$('#dvLoader').css("display", "block");
+                //var selectTipoOperacion = $("#selectTipoOperacion").val();
+                //setDetalleOperacion(selectTipoOperacion);                
+                //setDisabled("selectDetalleOperacion", false);
+                //$('#dvLoader').css("display", "none");
+
+                var filtro = "selectTipoOperacion";
+                changeFiltrosTipologia(filtro);
+            });
+
+            $("#selectDetalleOperacion").change(function () {
+                //setDisabled("selectURTipologia", false);
+
+                var filtro = "selectDetalleOperacion";
+                changeFiltrosTipologia(filtro);
+            });
+
+            $("#selectURTipologia").change(function () {
+                idUR = $("#selectURTipologia").val();
+                getIntegrantesUR(idUR);                
+            });
+
+            $("#selectURUsuario").change(function () {
+                idUR = $("#selectURUsuario").val();
+                setIntegrantesURUsuario(idUR);                               
+            });
+            
+            $("#selectIntegranteURUsuario").change(function () {
+                idIntegranteUR = $("#selectIntegranteURUsuario").val();                              
+            });
+
+            $("#selectIntegranteURAsignar").change(function () {
+                //debugger;
+                setDisabled("btnAsignar", false);
+            });            
+        });
+    </script>
+<meta></head>
+<body>
+    <div class="data-container">       
+        <h3 class="d-flex justify-content-center">Asignación Masiva de Casos</h3>
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="xmsbs_loading32gif">
+            </p>
+        </div>
+
+        <pre class="NoBorde">
+        </pre>
+        
+        <div id="divFiltrosBusqueda" class="container"> 
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Tipo Búsqueda<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectBusqueda" class="form-control">
+                    <option value="" disabled="" selected="">Seleccione un Tipo de Búsqueda</option>
+                    <option value="0">Tipología</option>
+                    <option value="1">Usuario</option>
+                    </select>
+                </div>
+            </div>     
+        </div>
+        
+        <div id="divFiltrosTipologia" class="container"> 
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Tipo Requerimiento<span class="obligatorio"> *</span></label>
+                    <div class="col-sm-9">
+                        <select id="selectTipoRequerimiento" class="form-control"></select>
+                    </div>
+            </div>
+        
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Producto<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectProducto" class="form-control"></select>
+                </div>
+            </div>
+        
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Tipo Operación<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectTipoOperacion" class="form-control"></select>
+                </div>
+            </div>
+        
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Detalle Operación<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectDetalleOperacion" class="form-control"></select>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Unidad Resolutora<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectURTipologia" class="form-control"></select>
+                </div>
+            </div>
+               
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label mr-4">Fecha Creación<span class="obligatorio"> *</span></label>
+                <div class="input-group date col-sm-4 mr-4" id="fechaDesde">
+                    <input type="text" class="form-control">
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            
+                <div class="input-group date col-sm-4" id="fechaHasta">
+                    <input type="text" class="form-control">
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center">
+                <button id="btnVolverFiltroTipologia" type="button" class="btn btn-danger mr-2" onclick="volverFiltroTipoBusqueda()">Volver</button>
+            
+                <button id="btnConsultarTipologia" type="button" class="btn btn-danger" onclick="GetCasosAsignar()">Consultar</button>
+            </div>
+        </div>
+        
+        <div id="divFiltrosUsuario" class="container"> 
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Unidad Resolutora<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectURUsuario" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Integrantes UR<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectIntegranteURUsuario" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center">
+                <button id="btnVolverFiltroUsuario" type="button" class="btn btn-danger mr-2" onclick="volverFiltroTipoBusqueda()">Volver</button>
+            
+                <button id="btnConsultarUsuario" type="button" class="btn btn-danger" onclick="GetCasosAsignar()">Consultar</button>
+            </div> 
+        </div>
+
+        <div id="divCasos" class="container">
+            <table id="tblCasos" class="table cell-border">
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Correlativo</th>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Rut</th>
+                        <th scope="col">Razón Estado</th>
+                        <th scope="col">Fecha Creación</th>                       
+                        <th scope="col">Tipo y Detalle Operación</th>
+                        <th scope="col">Propietario Actual</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+              
+            <div class="d-flex justify-content-center">
+                <button id="btnVolverFiltro" type="button" class="btn btn-danger mr-2" onclick="VolverFiltro()">Volver</button>
+                
+                <button id="btnAvanzarCierre" type="button" class="btn btn-danger" onclick="AvanzarAsignar()">Avanzar</button>
+            </div>
+        </div>
+
+        <div id="divAsignar" class="container">            
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Unidad Resolutora<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectURAsignar" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="form-group row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Integrantes UR<span class="obligatorio"> *</span></label>
+                <div class="col-sm-9">
+                    <select id="selectIntegranteURAsignar" class="form-control"></select>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-center">
+                <button id="btnVolverCasos" type="button" class="btn btn-danger mr-2" onclick="AvanzarListaCasos()">Volver</button>
+                
+                <button id="btnAsignar" type="button" class="btn btn-danger mr-2" onclick="AsignarCasos()" disabled="">Asignar</button>
+            </div>                
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Información</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="pMensaje"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>   
+</body></html>

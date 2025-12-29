@@ -1,0 +1,43 @@
+<html>
+<head>    
+	<meta charset="utf-8"> 
+    <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="/WebResources/xmsbs_webAPI"></script>
+    <script src="/WebResources/xmsbs_util"></script>    
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+	<script type="text/javascript">
+		function openSucursalesyEquipos() {
+			//debugger;
+			window._executionContext = window.parent.getExecutionContextAdquirencia();
+			window._formContext = window.parent.getExecutionFormContextAdquirencia();
+
+			var ComercioID = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_comercio", null);
+			var IncidentId = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+		
+			// abre el Modal de Ingreso de Sucursales y Equipos
+			if(ComercioID)
+			{
+				var pageInput = {
+					pageType: "webresource",
+					webresourceName: "xmsbs_sucursalesequipos"
+				};
+				
+				var navigationOptions = {
+					target: 2,
+					width: 1200,
+					height: 800,
+					position: 1
+				};
+				
+				window.parent.Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(function success()
+				{}, function error()
+				{}); 
+			}
+		 }
+	</script>
+</head>
+<body> 
+    <button onclick="openSucursalesyEquipos()">Ingreso de Sucursales y Equipos</button>
+</body>
+</html>

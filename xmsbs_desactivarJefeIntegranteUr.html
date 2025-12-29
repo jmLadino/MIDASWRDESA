@@ -1,0 +1,385 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Desactivar Jefe Integrante UR</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_FormUnidadResolutora"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <style>
+        .ocultar {
+            display: none;
+        }
+
+        .obligatorio {
+            font-weight: bold;
+            color: red;
+        }
+
+        .mr-1 {
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var apiToken = "";
+        var listUR = null;
+        var idUR = null;
+        var idExecuteUsuario  = null;
+
+        function get(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+
+        function post(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+		
+		function GetRequestObject() {
+			if (window.XMLHttpRequest) {
+				return new window.XMLHttpRequest();
+			}
+			else {
+				try {
+					return new ActiveXObject("MSXML2.XMLHTTP.3.0");
+				}
+				catch (ex) {
+					return null;
+				}
+			}
+		}
+		
+
+        function setDisabled(item, bool) {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+        
+        
+        function buscarUsuariosOriginales(idUR){
+            var entityType = "xmsbs_bitacorareemplazosjefes";
+            var query = "$select=xmsbs_bitacorareemplazosjefeid,_xmsbs_usuariooriginal_value,_xmsbs_usuariobackup_value,xmsbs_estado&$expand=xmsbs_usuariooriginal($select=fullname),xmsbs_usuariobackup($select=fullname)&$filter=(xmsbs_estado eq false and _xmsbs_unidadresolutora_value eq "+idUR+")&$orderby=_xmsbs_usuariooriginal_value asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
+            {});
+            return resultado;
+        }
+
+        function buscarDatosUsuario(idUR, idUsuario){
+            var entityType = "xmsbs_bitacorareemplazosjefes";
+            var query = "$select=xmsbs_bitacorareemplazosjefeid,createdon,xmsbs_estado&$expand=xmsbs_usuariobackup($select=fullname),xmsbs_unidadresolutora($select=xmsbs_name)&$filter=(xmsbs_estado eq false and _xmsbs_unidadresolutora_value eq "+idUR+" and _xmsbs_usuariooriginal_value eq "+idUsuario+")&$orderby=createdon asc";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
+            {});
+            return resultado;
+        }
+        
+        function buscarUsuarioOriginal(){            
+            //Validamos si es admin. Si no, se pone el nombre del usuario en el campo.
+            var idUsuario = JumpStartLibXRM.Fx.getUserId();
+            if (idUsuario.indexOf("{") > -1){idUsuario = idUsuario.substring(1, 37);}
+            var usuarioName = JumpStartLibXRM.Fx.getUserName();
+            
+            var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+            if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+            
+            let arrayJefeCanales = new Array ();
+            Unidad.RolesArray.JefeCanales.forEach( 
+                function (x){
+                    arrayJefeCanales.push(x);
+                }
+            );
+            
+            let arraySystemUser = new Array ();
+            Unidad.RolesArray.SystemUser.forEach( 
+                function (x){
+                    arraySystemUser.push(x);
+                }
+            );
+            
+            let foundJefeCanales = JumpStartLibXRM.Fx.UserHasRolesArray(window._executionContext, arrayJefeCanales);
+            let foundSystemUser = JumpStartLibXRM.Fx.UserHasRolesArray(window._executionContext, arraySystemUser);
+            
+            if(foundSystemUser){
+                //Si tiene el rol de administrador de sistema, se debe buscar los nombres de jefes originales
+                var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+                if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+                let arrayUsuariosOriginales = new Array ();
+                debugger;
+
+                var usuariosOriginales = buscarUsuariosOriginales(idUR);
+                if(usuariosOriginales && usuariosOriginales.value.length > 0){
+                    for (var i = 0; i < usuariosOriginales.value.length; ++i) {
+                        var existe = arrayUsuariosOriginales.find(x=>x.systemuserid==usuariosOriginales.value[i].xmsbs_usuariooriginal.systemuserid);
+                        if(!existe){
+                            arrayUsuariosOriginales.push(usuariosOriginales.value[i].xmsbs_usuariooriginal);
+                        }
+                    }
+                    
+                    var selectUsuarioAReemplazar = $("#selectUsuarioOriginal").empty().append('<option value="" disabled selected>Seleccione Usuario a reemplazar</option>');
+                    if(arrayUsuariosOriginales){
+                        for (var i = 0; i < arrayUsuariosOriginales.length; ++i) {
+                            var option = document.createElement('option');
+                            option.innerHTML = arrayUsuariosOriginales[i].fullname;
+                            option.value = arrayUsuariosOriginales[i].systemuserid;
+                            selectUsuarioAReemplazar.append(option);
+                        }
+                        
+                        setDisabled("selectUsuarioOriginal", false);
+                        $('#dvLoader').css("display", "none");
+                    }
+                }
+                else{
+                    //No encontró resultados de reemplazos. Alerta
+                    alert("No se encontraron usuarios con reemplazos activos a revertir");
+                    $('#dvLoader').css("display", "none");
+                    setDisabled("btnConfirmar", true);
+                }
+            }
+            else{
+                //Es jefe de canales, busco su registro con los datos relacionados, si existe
+                var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+                if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+                let arrayDatosUsuario = new Array ();
+                debugger;
+
+                var datosUsuario = buscarDatosUsuario(idUR, idUsuario);
+                if(datosUsuario && datosUsuario.value.length == 1){
+                    var selectUsuarioAReemplazar = $("#selectUsuarioOriginal").empty();
+                    var option = document.createElement('option');
+                    option.innerHTML = usuarioName;
+                    option.value = idUsuario;
+                    selectUsuarioAReemplazar.append(option);
+                    setDisabled("selectUsuarioOriginal", true);
+
+                    //Se deben pegar los datos del registro encontrado
+                    
+                    $("#txtUsuarioBackup").text(datosUsuario.value[0].xmsbs_usuariobackup.fullname);
+                    $("#txtUnidadResolutora").text(datosUsuario.value[0].xmsbs_unidadresolutora.xmsbs_name);
+                        
+                    setDisabled("selectUsuarioAReemplazar", true);
+                    $('#dvLoader').css("display", "none");
+                    
+                    setDisabled("btnConfirmar", false);
+                }
+                else{
+                    //No encontró resultados de reemplazos. Alerta
+                    alert("No se encontraron usuarios con reemplazos activos a revertir");
+                    $('#dvLoader').css("display", "none");
+                    setDisabled("btnConfirmar", true);
+                }
+            }
+        }
+
+        function buscarDatosDelUsuarioSeleccionado(){
+            $('#dvLoader').css("display", "block");
+            //Si selecciona un nombre del combo, se buscan los datos de ese usuairo en esa UR
+            var idUsuario = $("#selectUsuarioOriginal").val();
+            if (idUsuario.indexOf("{") > -1){idUsuario = idUsuario.substring(1, 37);}
+            var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+            if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+            
+            let arrayDatosUsuario = new Array ();
+            debugger;
+
+            var datosUsuario = buscarDatosUsuario(idUR, idUsuario);
+            if(datosUsuario && datosUsuario.value.length == 1){
+                //Se deben pegar los datos del registro encontrado
+                
+                $("#txtUsuarioBackup").text(datosUsuario.value[0].xmsbs_usuariobackup.fullname);
+                $("#txtUnidadResolutora").text(datosUsuario.value[0].xmsbs_unidadresolutora.xmsbs_name);
+                
+                $('#dvLoader').css("display", "none");
+                setDisabled("btnConfirmar", false);
+                
+            }
+            else{
+                //No encontró resultados de reemplazos. Alerta
+                $('#dvLoader').css("display", "none");
+                alert("No se encontraron usuarios con reemplazos activos a revertir");
+            }
+        }
+
+        $(document).ready(function () {            
+            $('#dvLoader').css("display", "block");
+            
+            window._executionContext = parent.getContextPopUp();
+            baseUrl = parent.getAzureURLPopUp();
+            apiKey = parent.getApiKeyPopUp();           
+            
+            setDisabled("btnConfirmar", true);
+            
+            buscarUsuarioOriginal();
+
+            $("#btnConfirmar").click(function () {
+                setDisabled("btnConfirmar", true);
+
+                var selectUsuarioOriginal = $("#selectUsuarioOriginal").val();
+                var idUR = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+                if (idUR.indexOf("{") > -1){idUR = idUR.substring(1, 37);}
+
+                if ((idUR != null && idUR != undefined)) {
+                    if (selectUsuarioOriginal != null && selectUsuarioOriginal != undefined) 
+                    {	
+						debugger;
+                        
+                        //var URL= "UnidadResolutora/DesactivarBackupJefeIntegranteUR/"+idUR+"/"+selectUsuarioOriginal+"";
+                        //$('#dvLoader').css("display", "block");
+                        //var service = GetRequestObject();
+                        //if (service != null) {
+                        //    service.open("POST", baseUrl+URL, false);
+                        //    service.setRequestHeader("X-Requested-Width", "XMLHttpRequest");
+                        //    service.setRequestHeader("Accept", "application/json,text/javascript, */*");
+                        //    service.setRequestHeader("AuthApi", apiKey);
+                        //   // service.setRequestHeader("TokenApi", apiToken);
+                        //    service.send(null);
+                        //    if (service.response != "") {
+                        //        response = JSON.parse(service.response);
+                        //    }
+                        //}
+                        //
+						//if (response.success) {
+                        //    $('#dvLoader').css("display", "none");
+						//	alert("Se ha realizado el cambio de jefatura exitosamente");
+						//	JumpStartLibXRM.Fx.formSave(window._executionContext);
+						//	window.close();						
+						//}
+						//else
+						//{
+						//	$('#dvLoader').css("display", "none");
+                        //    setDisabled("btnConfirmar", true);
+						//	alert("No pudo realizar la modificación de jefatura. Favor contactar al administrador");
+						//}
+                        
+                        $('#dvLoader').css("display", "block");
+                        post("/UnidadResolutora/DesactivarBackupJefeIntegranteUR/"+idUR+"/"+selectUsuarioOriginal+"", null, function (data) {
+                            $('#dvLoader').css("display", "none");
+                            if (data.success) {
+                                alert("Se ha realizado el cambio de jefatura exitosamente");
+                                JumpStartLibXRM.Fx.formSave(window._executionContext);
+                                window.close();						
+                            }
+                            else
+                            {
+                                $('#dvLoader').css("display", "none");
+                                setDisabled("btnConfirmar", true);
+                                alert("No pudo realizar la modificación de jefatura. Favor contactar al administrador");
+                            }
+                        });
+						
+                    }
+                    else {
+                        $('#dvLoader').css("display", "none");
+                        setDisabled("btnConfirmar", true);
+                        alert("Favor seleccionar usuario.");
+                    }
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    setDisabled("btnConfirmar", true);
+                    alert("Favor refresque la ventana");
+                }
+            });
+        });
+    </script>
+<meta><meta></head>
+<body>
+    <div class="container">
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="xmsbs_loading32gif">
+            </p>
+        </div>
+        
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-4 my-3">Usuario Original<span class="obligatorio"> *</span></label>
+            <div class="col-sm-8 my-2">
+                <select id="selectUsuarioOriginal" class="form-control" onchange="buscarDatosDelUsuarioSeleccionado()">
+                    <option value="" disabled="" selected="">Seleccione el usuario Original </option>
+                </select>
+            </div>
+        </div>
+
+        <br>
+        <div class="form-group row">
+            <div class="col-sm-4 my-2">
+                <label for="txtDireccion">Backup Actual</label>
+            </div>
+            <div class="col-sm-8 my-2">
+              <label id="txtUsuarioBackup" type="label"></label>
+            </div>
+		</div>
+
+        <div class="form-group row">
+            <div class="col-sm-4 my-2">
+                <label for="txtCodigo">Unidad Resolutora</label>
+            </div>
+            <div class="col-sm-8 my-2">
+              <label id="txtUnidadResolutora" type="label"></label>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <button id="btnConfirmar" type="button" class="btn btn-danger">Revertir</button>
+        </div>
+    </div>
+</body></html>

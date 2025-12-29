@@ -1,0 +1,320 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Resolver Caso</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_formularioCaso"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript" ></script>
+    <style>
+        .ocultar {
+            display: none;
+        }
+
+        .obligatorio {
+            font-weight: bold;
+            color: red;
+        }
+
+        .mr-1 {
+            margin-right: 10px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var apiToken = "";
+        var idIncident = null;
+        var idAccionEtapa = null;
+
+        function get(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+        function getV2(url, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+            xhr.send();
+        }
+
+        function post(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+        function postV2(url, params, successFunction) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.setRequestHeader("TokenApi", apiToken);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }        
+
+        function setDisabled(item, bool) 
+        {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+
+        function setMotivosCierreCaso() 
+        {
+            var selectMotivoCierre = $("#selectMotivoCierre").empty().append('<option value="" disabled selected>Seleccione un Motivo de Cierre</option>');
+            get("/MantenedorWeb/GetMotivosCierreCaso", function (data) {
+                $('#dvLoader').css("display", "block");
+                if (data.success) {
+                    for (var i = 0; i < data.listER.length; ++i) {
+                        var option = document.createElement('option');
+                        option.innerHTML = data.listER[i].name;
+                        option.value = data.listER[i].id;
+                        selectMotivoCierre.append(option);
+                    }
+                    $('#dvLoader').css("display", "none");         
+                    setDisabled("selectMotivoCierre", false); 
+                    setDisabled("btnResolver", false); 
+                }
+                else {
+                    $('#dvLoader').css("display", "none");
+                    setDisabled("btnResolver", true); 
+                    alert(data.message);
+                }
+            });
+        }
+
+        function EnviarNotificacionesCliente(idIncident, idAccionEtapa)
+        {
+            //debugger;
+            var response = null;            
+            post("/CasoAccion/PostEnviarNotificacionesClienteAsync?idIncident=" + idIncident + "&idAccionEtapa=" + idAccionEtapa, null, function (data) {
+                //debugger;
+                if(data != null)
+                {
+                    response = data;
+                }
+            });
+            
+            return response;
+        }
+
+        $(document).ready(function () {
+            parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Resolver Caso");
+            $('#dvLoader').css("display", "block");      
+            setDisabled("selectMotivoCierre", true);            
+            setDisabled("btnResolver", true);
+            //debugger;
+            window._executionContext = parent.getContext();
+            window._formContext = window._executionContext.getFormContext();
+            baseUrl = parent.getAzureURL();
+            apiKey = parent.getApiKey(); 
+           // apiToken = window.sessionStorage.getItem("LokiAuthToken");
+            idAccionEtapa = parent.getIdAccionEtapa(); 
+    
+            idIncident = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+            if (idIncident.indexOf("{") > -1)
+            {
+                idIncident = idIncident.substring(1, 37);
+            }
+            
+            if (idAccionEtapa.indexOf("{") > -1)
+            {
+                idAccionEtapa = idAccionEtapa.substring(1, 37);
+            }
+
+            //setMotivosCierreCaso();  
+            $('#dvLoader').css("display", "none"); 
+            setDisabled("btnResolver", false);
+
+            $("#btnResolver").click(function () {
+                var selectEstado = $("#selectEstado").val();
+                var selectRazonEstado = $("#selectRazon").val();
+
+                if ((idIncident != null && idIncident != undefined && idIncident != "") && (idAccionEtapa != null && idAccionEtapa != undefined && idAccionEtapa != "")) {
+                    if ((selectEstado != null && selectEstado != undefined)
+                        && (selectRazonEstado != null && selectRazonEstado != undefined)) {
+                        $('#dvLoader').css("display", "block");
+                        var request = {
+                            IdIncident: idIncident,
+                            Estado: selectEstado,
+                            RazonEstado: selectRazonEstado
+                        };
+
+                        post("/Caso/ResolverCaso", request, function (data) {
+                            $('#dvLoader').css("display", "none");
+                            if (data.success) {
+                                var _responseEnviarNotificacionesCliente = EnviarNotificacionesCliente(idIncident, idAccionEtapa);
+                                setTimeout(function () {
+                                    var entityFormOptions = {};
+                                    entityFormOptions["entityName"] = window._formContext.data.entity.getEntityName();
+                                    entityFormOptions["entityId"] = idIncident;
+                                
+                                    window._formContext.data.save().then(
+                                        function () {
+                                            Xrm.Navigation.openForm(entityFormOptions).then(
+                                            function (success) {
+                                            },
+                                            function (error) {                                                
+                                            });
+                                        },
+                                        null
+                                    );
+                                    window.close(); 
+                                }, 3000);
+                            }
+                            else {
+                                var alertStrings = { confirmButtonLabel: "Aceptar", title: "Error", text: data.message};
+                                var alertOptions = { height: 120, width: 260 };
+                                Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                                    function (success) {
+                                        //console.log("Alert dialog closed");
+                                    },
+                                    function (error) {
+                                        //console.log(error.message);
+                                    }
+                                );
+                            }
+                        });
+                    }
+                    else {
+                        var alertStrings = { confirmButtonLabel: "Aceptar", title: "Error", text: "Favor seleccionar campos obligatorios antes de confirmar"};
+                        var alertOptions = { height: 120, width: 260 };
+                        Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                            function (success) {
+                                //console.log("Alert dialog closed");
+                            },
+                            function (error) {
+                                //console.log(error.message);
+                            }
+                        );
+                    }
+                }
+                else {
+                    alert("La URL no cuenta con el parametro 'idIncident' (Guid del Caso).");
+                }
+            });
+        });
+    </script>
+<meta></head>
+<body>
+    <div class="container">
+        <div class="parent" id="dvLoader">
+        <p style="text-align:center">
+            <img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />
+        </p>
+        </div>
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Seleccionar Estado<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectEstado" class="form-control">
+                    <option value="" disabled="" selected="">Seleccione un Estado</option>
+                    <option value="1">Resuelto</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Seleccionar Razón<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectRazon" class="form-control">
+                    <option value="" disabled="" selected="">Seleccione una Razón</option>
+                    <option value="1">Finalizado</option>
+                </select>
+            </div>
+        </div>
+
+        <!--<div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Seleccionar Motivo Cierre<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectMotivoCierre" class="form-control">
+                    <option value="" disabled="" selected="">Seleccione un Motivo de Cierre</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="staticEmail">Observaciones<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <textarea class="form-control" id="txtObservacionCaso" maxlength="100" rows="3"></textarea>
+            </div>
+        </div>-->
+
+        <div class="d-flex justify-content-center">
+            <button id="btnResolver" type="button" class="btn btn-danger">Confirmar</button>
+        </div>
+    </div>
+
+</body></html>

@@ -1,0 +1,277 @@
+<html><head>
+    <meta charset="utf-8">
+    <title>Número Operación</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_webAPI"></script>
+    <script src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_formularioCaso"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript" ></script>
+    <style>
+        .labelCRM {
+            color: rgb(68,68,68); 
+            font-size: 14px; 
+            font-family: SegoeUI, "Segoe UI";"
+        }
+
+        .divCRM {
+            border-bottom: 1px solid; 
+            color: rgb(216,216,216);
+        }
+        
+        .selectCRM {
+            margin-left: 70px;
+        }
+
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+        var apiKey = "";
+        var listPreguntas2 = null;
+
+        function get(url, successFunction) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.open("GET", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+            xhr.send();
+        }
+
+        function post(url, params, successFunction) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", baseUrl + url, true);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("AuthApi", apiKey);
+
+            xhr.onreadystatechange = function (data) {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    successFunction(JSON.parse(data.currentTarget.response));
+                }
+            }
+
+            xhr.send(JSON.stringify(params));
+        }
+                
+        function setDisabled(item, bool) 
+        {
+            if (bool) {
+                $("#" + item).prop('disabled', true);
+            }
+            else {
+                $("#" + item).prop('disabled', false);
+            }
+        }
+        
+        function setSelectPregunta2(idDependencia, listPreguntas2) 
+        {
+            var selectPregunta2 = $("#selectPregunta2").empty().append('<option value="" disabled selected>Seleccione...</option>');
+            for (var i = 0; i < listPreguntas2.length; ++i) {
+                if(idDependencia === listPreguntas2[i].idDependencia)
+                {
+                    var option = document.createElement('option');
+                    option.innerHTML = listPreguntas2[i].name;
+                    option.value = listPreguntas2[i].id;
+                    selectPregunta2.append(option);
+                }
+            }
+        }
+        
+        function Pregunta2Caso(executionContext)
+        {
+            Caso.onChange_pregunta2caso(executionContext);
+        }
+                
+        function setNumeroOperacion()
+        {
+            var rut = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_rut", null);
+            var idProducto = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "xmsbs_producto");
+            var numeroOperacion = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_numerooperacion", null);
+            
+            if (idProducto.indexOf("{") > -1)
+            {
+                idProducto = idProducto.substring(1, 37);
+            }
+                        
+            let urlGetNumeroOperacion = "/Santander/GetNumeroOperacion?rutCRM=" + rut + "&idProducto=" + idProducto;
+            
+            get(urlGetNumeroOperacion, function (data) {                
+                var selectNumeroOperacion = $("#selectNumeroOperacion").empty().append('<option value="" disabled selected>Seleccione...</option>');
+                var selectPregunta1 = $("#selectPregunta1").empty().append('<option value="" disabled selected>Seleccione...</option>');
+                var selectPregunta2 = $("#selectPregunta2").empty().append('<option value="" disabled selected>Seleccione...</option>');
+                debugger;
+                if (data.success) 
+                {
+                    for (var i = 0; i < data.numeroOperaciones.length; ++i) {
+                        var option = document.createElement('option');
+                        option.innerHTML = data.numeroOperaciones[i];
+                        option.value = data.numeroOperaciones[i];
+                        selectNumeroOperacion.append(option);
+                    }
+                    
+                    for (var i = 0; i < data.preguntas1.length; ++i) {
+                        var option = document.createElement('option');
+                        option.innerHTML = data.preguntas1[i].name;
+                        option.value = data.preguntas1[i].id;
+                        selectPregunta1.append(option);
+                    }                    
+                    
+                    listPreguntas2 = data.preguntas2;
+                    
+                    if(numeroOperacion != null && numeroOperacion != undefined && numeroOperacion != "")
+                    {
+                        $('#selectNumeroOperacion').val(numeroOperacion);
+                    } 
+
+                    JumpStartLibXRM.Fx.updateRequirementLevel(window._executionContext, "xmsbs_numerooperacion", "required");
+                    JumpStartLibXRM.Fx.updateRequirementLevel(window._executionContext, "xmsbs_pregunta1delcaso", "required");
+                    JumpStartLibXRM.Fx.updateRequirementLevel(window._executionContext, "xmsbs_pregunta2delcaso", "required");                   
+                                        
+                    setDisabled("selectNumeroOperacion", false);
+                    setDisabled("selectPregunta1", false);
+                    setDisabled("btnConfirmar", false);
+                    $('#dvLoader').css("display", "none");
+                }
+                else 
+                {
+                    setDisabled("btnConfirmar", true);
+                    $('#dvLoader').css("display", "none");
+                    alert(data.message);
+                }
+            });        
+        }  
+
+        $(document).ready(function () {
+            parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Cuestionario");
+            $('#dvLoader').css("display", "block");
+            setDisabled("btnConfirmar", true);            
+            setDisabled("selectNumeroOperacion", true);
+            setDisabled("selectPregunta1", true);
+            setDisabled("selectPregunta2", true);
+            //debugger; 
+            window._executionContext = parent.getContextPopUp();
+            window._formContext = window._executionContext.getFormContext();
+            baseUrl = parent.getAzureURLPopUp();
+            apiKey = parent.getApiKeyPopUp();   
+            
+            setNumeroOperacion();
+
+            $("#selectNumeroOperacion").change(function () {
+                var selectNumeroOperacion = $("#selectNumeroOperacion").val();                
+                JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_numerooperacion", selectNumeroOperacion);                
+            });
+
+            $("#selectPregunta1").change(function () {
+                var selectPregunta1Value = $("#selectPregunta1").val();
+                var selectPregunta1Text = $("#selectPregunta1 option:selected").text();                
+                JumpStartLibXRM.Fx.setLookupValue(window._executionContext, "xmsbs_pregunta1delcaso", selectPregunta1Value, selectPregunta1Text, "xmsbs_preguntascaso"); 
+                setDisabled("selectPregunta2", false);
+                setSelectPregunta2(selectPregunta1Value, listPreguntas2);
+            });
+
+            $("#selectPregunta2").change(function () {
+                var selectPregunta2Value = $("#selectPregunta2").val();
+                var selectPregunta2Text = $("#selectPregunta2 option:selected").text();   
+                JumpStartLibXRM.Fx.setLookupValue(window._executionContext, "xmsbs_pregunta2delcaso", selectPregunta2Value, selectPregunta2Text, "xmsbs_pregunta2delcaso");                
+            });
+
+            $("#btnConfirmar").click(function () {
+                var selectNumeroOperacion = $("#selectNumeroOperacion").val(); 
+                var selectPregunta1Value = $("#selectPregunta1").val();
+                var selectPregunta2Value = $("#selectPregunta2").val();
+                
+                if((selectNumeroOperacion != null && selectNumeroOperacion != undefined) &&
+                    (selectPregunta1Value != null && selectPregunta1Value != undefined) &&
+                    (selectPregunta2Value != null && selectPregunta2Value != undefined))
+                    {
+                        Pregunta2Caso(window._executionContext);
+                        window.close();
+                    }
+                    else
+                    {
+                        alert("Favor seleccionar campos obligatorios antes de confirmar.");
+                    }                
+            });
+        });
+    </script>
+<meta></head>
+<body>
+    <div class="container">
+        <!--<div id="dvLoader" class="loader container"></div>-->
+        <div class="parent" id="dvLoader">
+            <p style="text-align:center">
+                <img src="https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_loading32gif" />
+            </p>
+        </div>
+        
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">N° de Operación<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectNumeroOperacion" class="form-control"></select>
+            </div>
+        </div>
+        
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Su requerimiento está relacionado con<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectPregunta1" class="form-control"></select>
+            </div>
+        </div>
+        
+        <div class="form-group row">
+            <label for="staticEmail" class="col-sm-2 col-form-label">Seleccione una opción<span class="obligatorio"> *</span></label>
+            <div class="col-sm-9">
+                <select id="selectPregunta2" class="form-control"></select>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center">
+            <button id="btnConfirmar" type="button" class="btn btn-danger">Confirmar</button>
+        </div>        
+    </div> 
+</body>
+</html>

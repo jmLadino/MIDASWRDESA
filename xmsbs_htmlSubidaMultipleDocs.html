@@ -1,0 +1,643 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Subir múltiples documentos</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="/WebResources/xmsbs_repositorioSucesos"></script>
+    <script src="/WebResources/xmsbs_webAPI"></script>
+    <script src="/WebResources/xmsbs_webApi"></script>
+    <script src="/WebResources/xmsbs_util"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+
+    <!-- TABLAS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/locale/es.js"></script>
+
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="/WebResources/xmsbs_checkboxjs" type="text/javascript"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
+
+    <link href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css" rel="stylesheet" type="text/css">
+
+    <script src="/WebResources/xmsbs_checkboxcss" type="text/css"></script>
+
+    <style>
+        .obligatorio {
+            color: rgb(234, 6, 0);
+        }
+        
+        .ocultar {
+            display: none;
+        }
+        
+        .subidaDocumento {
+            background-color: rgb(255, 255, 0) !important;
+            border-bottom: 3px solid #FFFF00 !important;
+            font-weight: bold;
+        }
+        
+        .documentoSubido {
+            background-color: rgb(0, 255, 0) !important;
+            border-bottom: 3px solid #1ABB01 !important;
+            font-weight: bold;
+            padding: 5px;
+            font-size: 16px;
+            font-family: Segoe UI;
+            margin-right: 7px;
+            margin-bottom: 7px;
+            margin-top: 7px;
+        }
+        
+        .texto-uploader {
+            font-family: Segoe UI;
+            font-size: 16px;
+        }
+        
+        .boton-menu {
+            background-color: #efefef;
+            padding: 5px;
+            margin-right: 7px;
+            font-family: Segoe UI;
+            font-weight: bold;
+            font-size: 16px;
+            align-items: center;
+            border-bottom: 3px solid #DA0202;
+        }
+        
+        .boton-menu:hover {
+            background-color: rgb(216, 216, 216);
+            border-bottom: 3px solid #DA0202;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .boton-menu svg {
+            color: #DA0202;
+            padding-right: 3px;
+        }
+        
+        .boton-menu span {
+            color: #DA0202;
+            text-align: center;
+        }
+        
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            /* Safari */
+            animation: spin 2s linear infinite;
+        }
+        
+        thead th {
+            background-color: rgb(221, 8, 8);
+            color: white;
+        }
+        
+        .vcenter {
+            display: inline-block;
+            vertical-align: middle;
+            float: none;
+        }
+                
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .NoBorde {
+            border-style: none;
+        }
+        
+        #tblPolizas span {
+            display: none;
+        }
+        
+        .msgerror {
+            color: rgb(234, 6, 0);
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "https://chld2weuapppmidas001.csbsand.cl.corp/";
+        var apiKey = "56C3D9E6-E5B6-4B76-816F-5741FA0420BE";
+        var UsuarioAdminID = "d43af6f7-e875-eb11-a812-000d3ab23035"; // Dynamics_CRM_MIDAS_CL_DEV
+
+        var IncidentId = "";
+        var objeto = "";
+        var listInfoDocumentoSubida = [];
+
+        function openModal(mensaje) {
+            $("#pMensaje").html(mensaje);
+            $('#alertModal').modal("show");
+        }
+
+       function loadTableData(items) {
+             const table = document.getElementById("tbody");
+             var numeroFila = 1;
+             items.forEach(item => {
+                 let row = table.insertRow();
+                 let blankColumn = row.insertCell(0);
+                 let status = row.insertCell(1);
+                 let requied = row.insertCell(2);
+                 let typeDocument = row.insertCell(3);
+                 let inputFile = row.insertCell(4);
+                 blankColumn.innerHTML = "";
+                 status.innerHTML = "<label class='vcenter' id='actual-status_"+numeroFila+"'>Pendiente</label>";
+                 requied.innerHTML = TextoObligatorio(item.obligatorio);
+                 typeDocument.innerHTML = item.tipoDocumento;
+                 inputFile.innerHTML = "<input type='file' id='actual-btn_"+numeroFila+"' hidden=''><label class='boton-menu' for='actual-btn_"+numeroFila+"' id='btnSubir_"+numeroFila+"' onclick='cargarDocumento(event)'>Seleccione Archivo</label><span class='texto-uploader' id='file-chosen_"+numeroFila+"'> Ningún archivo seleccionado</span>";
+                 
+                 addOnChange(numeroFila);
+                 
+                 numeroFila = numeroFila + 1;
+             });
+         }
+
+        function TextoObligatorio(valor) {
+            let retorno = "No";
+            if (valor == true) {
+                retorno = "Sí";
+            }
+            return retorno;
+        }
+        
+        function addOnChange(numeroFila){
+            const actualBtn = document.getElementById("actual-btn_"+numeroFila+"");
+            var base64data;
+            var fileName = "";
+            var esExcel = false;
+            var file;
+            const fileChosen = document.getElementById("file-chosen_"+numeroFila+"");
+            actualBtn.addEventListener('change', function() {
+                if (this.files) {
+                    fileChosen.textContent = this.files[0].name;
+                    fileName = this.files[0].name;
+                    file = this.files[0];
+                    let btnSubir = document.getElementById("btnSubir_"+numeroFila+"");
+                    btnSubir.classList.remove('ocultar');
+                    let validFile = validate(numeroFila);
+                    if (validFile) {
+                        btnSubir.classList.add('subidaDocumento');
+                        btnSubir.innerHTML = "Subiendo Archivo";
+                        getBase64(file).then(
+                            data => {
+                                base64data = data;
+                                let validFile64 = validateBase64(base64data);
+                                if (validFile64) {
+                                    if (false) {
+                                        uploadDocumento();
+                                    } else {
+                                        uploadDocumentoDirectoBanco(base64data, numeroFila, file);
+                                    }
+                                } else {
+                                    MessageError();
+                                }
+                            }
+                        );
+                    } else {
+                        var alertStrings = {
+                            confirmButtonLabel: "Aceptar",
+                            title: "Error",
+                            text: "No se pudo validar el documento, verifique el tamaño y la extensión."
+                        };
+                        var alertOptions = {
+                            height: 120,
+                            width: 260
+                        };
+                        Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+                            function(success) {
+                                //console.log("Alert dialog closed");
+                            },
+                            function(error) {
+                                //console.log(error.message);
+                            }
+                        );
+                    }
+                }
+            });
+        }
+        
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function validate(numeroFila) {
+            let fileUploader = document.getElementById("actual-btn_"+numeroFila+"");
+            let fileUploaderValue = fileUploader.value;
+            if (fileUploaderValue) {
+                let checkFile = fileUploaderValue.toLowerCase();
+                if (!checkFile.match(/(\.pdf|.xls|.xlsx|.jpg|.jpeg|.png)$/)) {
+                    return false;
+                } else {
+                    if (checkFile.match(/(\.xls|.xlsx)$/)) {
+                        esExcel = true;
+                    } else {
+                        esExcel = false;
+                    }
+                    let sz = fileUploader.files[0].size / 1024 / 1024;
+                    if (sz > 8) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            } else {
+                return false;
+            }
+        }
+
+        function validateBase64(base64data) {
+            let _return = false;
+            let myArray = base64data.split(";");
+            let typeBase64 = "";
+            if (myArray.length > 1) {
+                if (myArray[1].includes(",")) {
+                    let myArray2 = myArray[1].split(",");
+                    if (myArray2.length > 1) {
+                        typeBase64 = myArray2[1].substr(0, 5);
+                    }
+                } else {
+                    typeBase64 = myArray[0].substr(0, 5);
+                }
+            }
+            switch (typeBase64.toUpperCase()) {
+                case "JVBER":
+                    // pdf
+                    _return = true;
+                    break;
+                case "LS1GY":
+                    // pdf
+                    _return = true;
+                    break;
+                case "UESDB":
+                    // excel
+                    _return = true;
+                    break;
+                case "IVBOR":
+                    // PNG
+                    _return = true;
+                    break;
+                case "/9J/4":
+                    // JPG / JPEG
+                    _return = true;
+                    break;
+                case "0M8R4":
+                    // .xls
+                    _return = true;
+                    break;
+                default:
+                    // no permitido
+                    _return = false;
+                    break;
+            }
+            return _return;
+        }
+        
+        function uploadDocumentoDirectoBanco(base64data, numeroFila, file) {
+            if (IncidentId != null && IncidentId != "") {
+                if (IncidentId.indexOf("{") > -1) {IncidentId = IncidentId.substring(1, 37);}
+                var fileData = new FormData();
+                fileData.append("file", file);
+                var idDocumento = objeto[numeroFila - 1].documentoId;
+                if (idDocumento.indexOf("{") > -1) {idDocumento = idDocumento.substring(1, 37);}
+                var idTipoDocumento = objeto[numeroFila - 1].tipoDocumentoId;
+                if (idTipoDocumento.indexOf("{") > -1) {idTipoDocumento = idTipoDocumento.substring(1, 37);}
+                var nombreDocumento = objeto[numeroFila - 1].tipoDocumento;
+                
+                debugger;
+                
+                var objetoDeSubida = {
+                    IncidentId : IncidentId,
+                    fileData : fileData,
+                    idDocumento : idDocumento,
+                    idTipoDocumento : idTipoDocumento,
+                    base64data : base64data,
+                    nombreDocumento : nombreDocumento
+                };
+                listInfoDocumentoSubida.push(objetoDeSubida);
+                
+                uploadDocumentoDirectoBancoP2(IncidentId, idDocumento, idTipoDocumento, base64data, file, numeroFila);
+            }
+        }
+        
+        function uploadDocumentoDirectoBancoP2(idIncident, idDocumento, idTipoDocumento, base64data, file, numeroFila) {
+            // obtener nombre de archivo
+            fileUploaderValue = file.name;
+            
+            // obtener base64 limpia
+            let myArray = base64data.split(";");
+            let Base64 = "";
+            if (myArray.length > 1) {
+                if (myArray[1].includes(",")) {
+                    let myArray2 = myArray[1].split(",");
+                    if (myArray2.length > 1) {
+                        Base64 = myArray2[1];
+                    }
+                } else {
+                    Base64 = myArray[0];
+                }
+            }
+
+
+            // llamar plugin action
+            var parameters = {};
+            parameters.Request_IdIncident = idIncident; // Edm.String
+            parameters.Request_IdDocument = idDocumento; // Edm.String
+            parameters.Request_IdTipoDocumento = idTipoDocumento; // Edm.String
+            parameters.Request_Filename = fileUploaderValue; // Edm.String            
+
+            var req = new XMLHttpRequest();
+            req.open("POST", window.Xrm.Utility.getGlobalContext().getClientUrl() + "/api/data/v9.2/xmsbs_FileNetUploadModel", true);
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("Accept", "application/json");
+            req.onreadystatechange = function() {
+                if (this.readyState === 4) {
+                    req.onreadystatechange = null;
+                    if (this.status === 200 || this.status === 204) {
+                        var result = JSON.parse(this.response);
+                        console.log(result);
+                        // Output Parameters
+                        var response_filenetuploadmodel_success = result["Response_FileNetUploadModel_Success"]; // Edm.Boolean
+                        var response_filenetuploadmodel_message = result["Response_FileNetUploadModel_Message"]; // Edm.String
+                        var response_filenetuploadmodel_jsonobj = result["Response_FileNetUploadModel_JsonObj"]; // Edm.String
+                        if (response_filenetuploadmodel_success) {
+                            // replace ##contenidoBase64##
+                            let objJson = response_filenetuploadmodel_jsonobj.replace("##contenidoBase64##", Base64.replace("'", ""));
+                            uploadDocumentoDirectoBancoP3(objJson, file, idDocumento, numeroFila);
+                        }
+                    } else {
+                        console.log(this.responseText);
+                    }
+                }
+            };
+            req.send(JSON.stringify(parameters));
+        }
+        
+        function uploadDocumentoDirectoBancoP3(objJson, file, idDocumento, numeroFila) {
+            window._formContext =  window._executionContext;
+            RepositorioSucesos.setMidasHost(window._formContext);
+            RepositorioSucesos.setMidasHostBody(window._formContext);
+            RepositorioSucesos.setFileNetUploadHost(window._formContext);
+
+            RepositorioSucesos.apiTokenMidas(function(data1) {
+                if (data1 && data1.access_token !== "undefined" ) {
+                    RepositorioSucesos.apiFileNetUploadV1(data1.access_token, objJson, function(data2) {
+                        if (data2 && data2.IdDocumento !== "undefined" && data2.IdDocumento != "" && data2.IdDocumento.trim().length > 0) {
+                            // id filenet
+                            idFilenet = data2.IdDocumento;
+                            RepositorioSucesos.ocultarIndicadorProgreso();
+                            let fecha = Date.now();
+                            let fechaUTC = new Date().toISOString();
+
+                            var record = {};
+                            record.xmsbs_id = idFilenet;
+                            record.xmsbs_name = file.name;
+                            record.xmsbs_fechaalta = fechaUTC; // Date Time
+                            record.statuscode = 657130001; // Status
+                            
+                            let userSettings = window.Xrm.Utility.getGlobalContext().userSettings;
+                            let idUsuario = userSettings.userId;
+                            if (idUsuario.indexOf("{") > -1) {idUsuario = idUsuario.substring(1, 37);}
+                            
+                            record["xmsbs_subidopor@odata.bind"] = "/systemusers("+idUsuario+")";
+                    
+                            debugger;
+                            
+                            window.Xrm.WebApi.updateRecord("xmsbs_documento", idDocumento, record).then(
+                                function success(result) {
+                                    uploadDocumentoDirectoBancoP4(idFilenet, fechaUTC, file, numeroFila);
+                                },
+                                function(error) {
+                                    var confirmStrings = {
+                                        confirmButtonLabel: "Aceptar",
+                                        title: "Error",
+                                        subtitle: data.message
+                                    };
+                                    var confirmOptions = {
+                                        height: 200,
+                                        width: 260
+                                    };
+                                    openConfirmDialog(confirmStrings, confirmOptions);
+                                }
+                            );
+                        } else {
+                            var confirmStrings = {
+                                confirmButtonLabel: "Aceptar",
+                                title: "Error",
+                                subtitle: data.message
+                            };
+                            var confirmOptions = {
+                                height: 200,
+                                width: 260
+                            };
+                            openConfirmDialog(confirmStrings, confirmOptions);
+                        }
+                    });
+                } else {
+                    var confirmStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        subtitle: "Estimado usuario, el servicio presenta intermitencia. Intente nuevamente más tarde"
+                    };
+                    var confirmOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialog(confirmStrings, confirmOptions);
+                }
+            });
+        }
+        
+        function uploadDocumentoDirectoBancoP4(idfilenet, fecha, file, numeroFila) {
+            RepositorioSucesos.ocultarIndicadorProgreso();
+            if (idfilenet) {
+                var genIdAPI = "";
+                genIdAPI = idfilenet;
+                fileName = file.name;
+
+                if (genIdAPI != null && fileName != null && genIdAPI != "" && fileName != "") {
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Operación Exitosa",
+                        text: ""+objeto[numeroFila - 1].tipoDocumento+" se ha subido exitosamente"
+                    };
+                    var alertOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialogUploadDocumento(true, alertStrings, alertOptions);
+                    
+                    //Actualiza texto a Subido
+                    let btnSubir = document.getElementById("btnSubir_"+numeroFila+"");
+                    btnSubir.classList.add('documentoSubido');
+                    btnSubir.innerHTML = "Documento Subido";
+                    
+                    //Oculta nombre del archivo
+                    let archivoSubir = document.getElementById("file-chosen_"+numeroFila+"");
+                    archivoSubir.innerHTML = "";
+                    
+                    //Oculta el botón subir
+                    btnSubir.classList.add('ocultar');
+                    
+                    //El texto queda como subido
+                    archivoSubir.classList.add('documentoSubido');
+                    archivoSubir.innerHTML = "Documento Subido";
+                    
+                    //Cambia a Subido
+                    let textoEstado = document.getElementById("actual-status_"+numeroFila+"");
+                    textoEstado.innerHTML = "Subido";
+                    
+                } else {
+                    var alertStrings = {
+                        confirmButtonLabel: "Aceptar",
+                        title: "Error",
+                        text: "Estimado usuario, el servicio presenta intermitencia. Intente nuevamente más tarde"
+                    };
+                    var alertOptions = {
+                        height: 200,
+                        width: 260
+                    };
+                    openConfirmDialogUploadDocumento(false, alertStrings, alertOptions);
+                }
+
+            } else {
+                var alertStrings = {
+                    confirmButtonLabel: "Aceptar",
+                    title: "Error",
+                    text: data.message
+                };
+                var alertOptions = {
+                    height: 200,
+                    width: 260
+                };
+                openConfirmDialogUploadDocumento(data.success, alertStrings, alertOptions);
+            }
+        }
+        
+        function openConfirmDialogUploadDocumento(resultado, confirmStrings, confirmOptions) {
+            //debugger;
+            window.Xrm.Navigation.openAlertDialog(confirmStrings, confirmOptions).then(
+                function(success) {
+                    if (success.confirmed) {
+                        if (resultado) {
+                            
+                        }
+                    }
+                    else {
+                        
+                    }
+                },
+                function(error) {
+                    //console.log(error.message);
+                }
+            );
+        }
+        
+        function cerrarVentana(){
+            window._executionContext.getControl("DocumentosDelCaso").refresh();
+            window.close();
+        }
+
+        $(document).ready(function() {
+            window._executionContext = window.parent.getContextPopUp_PopUp();
+            window._formContext = window.parent.getFormContextPopUp();
+            objeto = window.parent.getObjetoDatos();
+
+            IncidentId = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+            loadTableData(objeto)
+        });
+    </script>
+</head>
+
+<body>
+    <form autocomplete="off">
+        <div class="data-container">
+            <pre class="NoBorde"></pre>
+            <div id="DIVSubirDocumentos">
+                <div class="p-4 form-group row">
+                    <div class="col-sm-3 my-2">
+                        <label id="lblTitulo">Listado de Documentos</label>
+                    </div>
+                </div>
+                <div id="divTblSubirDocumentos" class="container">
+                    <table id="tblSubirDocumentos" class="table cell-border">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Estado del Documento</th>
+                                <th scope="col">Obligatorio</th>
+                                <th scope="col">Tipo de Documento</th>
+                                <th scope="col">Subir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody" style="vertical-align:middle">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="DIVCerrarVentana" class="container" style="text-align:right">
+                    <button id="btnCerrarVentana" type="button" class="btn btn-danger" onclick="cerrarVentana()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal 
+        <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Información</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">×</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="pMensaje"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="cerrarModalPolizas()">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+    </form>
+</body>
+
+</html>
