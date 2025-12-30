@@ -371,7 +371,7 @@ GrillaCaso = {
 			return nombreCampo.substring(0, nombreCampo.length - 1);
 		}
 		return nombreCampo;
-	},   
+	},  
 	
 //================
 //FUNCIONES ODATA

@@ -1200,7 +1200,7 @@ BotonRibbonCaso = {
         else {
             return false;
         }
-	},	
+	},	 
 
 	onClickButtonSLA: function (executionContext) {	
 		//debugger;       
@@ -1311,17 +1311,68 @@ BotonRibbonCaso = {
 		// el botón solo se muestra solo si el caso es de: DO-1152 y DO-1354
 		// DO-1152: d4a03cd8-cb09-ed11-82e5-000d3add02c2
 		// DO-1354: 8e3f4bd4-082e-ed11-9db1-002248a01933
-		
+
+        // FRAUDE
+        // DO-1472 : ac823ec0-e919-ef11-9f89-000d3ad8d133
+        // DO-1473 : f33f8ce8-ea19-ef11-9f89-000d3ad8d133
+        // DO-1474 : 08570bff-eb19-ef11-9f89-000d3ad8d133
+
+        // SUB REQ FRAUDE:
+        // DO-1499	48596975-608e-f011-b4cb-002248e00f9b
+        // DO-1500	54a7f405-4fa5-f011-bbd2-002248e037cf
+        // DO-1501	5d276ea2-50a5-f011-bbd2-002248e037cf
+        // DO-1502	95476234-51a5-f011-bbd2-002248e037cf
+        // DO-1503	9ee0748b-53a5-f011-bbd2-002248e037cf
+        // DO-1504	0a5634c7-53a5-f011-bbd2-002248e037cf
+        
 		var DetalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
 		if(!DetalleOperacionID)
 			return false;
 		
 		DetalleOperacionID = DetalleOperacionID.replace(/[{}]/g, "").toLowerCase();
 		
+
+        var etapaID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_etapa");
+		if(!etapaID)
+			return false;
+
+        etapaID = etapaID.replace(/[{}]/g, "").toLowerCase();
+
 		if (DetalleOperacionID == "d4a03cd8-cb09-ed11-82e5-000d3add02c2" ||
-			DetalleOperacionID == "8e3f4bd4-082e-ed11-9db1-002248a01933") {
+			DetalleOperacionID == "8e3f4bd4-082e-ed11-9db1-002248a01933")
+        {
 			return true;
 		}
+
+        if (DetalleOperacionID == "ac823ec0-e919-ef11-9f89-000d3ad8d133" ||
+            DetalleOperacionID == "f33f8ce8-ea19-ef11-9f89-000d3ad8d133")
+        {
+            if (etapaID =="10612f72-ba82-f011-b4cc-6045bd39511e") // Análisis de Fraude
+            {
+                return true;
+            }
+        }
+
+        if (DetalleOperacionID == "08570bff-eb19-ef11-9f89-000d3ad8d133")
+        {
+            if (etapaID =="80b15e27-c082-f011-b4cc-6045bd39511e") // Análisis de Fraude
+            {
+                return true;
+            }
+        }
+
+        if (DetalleOperacionID == "48596975-608e-f011-b4cb-002248e00f9b" ||
+                DetalleOperacionID == "54a7f405-4fa5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "5d276ea2-50a5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "95476234-51a5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "9ee0748b-53a5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "0a5634c7-53a5-f011-bbd2-002248e037cf"){
+            
+            if (etapaID =="5ac4d385-d58c-f011-b4cb-000d3ac0d3a3") // Gestión Demanda
+            {
+                return true;
+            }        
+        }
 		
 		return false;
 		
@@ -1342,21 +1393,40 @@ BotonRibbonCaso = {
         //var windowFeatures = "width=900,height=500,resizable=yes,top=100,menubar=no,toolbar=no,location=no,status=no,scrollbars=no";
 
         //window.open(url, windowName, windowFeatures);
+        var wrName = "";
+    
+		var DetalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
+		if(!DetalleOperacionID)
+			return false;
+        
+		DetalleOperacionID = DetalleOperacionID.replace(/[{}]/g, "").toLowerCase();
 		
-		var pageInput = {
-			pageType: "webresource",
-			webresourceName: "xmsbs_incident_print"
-		};
-		var navigationOptions = {
-			target: 2,
-			width: 900,
-			height: 500,
-			position: 1
-		};
-		Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(
-			function success(){}, 
-			function error(){}
-		);
+		if (DetalleOperacionID == "d4a03cd8-cb09-ed11-82e5-000d3add02c2" ||
+			DetalleOperacionID == "8e3f4bd4-082e-ed11-9db1-002248a01933") {
+			wrName = "xmsbs_incident_print";
+		}
+        else if (DetalleOperacionID == "ac823ec0-e919-ef11-9f89-000d3ad8d133" ||
+                 DetalleOperacionID == "f33f8ce8-ea19-ef11-9f89-000d3ad8d133" ||
+                DetalleOperacionID == "08570bff-eb19-ef11-9f89-000d3ad8d133") {
+            
+            wrName = "xmsbs_incidentfraude_print";
+        }
+        else if (DetalleOperacionID == "48596975-608e-f011-b4cb-002248e00f9b" ||
+                DetalleOperacionID == "54a7f405-4fa5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "5d276ea2-50a5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "95476234-51a5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "9ee0748b-53a5-f011-bbd2-002248e037cf" ||
+                DetalleOperacionID == "0a5634c7-53a5-f011-bbd2-002248e037cf"){
+
+            wrName = "xmsbs_incidentfraude_print";
+        }
+        else{
+            return; // DO no habilitado para imprimir
+        }
+        
+		var pageInput = {pageType: "webresource", webresourceName: wrName };
+		var navigationOptions = { target: 2, width: 900, height: 500, position: 1 };
+		Xrm.Navigation.navigateTo(pageInput, navigationOptions).then( function success(){},  function error(){} );
 	},
     
     enableButtonCancelar: function (executionContext){

@@ -1,1150 +1,167 @@
-<html><head>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seleccionar Opción</title>
     <meta charset="utf-8">
-    <title>Interesado y Pólizas</title>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">    
-    
-    <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
-    <script src="/WebResources/xmsbs_webAPI"></script>
-    <script src="/WebResources/xmsbs_util"></script>    
-	<script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
-
-
-	<!-- TABLAS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.css" rel="stylesheet">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/locale/es.js"></script>
-    
-    <script type="text/javascript" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-    <script src="/WebResources/xmsbs_checkboxjs" type="text/javascript"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js"></script>
-    <!--<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>-->
-
-    <link href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
-    <link href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css" rel="stylesheet" type="text/css">   
-    <!--<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />-->
-    <script src="/WebResources/xmsbs_checkboxcss" type="text/css"></script>    
-
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+	<script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+	<script src="/WebResources/xmsbs_webAPI"></script>
+	<script src="/WebResources/xmsbs_util"></script>
     <style>
-        .obligatorio {
-            color: rgb(234, 6, 0);
-        }
-
-        .loader {
-            border: 16px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 16px solid #3498db;
-            width: 120px;
-            height: 120px;
-            -webkit-animation: spin 2s linear infinite; /* Safari */
-            animation: spin 2s linear infinite;
-        }
-
-        thead th {
-            background-color: rgb(221, 8, 8);
-            color: white;
-        }
-
-        /* Safari */
-        @-webkit-keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-            }
-
-            100% {
-                -webkit-transform: rotate(360deg);
-            }
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }       
-
-        .NoBorde {
-            border-style: none;
-        }  
-        
-        #tblPolizas span{
-			display:none;
-        }
-		
-		.msgerror {
-			color: rgb(234, 6, 0);
-		}		
+        body { font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; padding: 10px; }
+        .field-container { margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; }
+        .field-title { font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #0078d4; padding-bottom: 5px; color: #0078d4;}
+        .option-item { border: 1px solid #eee; margin-bottom: 5px; padding: 8px; cursor: pointer; transition: background-color 0.2s; }
+        .option-item:hover { background-color: #f0f8ff; border-color: #0078d4; }
+        .option-name { font-weight: bold; }
+        .option-description { font-size: 0.9em; color: #555; }
+        .no-options { color: #888; font-style: italic; }
     </style>
-    <script type="text/javascript">
-        var parametroApiKey = "AuthApi";
-        var parametroAzure = "AzureURL";
-        var baseUrl = "https://chld2weuapppmidas001.csbsand.cl.corp/";
-        //var baseUrl = "https://chli2weuapppmidas001.csbsanh.cl.corp/";
-        //var baseUrl = "https://chlp2weuapppmidas001.csbsan.cl.corp/";
-        var apiKey = "56C3D9E6-E5B6-4B76-816F-5741FA0420BE";
-		var UsuarioAdminID = "d43af6f7-e875-eb11-a812-000d3ab23035"; // Dynamics_CRM_MIDAS_CL_DEV
-		
-        // DEV:  {d43af6f7-e875-eb11-a812-000d3ab23035}
-        // HOMO: {d43af6f7-e875-eb11-a812-000d3ab23035}
-        // PROD: {a533cb3f-6583-eb11-a812-000d3abd3579}
-        
-		var IncidentId = "";
-		var oClienteCaso = null;
+	<script>
+// Variable global para almacenar el contexto de la organización (URL)
+var Xrm = parent.Xrm;
+var orgUrl = Xrm.Utility.getGlobalContext().getClientUrl();
 
-		var InteresadoID = null;
-		var PolizaContainerID = "";
-		
-		var EsTitularContrato = false;
-		var RUTInteresado = "";
-		var NombreInteresado = "";
-		var DireccionInteresado = "";
-		var TelefonoInteresado = "";
-		var MailInteresado = "";
-		
-        var tblPolizas = null;
-        var listPolizasSeleccionadas = [];
-		var LstPolizas = [];
-
-        function get(url, successFunction){
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function (data) {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    successFunction(JSON.parse(data.currentTarget.response));
-                }
-            }
-
-            xhr.open("GET", baseUrl + url, true);
-            xhr.setRequestHeader("Accept", "application/json");
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.setRequestHeader("AuthApi", apiKey);
-            xhr.send();
-        }
-        function post(url, params, successFunction){
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", baseUrl + url, true);
-            xhr.setRequestHeader("Accept", "application/json");
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.setRequestHeader("AuthApi", apiKey);
-
-            xhr.onreadystatechange = function (data) {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    successFunction(JSON.parse(data.currentTarget.response));
-                }
-            }
-
-            xhr.send(JSON.stringify(params));
-        }
-        function openModal(mensaje){
-            $("#pMensaje").html(mensaje);
-            $('#alertModal').modal("show");
-        }
-
-        $(document).ready(function () {
-            limpiarTitulo();
-
-            window._executionContext = window.parent.getExecutionContext();
-            window._formContext = window.parent.getExecutionFormContext();         
-			IncidentId = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
-			
-			
-			LoadIntereado();
-			$('#dvLoaderInteresado').css("display", "none");
-			$('#DIVIntersado').css("display", "block");
-			
-			// ------------------------------------------------
-			LoadPolizas();
-			$('#dvLoaderPolizas').css("display", "none");
-			$('#DIVPolizas').css("display", "block");			
-        });
-		function LoadIntereado(){
-			var oInteresado = buscarInteresado();
-			if (oInteresado && oInteresado.value.length > 0)
-			{
-				if (oInteresado.value.length > 1)
-				{
-					// realiza medida correctiva, y elimina registros, solo deja el registro más reciente.
-					for (var i = 1; i < oInteresado.value.length; i++) {                    
-						//SDK.WEBAPI.deleteRecordImpersonate(window._executionContext, oInteresado.value[i].xmsbs_movimientoid, entity, UsuarioAdminID, null, null);
-						SDK.WEBAPI.deleteRecord(window._executionContext, oInteresado.value[i].xmsbs_interesadoid, entity, null, null);
-					}
-				}
-				
-				// si existe el registro en CRM, entonces lo setea al formulario.
-				InteresadoID = oInteresado.value[0].xmsbs_interesadoid;
-				EsTitularContrato = oInteresado.value[0].xmsbs_estitularcontrato;
-				RUTInteresado = oInteresado.value[0].xmsbs_rut;
-				NombreInteresado = oInteresado.value[0].xmsbs_name;
-				DireccionInteresado = oInteresado.value[0].xmsbs_direccion;
-				TelefonoInteresado = oInteresado.value[0].xmsbs_telefono;
-				MailInteresado = oInteresado.value[0].xmsbs_mail;
-				
-				if (EsTitularContrato)
-				{
-					$('#OpcionSI').prop('checked', true);
-					$('#OpcionNO').prop('checked', false);
-
-					//InteresadoTitular_SI();
-					
-					setDisabled("txtRutInteresado", true);
-					setDisabled("txtNombreInteresado", true);
-					setDisabled("txtTelefonoInteresado", true);
-					setDisabled("txtEmailInteresado", true);
-			
-					$('#txtRutInteresado').val(RUTInteresado);
-					$('#txtNombreInteresado').val(NombreInteresado);
-					$('#txtDireccionInteresado').val(DireccionInteresado);
-					$('#txtTelefonoInteresado').val(TelefonoInteresado);
-					$('#txtEmailInteresado').val(MailInteresado);					
-				}
-				else
-				{
-					$('#OpcionSI').prop('checked', false);
-					$('#OpcionNO').prop('checked', true);
-					
-					//InteresadoTitular_NO();
-					
-					setDisabled("txtRutInteresado", false);
-					setDisabled("txtNombreInteresado", false);
-					setDisabled("txtTelefonoInteresado", false);
-					setDisabled("txtEmailInteresado", false);	
-			
-					$('#txtRutInteresado').val(RUTInteresado);
-					$('#txtNombreInteresado').val(NombreInteresado);
-					$('#txtDireccionInteresado').val(DireccionInteresado);
-					$('#txtTelefonoInteresado').val(TelefonoInteresado);
-					$('#txtEmailInteresado').val(MailInteresado);					
-				}
-			}
-			else
-			{
-				InteresadoID = null;
-				EsTitularContrato = "";
-				RUTInteresado = "";
-				NombreInteresado = "";
-				DireccionInteresado = ""; 
-				TelefonoInteresado = "";
-				MailInteresado = "";
-				InteresadoTitular_NO();
-			}		
-		}
-		
-		function LoadPolizas(){
-			var resultado = buscarClienteCaso();
-			if (!resultado || resultado.value.length == 0)
-				return; // Debería mostrar error, ya que no se pudo obtener los datos del caso.
-            //SetFieldInteresado_ClienteCaso(resultado);
-			oClienteCaso = resultado.value[0];
-			
-			$('#lblNombreRUTCliente').html(oClienteCaso.xmsbs_rut + " - " + oClienteCaso.xmsbs_nombrecliente);
-			consultarPolizas();		
-		}
-		
-		function limpiarTitulo(){
-			return;
-			
-            parent.$("h1[data-id='defaultDialogChromeTitle-1']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-2']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-3']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-4']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-5']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-6']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-7']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-8']",parent.document).html("");
-            parent.$("h1[data-id='defaultDialogChromeTitle-9']",parent.document).html("");
-			
-			parent.$("h1[data-id='defaultDialogChromeTitle-10']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-11]",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-12']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-13']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-14']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-15']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-16']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-17']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-18']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-19']",parent.document).html("");
-			parent.$("h1[data-id='defaultDialogChromeTitle-20']",parent.document).html("");
-        }
-        function setDisabled(item, bool){
-            if (bool) {
-                $("#" + item).prop('disabled', true);
-            }
-            else {
-                $("#" + item).prop('disabled', false);
-            }
-        } 		
-		var FnRUT = {
-			formatearRutCRM: function (rut){
-				if(rut)
-				{
-					var _quitarCero = rut.substring(0, 3);
-					if (_quitarCero == "000"){
-						rut = rut.substring(3);
-					}
-					else{
-						_quitarCero = rut.substring(0, 2);
-						if (_quitarCero == "00"){
-							rut = rut.substring(2);
-						}
-					}      
-					if (!rut.includes("-"))
-						rut = rut.substring(0, rut.length - 1) + "-" + rut.substring(rut.length - 1);
-						
-					return rut;
-				}
-			},		
-		
-			// Valida el rut con su cadena completa "XXXXXXXX-X"
-			validaRut : function (rutCompleto) {
-				rutCompleto = FnRUT.formatearRutCRM(rutCompleto);
-				if (!/^[0-9]+[-]{1}[0-9kK]{1}$/.test( rutCompleto ))
-					return false;
-				var tmp = rutCompleto.split('-');
-				var digv = tmp[1]; 
-				var rut = tmp[0];
-				if ( digv == 'K' ) digv = 'k' ;
-				
-				return (FnRUT.dv(rut) == digv );
-			},
-			dv : function(T){
-				var M=0,S=1;
-				for(;T;T=Math.floor(T/10))
-					S=(S+T%10*(9-M++%6))%11;
-				return S?S-1:'k';
-			}
-		}
-		function fncValidaRUT(){	
-			if (FnRUT.validaRut( $("#txtRutInteresado").val() )){
-				//$("#msgerror").html("El rut ingresado es válido");
-				
-				var formateaRut = $("#txtRutInteresado").val();
-				formateaRut = formateaRut.replace(/[^\dkK]/g, "");
-				var largo = formateaRut.length;
-
-				formateaRut = formateaRut.substring(0, largo - 1) + "-" + formateaRut.substring(largo - 1, largo);
-				formateaRut = formateaRut.toUpperCase();
-				
-				$('#txtRutInteresado').val(formateaRut);
-				$("#msgerror_RUT").html("");
-			} else {
-				$("#msgerror_RUT").html("El RUT no es válido");
-			}	
-		}
-		
-		function fncValidaMail(){
-			var correo = $("#txtEmailInteresado").val();
-			
-			if(!correo.match(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/))
-				$("#msgerror_Email").html("El Mail no es válido");
-			else
-				$("#msgerror_Email").html("");
-		}
-		
-		
-		function InteresadoTitular_SI(){
-			setDisabled("txtRutInteresado", true);
-			setDisabled("txtNombreInteresado", true);
-			setDisabled("txtTelefonoInteresado", true);
-			setDisabled("txtEmailInteresado", true);
-			
-			// Carga los datos del Cliente del Caso.
-			$('#txtRutInteresado').val(oClienteCaso.xmsbs_rut);
-			$('#txtNombreInteresado').val(oClienteCaso.xmsbs_nombrecliente);
-			$('#txtDireccionInteresado').val(""); // la integración PEY3 no trae la dirección
-			$('#txtTelefonoInteresado').val(oClienteCaso.xmsbs_telefonocelular);
-			$('#txtEmailInteresado').val(oClienteCaso.xmsbs_emailcliente);
-		}
-		function InteresadoTitular_NO(){
-			setDisabled("txtRutInteresado", false);
-			setDisabled("txtNombreInteresado", false);
-			setDisabled("txtTelefonoInteresado", false);
-			setDisabled("txtEmailInteresado", false);			
-			
-			$('#txtRutInteresado').val("");
-			$('#txtNombreInteresado').val("");
-			$('#txtDireccionInteresado').val("");
-			$('#txtTelefonoInteresado').val("");
-			$('#txtEmailInteresado').val("");
-		}
+function initializeModal() {
+	window._executionContext = window.parent.getExecutionContext();
+	debugger;
 	
-		function SetFieldInteresado_ClienteCaso(oClienteCaso){
-			RUTInteresado = oClienteCaso.value[0].xmsbs_rut;
-			NombreInteresado = oClienteCaso.value[0].xmsbs_nombrecliente;
-			DireccionInteresado = ""; // la integración PEY3 no trae la dirección
-			TelefonoInteresado = oClienteCaso.value[0].xmsbs_telefonocelular;
-			MailInteresado = oClienteCaso.value[0].xmsbs_emailcliente;			 
-		}
-        function GuardarInteresado(){
-			//$('#dvSavingInteresado').css("display", "block");
+	try {
+		loadDynamicOptions();
+
+	} catch (e) {
+		document.getElementById('dynamicContent').innerHTML = "<div class='no-options'>Error al procesar datos: " + e.message + "</div>";
+	}
+}
+
+function loadDynamicOptions() {
+	debugger;
+	
+    var dynamicContentDiv = document.getElementById('dynamicContent');
+    dynamicContentDiv.innerHTML = ''; // Limpiar el mensaje de carga
+
+	var etapaId = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "xmsbs_etapa");
+	if (!etapaId){
+		dynamicContentDiv.innerHTML = "<div class='no-options'>Error al cargar datos: No existe etapa</div>";
+		return;
+	}
+	
+	//var datosCompletos = [];
+
+	debugger;
+	// lectura de todos los campos activos de la etapa, que además la fnc al cambiar sea "Seleccion de Opcion"
+	var lstCampos = buscarCamposTextoSeleccionOpcion(etapaId);
+	
+	var htmlContent = '';
+	var hasContent = false;
 			
-			var isValid = true;
-			if ($('#OpcionSI').is(":checked")){
-				// solo valida la dirección
-				if ($('#txtDireccionInteresado').val() == null || $('#txtDireccionInteresado').val() == undefined || $('#txtDireccionInteresado').val() == ""){
-					isValid = false;
-				}
+	for (var oCampo of lstCampos.value){
+		//var lstSel = getFieldOptions(oCampo.xmsbs_campoid, oCampo.xmsbs_nombremostrar);
+		var lstSel = buscarSeleccionOpciones(oCampo.xmsbs_campoid);
+		
+		hasContent = true;
+		// Construir el contenedor del campo
+		htmlContent += "<div class='field-container'>";
+		htmlContent += "<div class='field-title'>" + oCampo.xmsbs_nombremostrar + "</div>";
+					
+		for (var oItem of lstSel.value){
+			//datosCompletos.push({campoId: oCampo.xmsbs_campoid,campoLabel: oCampo.xmsbs_nombremostrar,itemTitulo: oItem.xmsbs_name,itemDetalle: oItem.xmsbs_descripcion});
+
+			var optioname = oItem.xmsbs_name.replace(/'/g, "\\'");
+			var optiondescription = oItem.xmsbs_descripcion.replace(/'/g, "\\'");
+		
+			htmlContent += "<div class='option-item' onclick='selectOption('"+oCampo.xmsbs_name+"','"+optioname+"')'>";
+			htmlContent += "<div class='option-name'>${option.name}</div>";
+			htmlContent += "<div class='option-description'>" + oItem.xmsbs_descripcion + "</div>";
+			htmlContent += "</div>";
+
+		}
+		htmlContent += '</div>';
+	}
+	
+	if (hasContent) {
+		dynamicContentDiv.innerHTML = htmlContent;
+	} else {
+		dynamicContentDiv.innerHTML = "<div class='no-options'>No hay opciones configuradas para los campos evaluados.</div>";
+	}	
+}
+
+// ODATA
+
+function buscarCamposTextoSeleccionOpcion(etapaId){
+	//debugger;
+	var entityType = "xmsbs_campo";
+	var query = "$select=xmsbs_campoid,xmsbs_name,xmsbs_nombremostrar";
+	query += "&$filter=(_xmsbs_etapa_value eq '" + etapaId.replace(/[{}]/g, "") + "' and xmsbs_tipocampo eq 1 and xmsbs_fncjsonchange eq 657130010)";
+	var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+	return resultado;
+}	
+
+function buscarSeleccionOpciones(campoId){
+	//debugger;
+	var entityType = "xmsbs_conjuntodeopcionesgenerico";
+	var query = "$select=xmsbs_name,xmsbs_descripcion";
+	query += "&$filter=(_xmsbs_campo_value eq '" + campoId.replace(/[{}]/g, "") + "')";
+	var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+	return resultado;
+}			
+
+function getFieldOptions(campoId, nombreCampo) {
+	debugger;
+
+	
+
+	
+	/*
+		return new Promise((resolve, reject) => {
+		   
+
+			var data = buscarSeleccionOpciones(campoId);
+			var options = data.value.map(item => ({
+							name: item.xmsbs_name,
+							description: item.xmsbs_descripcion
+						}));
+						
+			if (options && options.value.length > 0){
+				resolve({ fieldName: nombreCampo, options: options });
 			}
 			else{
-				// todos los datos son obligatorios
-				if ($('#txtRutInteresado').val() == null || $('#txtRutInteresado').val() == undefined || $('#txtRutInteresado').val() == ""){
-					isValid = false;
-				}				
-				else if ($('#txtNombreInteresado').val() == null || $('#txtNombreInteresado').val() == undefined || $('#txtNombreInteresado').val() == ""){
-					isValid = false;
-				}
-				else if ($('#txtDireccionInteresado').val() == null || $('#txtDireccionInteresado').val() == undefined || $('#txtDireccionInteresado').val() == ""){
-					isValid = false;
-				}
-				else if ($('#txtTelefonoInteresado').val() == null || $('#txtTelefonoInteresado').val() == undefined || $('#txtTelefonoInteresado').val() == ""){
-					isValid = false;
-				}
-				else if ($('#txtEmailInteresado').val() == null || $('#txtEmailInteresado').val() == undefined || $('#txtEmailInteresado').val() == ""){
-					isValid = false;
-				}
+				resolve({ fieldName: nombreCampo, options: [] });
 			}
-			if (!isValid)
-			{
-				openModal("Ingrese datos obligatorios");
-				return false;
-			}
-			
-			
-			try
-			{
-				var objeto = {};
-				objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId.replace(/[{}]/g, "") + ")";
-				objeto["xmsbs_rut"] = $('#txtRutInteresado').val();
-				objeto["xmsbs_name"] = $('#txtNombreInteresado').val();
-				objeto["xmsbs_direccion"] = $('#txtDireccionInteresado').val();
-				objeto["xmsbs_telefono"] = $('#txtTelefonoInteresado').val();
-				objeto["xmsbs_mail"] = $('#txtEmailInteresado').val();
-				objeto["xmsbs_estitularcontrato"] = $('#OpcionSI').is(":checked");
+		});
+	*/
+}
 
-				if (InteresadoID)
-				{
-					// ACTUALIZA
-					var resultado = SDK.WEBAPI.updateRecord(window._executionContext, InteresadoID, objeto, "xmsbs_interesado", null, null);
-				}
-				else
-				{
-					// CREA
-					//var resultado = SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, "xmsbs_interesado", UsuarioAdminID);
-					var resultado = SDK.WEBAPI.createRecord(window._executionContext, objeto, "xmsbs_interesado");
-					InteresadoID = resultado.replace(/[{}]/g, "");
-				}
+function selectOption(fieldName, name) {
 
-				RUTInteresado = $('#txtRutInteresado').val();
-				NombreInteresado = $('#txtNombreInteresado').val();
-				DireccionInteresado = $('#txtDireccionInteresado').val();
-				TelefonoInteresado = $('#txtTelefonoInteresado').val();
-				MailInteresado = $('#txtEmailInteresado').val();
+    //var selectedValue = { 
+    //    fieldName: fieldName, 
+    //    name: name, 
+    //    description: description,
+    //    valueToSet: '${name} - ${description}' // Ejemplo de valor a retornar/establecer
+    //};
+    
+    // setea el campo
+	debugger;
+	JumpStartLibXRM.Fx.setValueField(window._executionContext,fieldName, name);
+    
+}
 
-				//openModal("Datos guardados correctamente.");
-				return true;
-			}
-			catch (ex) {
-				openModal("Error al guardar datos del interesado.");
-				return false;
-			}
-			
-			//refrescarGrillaInteresadoCaso();
-			//$('#dvSavingInteresado').css("display", "none");
-		}
-		
-		function GetRequestObject() {
-			if (window.XMLHttpRequest) {
-				return new window.XMLHttpRequest();
-			}
-			else {
-				try {
-					return new ActiveXObject("MSXML2.XMLHTTP.3.0");
-				}
-				catch (ex) {
-					return null;
-				}
-			}
-		}
+function closeModal() {
+    // Cerrar el modal sin devolver resultado.
+    //window.parent.Xrm.Navigation.closeModal();
 	
-		function consultarPolizas(){ 
-			
-			
-			var isDummy = false;
-			var str = ""; // esta fila no hace nada, pero me sirve en el debugger. NO BORRAR
-			debugger;
-			if (!isDummy)
-			{
-				var ApiUrl = "Santander/FamiliaPoliza?RutSantander=" + oClienteCaso.xmsbs_rut;
-				var service = GetRequestObject();
-				var response = null;
-				if (service != null)
-				{
-					service.open("GET", baseUrl + ApiUrl, false);
-					service.setRequestHeader("X-Requested-Width", "XMLHttpRequest");
-					service.setRequestHeader("Accept", "application/json,text/javascript, */*");
-					service.setRequestHeader(parametroApiKey, apiKey);
-					service.send(null);
-					if (service.response != "") 
-					{
-						if(service.response.includes("{"))
-						{
-							response = JSON.parse(service.response);
-						}  
-					}
-				}
-				
-				if (response)
-				{
-					if (response.success)
-					{
-						if(response.polizas.length > 0)
-						{
-							setPolizasInteresado(response);
-							$('#divTblPolizas').css("display", "block");
-						}
-						else 
-						{
-							openModal("No existen pólizas para: " + oClienteCaso.xmsbs_rut + " - " + oClienteCaso.xmsbs_nombrecliente);
-							$('#lblTituloRUTCliente').html("No existen Pólizas para:");
-							//setDisabled("btnBuscarPolizas", false);
-						}
-					}
-					else
-					{
-						openModal("Error al cargar Pólizas. " + response.message);
-					}
-				}
-				else
-				{
-					openModal("Error al cargar Pólizas.");
-				}			
-			}
-			else
-			{
-				// ---------------- DUMMY
-				var data = jQuery.parseJSON('{"polizas": [{"compania": "ZS","nombreCompania": "ZURICH SANTANDER","codigoFamilia": "VI","descripcionFamilia": "Vida con Ahorro","numeroPoliza": "1111111111","tipoProducto": "","codigoProducto": "343","nombreProducto": "Protección Ahorro","primaPoliza": "1,9","monedaPrimaPoliza": "UF"},{"compania": "ZS","nombreCompania": "ZURICH SANTANDER","codigoFamilia": "VI","descripcionFamilia": "Vida con Ahorro","numeroPoliza": "2222222222","tipoProducto": "","codigoProducto": "343","nombreProducto": "Protección Ahorro","primaPoliza": "1,9","monedaPrimaPoliza": "UF"},{"compania": "ZS","nombreCompania": "ZURICH SANTANDER","codigoFamilia": "VI","descripcionFamilia": "Vida con Ahorro","numeroPoliza": "3333333333","tipoProducto": "","codigoProducto": "343","nombreProducto": "Protección Ahorro","primaPoliza": "1,9","monedaPrimaPoliza": "UF"}],"success": true,"message": ""}');
-				//var data = jQuery.parseJSON('{"LstPolizas": [],"success": true,"message": "Ok","contenido": "","url": ""}');
-				//var data = jQuery.parseJSON('{"LstPolizas": [],"success": false,"message": "No existen Pólizas","contenido": "","url": ""}');
-				if (data.success) 
-				{
-					setPolizasInteresado(data);
-					$('#divTblPolizas').css("display", "block");
-				}
-				else 
-				{ 
-					openModal(data.message); 
-					//setDisabled("btnBuscarPolizas", false);
-					$('#lblTituloRUTCliente').html("No existen Pólizas para:");
-				}
-				// ---------------- END DUMMY			
-			}
-        }
-		
-        function setPolizasInteresado(data){
-			LstPolizas = data.polizas;
-			var html = DibujaTablaHTML(data.polizas);    
-			$("#tbody").html(html);
-			tblPolizas = $('#tblPolizas').DataTable({ 
-				"language": {
-					"sProcessing":     "Procesando...",
-					"sLengthMenu":     "Mostrar _MENU_ registros",
-					"sZeroRecords":    "No se encontraron resultados",
-					"sEmptyTable":     "Ningún dato disponible en esta tabla",
-					"sInfo":           "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-					"sInfoEmpty":      "Mostrando registros del 0 al 0 de un total de 0 registros",
-					"sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
-					"sSearch":         "Buscar:",
-					"sInfoThousands":  ",",
-					"sdvLoaderRecords": "Cargando...",
-					"oPaginate": {
-						"sFirst":    "Primero",
-						"sLast":     "Último",
-						"sNext":     "Siguiente",
-						"sPrevious": "Anterior"
-					},
-					"oAria": {
-						"sSortAscending":  ": Activar para ordenar la columna de manera ascendente",
-						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
-					},
-					"buttons": {
-						"copy": "Copiar",
-						"colvis": "Visibilidad"
-					}
-				},
-				select: {
-					"style": "multi"
-				},
-				"info": false,
-				"columnDefs": [                            
-					{
-						"targets": [0],
-						"checkboxes": {
-						   "selectRow": true
-						},
-						"searchable": false,
-						"orderable": false
-					}
-				],
-				"order": [[1, "asc"]]
-			});
-        }
-        function DibujaTablaHTML(data){
-            var html = '';
-            $.each(data, function (index, item) {
-                html += '<tr>';
-				html += '	<td>' + formatTexto(item.numeroPoliza) + '</td>';
-                html += '	<td>' + formatTexto(item.numeroPoliza) + '</td>';
-                html += '	<td>' + formatTexto(item.descripcionFamilia) + '</td>';
-                html += '	<td>' + formatTexto(item.nombreProducto) + '</td>';
-                html += '	<td>' + formatTexto(item.nombreCompania) + '</td>';
-                html += '	<td>' + '<input id="txtNOperacion_' + item.numeroPoliza + '" class="form-control" type="text" placeholder="(Solo si aplica)" onchange="SoloNumeros(this)">' + '</td>';
-                html += '</tr>';
-            });
-
-            return html;
-        }
-		
-		function SoloNumeros(input) {
-			//debugger;
-			var campo = input.value; // Obtiene el valor inicial del input
-			if (campo)
-			{
-				campo = campo.replace(/\D/g, '');			
-				input.value = campo;			
-			}
-		}
-		
-        function formatTexto(texto){  
-            //debugger;
-            if(texto != null && texto != undefined)
-            {
-                if(texto.toLowerCase() == "null")
-					texto = "";
-            }
-            else
-            {
-                texto = "";
-            }
-            
-            return texto;
-        }
-        function guardarPolizas(){
-            debugger;
-			$('#dvSavingPolizas').css("display", "block");
-			
-            setDisabled("btnguardarPolizas", true); 
-			setDisabled("btnIngresarPolizasManuales", true); 
-			
-            listPolizasSeleccionadas = [];
-            var rows_selected = tblPolizas.column(0).checkboxes.selected();
-            
-            $.each(rows_selected, function(index, rowId){
-                var lstPolSel = LstPolizas.filter(x => x.numeroPoliza == rowId);
-				
-				let Compania = "";
-				if (lstPolSel[0].compania != null)
-					Compania = lstPolSel[0].compania;
-				let NombreCompania = "";
-				if (lstPolSel[0].nombreCompania != null)
-					NombreCompania = lstPolSel[0].nombreCompania;				
-				let CodigoFamilia = "";
-				if (lstPolSel[0].codigoFamilia != null)
-					CodigoFamilia = lstPolSel[0].codigoFamilia;				
-				let DescripcionFamilia = "";
-				if (lstPolSel[0].descripcionFamilia != null)
-					DescripcionFamilia = lstPolSel[0].descripcionFamilia;				
-				let TipoProducto = "";
-				if (lstPolSel[0].tipoProducto != null)
-					TipoProducto = lstPolSel[0].tipoProducto;
-				let CodigoProducto = "";
-				if (lstPolSel[0].codigoProducto != null)
-					CodigoProducto = lstPolSel[0].codigoProducto;				
-				let NombreProducto = "";
-				if (lstPolSel[0].nombreProducto != null)
-					NombreProducto = lstPolSel[0].nombreProducto;				
-				let PrimaPoliza = "";
-				if (lstPolSel[0].primaPoliza != null)
-					PrimaPoliza = lstPolSel[0].primaPoliza;				
-				let MonedaPrimaPoliza = "";
-				if (lstPolSel[0].monedaPrimaPoliza != null)
-					MonedaPrimaPoliza = lstPolSel[0].monedaPrimaPoliza;
-				
-				let NOperacion = "";
-				if ($("#txtNOperacion_" + lstPolSel[0].numeroPoliza).val() != undefined)
-					NOperacion = $("#txtNOperacion_" + lstPolSel[0].numeroPoliza).val();
-				
-                if(lstPolSel != null)
-                {
-                    var itemPoliza = new Object();                
-					
-					
-                    itemPoliza = {
-						"Compania": Compania,
-						"NombreCompania": NombreCompania,
-						"CodigoFamilia": CodigoFamilia,
-						"DescripcionFamilia": DescripcionFamilia,
-						"NumeroPoliza": lstPolSel[0].numeroPoliza,
-						"TipoProducto": TipoProducto,
-						"CodigoProducto": CodigoProducto,
-						"NombreProducto": NombreProducto,
-						"PrimaPoliza": PrimaPoliza,
-						"MonedaPrimaPoliza": MonedaPrimaPoliza,
-						"NumeroOperacion": NOperacion
-					};
-                    listPolizasSeleccionadas.push(itemPoliza);
-                }
-            });
-            
-			debugger;
-            if(listPolizasSeleccionadas.length == 0)
-			{
-				openModal("Debe seleccionar al menos un registro para guardar las pólizas.");
-				$('#dvSavingPolizas').css("display", "none");
-				setDisabled("btnguardarPolizas", false);
-				setDisabled("btnIngresarPolizasManuales", false);				
-				return;
-			}
-            
-            //Validamos el Detalle de Operación asociado para ver si hay que validar que haya solo 1 poliza
-            var resultado = buscarCodDetalleOpCaso();
-            if(resultado != null && resultado.value.length > 0)
-            {
-                var codDetalleOp = resultado.value[0].xmsbs_detalledeoperacion.xmsbs_codigo;
-                if(codDetalleOp == "DO-1360"){
-                    if(listPolizasSeleccionadas.length > 1)
-                    {
-                    	openModal("No puede seleccionar mas de 1 poliza para guardar.");
-                    	$('#dvSavingPolizas').css("display", "none");
-                    	setDisabled("btnguardarPolizas", false);
-                    	setDisabled("btnIngresarPolizasManuales", false);				
-                    	return;
-                    }
-                }
-            }	
-			
-			// CREA/ACTUALIZA INTERESADO 
-			// ELIMINA Y CREA PÓLIZAS
-			
-			var ValInteresado = GuardarInteresado();
-			if (!ValInteresado)
-				return;
-		
-			if (!InteresadoID){
-				openModal("Debe ingresar datos del Interesado.");
-				return;
-			}
-			
-			eliminarPolizasCaso();	
-			for (var i=0; i<listPolizasSeleccionadas.length; i++) {
-				
-				var objeto = {};
-				objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId.replace(/[{}]/g, "") + ")";
-				objeto["xmsbs_interesado@odata.bind"] = "/xmsbs_interesados(" + InteresadoID.replace(/[{}]/g, "") + ")";
-				objeto["xmsbs_tipodeingreso"] = 1; // Integracion
-				objeto["xmsbs_borrador"] = false;
-				
-				objeto["xmsbs_name"] = oClienteCaso.xmsbs_rut + " - " + listPolizasSeleccionadas[i].NumeroPoliza.trim();
-				
-				// xmsbs_entidadaseguradora (lookup) N/A
-				objeto["xmsbs_codentidadaseguradora"] = listPolizasSeleccionadas[i].Compania.trim();
-				objeto["xmsbs_nombreentidadaseguradora"] = listPolizasSeleccionadas[i].NombreCompania.trim();
-				
-				// xmsbs_lineadeproducto (lookup) N/A
-				objeto["xmsbs_codigolineadeproducto"] = listPolizasSeleccionadas[i].CodigoFamilia.trim();
-				objeto["xmsbs_nombrelineadeproducto"] = listPolizasSeleccionadas[i].DescripcionFamilia.trim();
-				
-				objeto["xmsbs_ndeoperacion"] = listPolizasSeleccionadas[i].NumeroOperacion.trim();
-				objeto["xmsbs_ndepoliza"] = listPolizasSeleccionadas[i].NumeroPoliza.trim();
-				
-				// xmsbs_productodelcliente (lookup) N/A
-				objeto["xmsbs_codigoproductodelcliente"] = listPolizasSeleccionadas[i].CodigoProducto.trim();
-				objeto["xmsbs_nombreproductodelcliente"] = listPolizasSeleccionadas[i].NombreProducto.trim();					
-		
-				debugger;
-				//var resultado = SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, "xmsbs_poliza", UsuarioAdminID);
-				var resultado = SDK.WEBAPI.createRecord(window._executionContext, objeto, "xmsbs_poliza");
-			}
-			
-			openModal("Las Pólizas se crearon correctamente. La ventana se cerrará.");  
-			setTimeout(function () {
-				refrescarGrillaInteresadoCaso();
-				refrescarGrillaPolizasEnCaso();
-				tblPolizas.destroy();
-				cerrar();
-			}, 5000);
-			
-			$('#dvSavingPolizas').css("display", "none");
-            setDisabled("btnguardarPolizas", false);
-			setDisabled("btnIngresarPolizasManuales", false);
-        }
-        function eliminarPolizasCaso(){
-            var respuesta = buscarAllPolizasCaso();
-            if(respuesta != null && respuesta.value.length > 0)
-            {
-                for (var i = 0; i < respuesta.value.length; i++) {                    
-                    //SDK.WEBAPI.deleteRecordImpersonate(window._executionContext, respuesta.value[i].xmsbs_movimientoid, "xmsbs_poliza", UsuarioAdminID, null, null);
-					SDK.WEBAPI.deleteRecord(window._executionContext, respuesta.value[i].xmsbs_polizaid, "xmsbs_poliza", null, null);
-                }
-            }
-        }		
-        function IngresoManualPolizas(){
-			debugger;
-			var ValInteresado = GuardarInteresado();
-			if (!ValInteresado)
-				return;
-			
-			if (!InteresadoID)
-			{
-				openModal("Debe ingresar datos del Interesado.");
-				return;
-			}
-			
-			// validar que no existan registros seleccionados.
-			if (tblPolizas != null){
-				listPolizasSeleccionadas = [];
-				var rows_selected = tblPolizas.column(0).checkboxes.selected();
-				if(rows_selected.length > 0){
-					openModal("No puede agregar manualmente Pólizas si ya ha seleccionado Pólizas en el listado.");
-					return;
-				}			
-			}
-			
-			$('#dvSavingPolizas').css("display", "block");
-
-			//Valida que solo exista 1 registro contenedor
-			var lstPol = buscarPolizaContainer();
-			if (lstPol && lstPol.value.length > 0)
-			{
-				if (lstPol.value.length > 1)
-				{
-					// realiza medida correctiva, y elimina registros, solo deja el registro más reciente.
-					for (var i = 1; i < lstPol.value.length; i++) {                    
-						//SDK.WEBAPI.deleteRecordImpersonate(window._executionContext, lstPol.value[i].xmsbs_movimientoid, "xmsbs_poliza", UsuarioAdminID, null, null);
-						SDK.WEBAPI.deleteRecord(window._executionContext, lstPol.value[i].xmsbs_polizaid, "xmsbs_poliza", null, null);
-					}
-				}
-				PolizaContainerID = lstPol.value[0].xmsbs_polizaid;
-				
-				// valida que el contenedor esté vacío, de caso contrario, elimina los registros existentes.
-				var lstBorradores = buscarPolizasBorrador();
-				debugger;
-				for (var i = 0; i < lstBorradores.value.length; i++) {                    
-					//SDK.WEBAPI.deleteRecordImpersonate(window._executionContext, lstBorradores.value[i].xmsbs_movimientoid, "xmsbs_poliza", UsuarioAdminID, null, null);
-					SDK.WEBAPI.deleteRecord(window._executionContext, lstBorradores.value[i].xmsbs_polizaid, "xmsbs_poliza", null, null);
-				}				
-			}
-			else
-			{
-				// si no existe, entonces crea el registro container
-				debugger;
-				var objeto = {};
-				objeto["xmsbs_name"] = "Ingreso Manual de Pólizas del Caso"; // para el caso: " + Correlativo;         // NO SE PUEDE MOSTRAR NINGUNA REFERENCIA AL N DEL CASO, ya que se debe asegurar que el caso esté con el ingreso único finalizado = Sí
-				objeto["xmsbs_caso@odata.bind"] = "/incidents(" + IncidentId.replace(/[{}]/g, "") + ")";
-				objeto["xmsbs_interesado@odata.bind"] = "/xmsbs_interesados(" + InteresadoID.replace(/[{}]/g, "") + ")";
-				objeto["xmsbs_tipodeingreso"] = 2; // Manual
-				objeto["xmsbs_borrador"] = true;
-				
-				//var resultado = SDK.WEBAPI.createRecordImpersonate(window._executionContext, objeto, "xmsbs_poliza", UsuarioAdminID);
-				PolizaContainerID = SDK.WEBAPI.createRecord(window._executionContext, objeto, "xmsbs_poliza");				
-			}			
-			
-			// Guarda el caso, por si es que existen cambios pendientes.
-			JumpStartLibXRM.Fx.formSave(window._executionContext);
-			$('#dvSavingPolizas').css("display", "none");
-
-			var entityFormOptions = {};
-			entityFormOptions["entityName"] = "xmsbs_poliza";
-			entityFormOptions["openInNewWindow"] = false;
-			entityFormOptions["entityId"] = PolizaContainerID; 
-			Xrm.Navigation.openForm(entityFormOptions).then(
-				function (success) {
-					//console.log(success);
-				},
-				function (error) {
-					//console.log(error);
-				});
-        }
-		function refrescarGrillaPolizasEnCaso(){
-            //debugger;
-            var subgrid = window._formContext.ui.controls.get("GrillaPolizas");
-            if(subgrid)
-                subgrid.refresh();
-        }
-		function refrescarGrillaInteresadoCaso(){
-            //debugger;
-            var subgrid = window._formContext.ui.controls.get("GrillaInteresado");
-            if(subgrid)
-                subgrid.refresh();
-        }		
-        function cerrarModalPolizas(){
-			//var idUsuario = JumpStartLibXRM.Fx.getUserId();
-			//if (idUsuario == "{8B4CF48E-AAAD-EB11-8236-0022489BAFB9}") //JM
-			//{
-				$('#divPolizasManuales').show();
-				return; // permanece en la página, ya que es posible continuar ingresando movimientos manuales.
-			//}
-			
-            //debugger;
-			refrescarGrillaInteresadoCaso();
-            refrescarGrillaPolizasEnCaso();
-            if(tblPolizas != null)
-            {   
-                tblPolizas.destroy();
-            }            
-            cerrar();
-        }		
-		function cerrar(){
-            window.close();
-        }
-		
-		
-		// ODATA
-        function buscarClienteCaso(){
-            //debugger;
-            var entityType = "incident";
-            var query = "$select=xmsbs_rut,xmsbs_nombrecliente,xmsbs_telefonocelular,xmsbs_emailcliente";
-            query += "&$filter=(incidentid eq '" + IncidentId.replace(/[{}]/g, "") + "')";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
-            {});
-            return resultado;
-        }		
-        function buscarInteresado(){
-            // Siempre debe ser solo 1 por Caso
-            var entityType = "xmsbs_interesado";
-            var query = "$select=xmsbs_interesadoid,xmsbs_name,xmsbs_telefono,xmsbs_rut,xmsbs_mail,xmsbs_direccion,xmsbs_estitularcontrato,_xmsbs_caso_value,createdon";
-            query += "&$filter=(_xmsbs_caso_value eq '" + IncidentId.replace(/[{}]/g, "") + "')";
-			query += "&$orderby=createdon desc";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
-            {});
-            return resultado;
-        }
-		function buscarPolizaContainer(){
-            // Busca la póliza contenedora, siempre debe existir solo 1 para el caso.
-            var entityType = "xmsbs_poliza";
-            var query = "$select=xmsbs_polizaid,xmsbs_name,xmsbs_tipodeingreso,_xmsbs_productodelcliente_value,xmsbs_ndepoliza,xmsbs_ndeoperacion,_xmsbs_lineadeproducto_value,_xmsbs_interesado_value,_xmsbs_entidadaseguradora_value,_xmsbs_contenedor_value,_xmsbs_caso_value,xmsbs_borrador";
-            query += "&$filter=(xmsbs_borrador eq true and _xmsbs_contenedor_value eq null and _xmsbs_caso_value eq '" + IncidentId.replace(/[{}]/g, "") + "')";
-			query += "&$orderby=createdon desc";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
-            {});
-            return resultado;
-        }		
-		function buscarAllPolizasCaso(){
-            // Busca las pólizas confirmadas del CASO
-            var entityType = "xmsbs_poliza";
-            var query = "$select=xmsbs_polizaid,xmsbs_name,xmsbs_tipodeingreso,_xmsbs_productodelcliente_value,xmsbs_ndepoliza,xmsbs_ndeoperacion,_xmsbs_lineadeproducto_value,_xmsbs_interesado_value,_xmsbs_entidadaseguradora_value,_xmsbs_contenedor_value,_xmsbs_caso_value,xmsbs_borrador";
-            query += "&$filter=(_xmsbs_caso_value eq '" + IncidentId.replace(/[{}]/g, "") + "')";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
-            {});
-            return resultado;
-        }
-		function buscarPolizasBorrador(){
-            // Busca las pólizas del CASO en estado Borrador; NO CONTENEDOR
-            var entityType = "xmsbs_poliza";
-            var query = "$select=xmsbs_polizaid,xmsbs_name,xmsbs_tipodeingreso,_xmsbs_productodelcliente_value,xmsbs_ndepoliza,xmsbs_ndeoperacion,_xmsbs_lineadeproducto_value,_xmsbs_interesado_value,_xmsbs_entidadaseguradora_value,_xmsbs_contenedor_value,_xmsbs_caso_value,xmsbs_borrador";
-            query += "&$filter=(xmsbs_borrador eq true and _xmsbs_contenedor_value ne null and _xmsbs_caso_value eq '" + IncidentId.replace(/[{}]/g, "") + "')";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
-            {});
-            return resultado;
-        }
-        function buscarCodDetalleOpCaso(){
-            var entityType = "incidents";
-            var query = "$select=xmsbs_numerocorrelativo,incidentid";
-            query += "&$expand=xmsbs_detalledeoperacion($select=xmsbs_codigo)&$filter=(incidentid eq "+ IncidentId.replace(/[{}]/g, "") +")&$orderby=xmsbs_numerocorrelativo asc";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function ()
-            {});
-            return resultado;
-        }
-    </script>
-	
-<meta></head>
-<body>
-	<form autocomplete="off">
-
-    <div class="data-container">      
-		<!--
-        <h3 class="d-flex justify-content-center">Interesado y Pólizas</h3>
-        <pre class="NoBorde">
-        </pre>
-		-->
-        
-        <div class="parent" id="dvLoaderInteresado">
-            <p style="text-align:center">
-                <img src="xmsbs_loading32gif">
-				<br />
-				<span>Cargando datos del Interesado</span>
-            </p>
-        </div>		
-		
-		<div id="DIVIntersado" style="display:none">
-			<div class="p-4 form-group row">
-				<div class="col-sm-6 my-2">
-					<label for="">¿El interesado es el titular del contrato de seguros?</label>
-				</div>		
-				<div class="col-sm-2 my-2">
-					<div class="form-check form-check-inline">
-					  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="OpcionSI" value="OpcionSI" onchange="InteresadoTitular_SI()">
-					  <label class="form-check-label" for="OpcionSI">Sí</label>
-					</div>
-					<div class="form-check form-check-inline">
-					  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="OpcionNO" value="OpcionNO" onchange="InteresadoTitular_NO()" checked="checked">
-					  <label class="form-check-label" for="OpcionNO">No</label>
-					</div>			
-				</div>		
-				<div class="col-sm-4 my-2">
-				</div>
-			
-				<div class="col-sm-3 my-2">
-					<label for="txtRutInteresado">RUT Interesado</label>
-					<span class="obligatorio"> *</span>
-				</div>
-				<div class="col-sm-5 my-2">
-				  <input id="txtRutInteresado" class="form-control" type="text" placeholder="Ej: 11222333-4" onchange="fncValidaRUT()">
-				</div>
-				<div class="col-sm-4 my-2">
-					<p class="msgerror" id="msgerror_RUT"></p>
-				</div>
-				
-				<div class="col-sm-3 my-2">
-					<label for="txtNombreInteresado">Nombre Interesado</label>
-					<span class="obligatorio"> *</span>
-				</div>
-				<div class="col-sm-5 my-2">
-				  <input id="txtNombreInteresado" class="form-control" type="email" placeholder="">
-				</div>
-				<div class="col-sm-4 my-2">
-				</div>
-
-				<div class="col-sm-3 my-2">
-					<label for="txtDireccionInteresado">Dirección Interesado</label>
-					<span class="obligatorio"> *</span>
-				</div>
-				<div class="col-sm-5 my-2">
-				  <input id="txtDireccionInteresado" class="form-control" type="email" placeholder="">
-				</div>
-				<div class="col-sm-4 my-2">
-				</div>
-
-				<div class="col-sm-3 my-2">
-					<label for="txtTelefonoInteresado">Teléfono Interesado</label>
-					<span class="obligatorio"> *</span>
-				</div>
-				<div class="col-sm-5 my-2">
-				  <input id="txtTelefonoInteresado" class="form-control" type="email" placeholder="Ej: +56995555555">
-				</div>
-				<div class="col-sm-4 my-2">
-				</div>
-				
-				<div class="col-sm-3 my-2">
-					<label for="txtEmailInteresado">Email Interesado</label>
-					<span class="obligatorio"> *</span>
-				</div>
-				<div class="col-sm-5 my-2">
-				  <input id="txtEmailInteresado" class="form-control" type="email" placeholder="Ej: email@demo.cl" onchange="fncValidaMail()">
-				</div>
-				<div class="col-sm-4 my-2">
-					<p class="msgerror" id="msgerror_Email"></p>
-				</div>
-			</div>
-			
-			<div style="display:none">
-			<div class="d-flex justify-content-center">
-				<button id="btnGuardarInteresado" type="button" class="btn btn-danger mr-2" onclick="GuardarInteresado()">Guardar Interesado</button>
-			</div>
-			<div class="parent" id="dvSavingInteresado" style="display:none">
-				<p style="text-align:center">
-					<img src="xmsbs_loading32gif">
-				</p>
-			</div>
-			</div>
-			
-		</div>
-		<pre class="NoBorde"></pre>
-		
-		<div class="parent" id="dvLoaderPolizas">
-			<p style="text-align:center">
-				<img src="xmsbs_loading32gif">
-				<br />
-				<span>Cargando pólizas del Cliente</span>
-			</p>
-		</div>
-			
-		<div id="DIVPolizas" style="display:none">
-			<div class="p-4 form-group row">
-				<div class="col-sm-3 my-2">
-					<label id="lblTituloRUTCliente">Listado de Pólizas del Cliente:</label>
-				</div>
-				<div class="col-sm-9 my-2">
-					<label id="lblNombreRUTCliente"></label>
-				</div>
-			</div>
-			
-			<div class="d-flex justify-content-center">
-				<div style="display:none">
-					<button id="btnBuscarPolizas" type="button" class="btn btn-danger" onclick="this.disabled=true;consultarPolizas()">Buscar Pólizas</button>
-				</div>
-			</div>
-			
-
-			
-			<div id="divTblPolizas" class="container" style="display:none">
-				<table id="tblPolizas" class="table cell-border">
-					<thead>
-						<tr>
-							<th scope="col"></th>
-							<th scope="col">Póliza</th>
-							<th scope="col">Línea</th>
-							<th scope="col">Producto</th>
-							<th scope="col">Entidad Asegurada</th>
-							<th scope="col">Número de Operación</th>
-						</tr>
-					</thead>
-					<tbody id="tbody"></tbody>
-				</table>
-				  
-				<div class="d-flex justify-content-center">  
-					<button id="btnGuardarPolizas" type="button" class="btn btn-danger" onclick="guardarPolizas()">Guardar</button>
-				</div>
-			</div>
-
-			<div id="divPolizasManuales" class="container" style="text-align:right">  
-				<button id="btnIngresarPolizasManuales" type="button" class="btn btn-danger" onclick="IngresoManualPolizas()">Ingreso manual de Pólizas</button>
-			</div>		
-			
-			<div class="parent" id="dvSavingPolizas" style="display:none">
-				<p style="text-align:center">
-					<img src="xmsbs_loading32gif">
-				</p>
-			</div>
-		</div>
-	</div>
-
-    <!-- Modal -->
-    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Información</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p id="pMensaje"></p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="cerrarModalPolizas()">Aceptar</button>
-          </div>
-        </div>
-      </div>
-    </div>   
-	
-	</form>
-</body></html>
+	window.close();
+}	
+	</script>
+</head>
+<body onload="initializeModal()">
+    <h1>Opciones de Asistencia</h1>
+    <div id="dynamicContent">
+        Cargando opciones...
+    </div>
+    <div style="text-align: right; margin-top: 20px;">
+        <button onclick="closeModal()">Cerrar</button>
+    </div>
+</body>
+</html>

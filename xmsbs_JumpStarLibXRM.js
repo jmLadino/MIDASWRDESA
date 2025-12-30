@@ -713,7 +713,7 @@ JumpStartLibXRM.Fx = {
                 // otro error
             }
         });
-    },     
+    },
     // Show Hide//
     getVisible: function (executionContext, fieldName) {
 		var formContext = JumpStartLibXRM.Fx.getFormContext(executionContext);

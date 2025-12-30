@@ -4698,7 +4698,7 @@ CasoAdquirencia = {
     getCasoMeArrepenti: function (executionContext, rut) {
         var entityType = "incident";
         var query = "$select=xmsbs_numerocorrelativo";
-        query += "&$filter=(xmsbs_rutcomercio eq '"+rut+"' and _xmsbs_detalledeoperacion_value eq 0fe4ce3a-b472-eb11-b0b0-000d3a3b377d)";
+        query += "&$filter=(xmsbs_rutcomercio eq '"+rut+"' and _xmsbs_detalledeoperacion_value eq 0fe4ce3a-b472-eb11-b0b0-000d3a3b377d and statecode ne 2)";
         var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query);
         return resultado;
 		
@@ -4707,7 +4707,7 @@ CasoAdquirencia = {
     getCasoRoboPerdida: function (executionContext, rut) {
         var entityType = "incident";
         var query = "$select=xmsbs_numerocorrelativo";
-        query += "&$filter=(xmsbs_rutcomercio eq '"+rut+"' and _xmsbs_detalledetipologia_value eq 6AB46093-7E27-EC11-B6E5-000D3ADF05BA)";
+        query += "&$filter=(xmsbs_rutcomercio eq '"+rut+"' and _xmsbs_detalledetipologia_value eq 6AB46093-7E27-EC11-B6E5-000D3ADF05BA and statecode ne 2)";
         var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query);
         return resultado;
 		

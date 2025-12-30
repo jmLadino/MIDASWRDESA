@@ -14,15 +14,15 @@ DetalleOperacion = {
         DetalleOperacion.Form.tipoFormulario = formContext.ui.getFormType();
 
         debugger;
-        DetalleOperacion.visibilidad_section_NotificacionCierre(executionContext);
+        //DetalleOperacion.visibilidad_section_NotificacionCierre(executionContext);
         DetalleOperacion.visibilidad_section_CierreAutomatico(executionContext);
 
         if (DetalleOperacion.Form.tipoFormulario == JumpStartLibXRM.FormState.CREATE || DetalleOperacion.Form.tipoFormulario == JumpStartLibXRM.FormState.UPDATE){
             
-            JumpStartLibXRM.Fx.addOnChange(executionContext, "xmsbs_tipooperacion", "DetalleOperacion.visibilidad_section_NotificacionCierre");
+            //JumpStartLibXRM.Fx.addOnChange(executionContext, "xmsbs_tipooperacion", "DetalleOperacion.visibilidad_section_NotificacionCierre");
             JumpStartLibXRM.Fx.addOnChange(executionContext, "xmsbs_tipooperacion", "DetalleOperacion.visibilidad_section_CierreAutomatico");
 
-            JumpStartLibXRM.Fx.addOnChange(executionContext, "xmsbs_habilitamensajeria", "DetalleOperacion.visibilidad_section_NotificacionCierre");
+            //JumpStartLibXRM.Fx.addOnChange(executionContext, "xmsbs_habilitamensajeria", "DetalleOperacion.visibilidad_section_NotificacionCierre");
             JumpStartLibXRM.Fx.addOnChange(executionContext, "xmsbs_habilitacierre", "DetalleOperacion.visibilidad_section_CierreAutomatico");
         }
     },
@@ -118,7 +118,9 @@ DetalleOperacion = {
         }
             
         var tipoRequerimientoId = oTipoOperacion.value[0]._xmsbs_tiporequerimiento_value;
-        if (tipoRequerimientoId == 'd6d57a1f-cc25-eb11-a813-000d3a59fabf') // RECLAMO
+        // RECLAMO   : d6d57a1f-cc25-eb11-a813-000d3a59fabf
+        // SOLICITUD : 59e07725-cc25-eb11-a813-000d3a59fabf
+        if (tipoRequerimientoId == 'd6d57a1f-cc25-eb11-a813-000d3a59fabf' || tipoRequerimientoId == "59e07725-cc25-eb11-a813-000d3a59fabf") 
         {
             JumpStartLibXRM.Fx.hideShowSection(executionContext, "{5616f04d-c14a-4a51-86eb-1fd6081c6cbf}", "section_CierreAutomatico", true);
         }
@@ -137,11 +139,7 @@ DetalleOperacion = {
         var entityType = "xmsbs_tipooperacion";
 		var query = "?$select=_xmsbs_tiporequerimiento_value";
 		query += "&$filter=(xmsbs_tipooperacionid eq " +  tipooperacionId.replace(/[{}]/g, "") + ")";
-		var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function ()
-		{});
+		var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
 		return resultado;
-    },        
-
-
-
+    },
 };

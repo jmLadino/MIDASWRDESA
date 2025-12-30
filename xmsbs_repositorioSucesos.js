@@ -270,8 +270,7 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
         
-        setApiKey: function(executionContext){
-            //debugger;        
+        setApiKey: function(executionContext){   
             var resultado = Util.buscarValorParametro(executionContext, RepositorioSucesos.ApiKey.Name);
             
             if(resultado)
@@ -281,7 +280,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
         setAzureURL: function(executionContext){
-            //debugger;
             var resultado = Util.buscarValorParametro(executionContext, RepositorioSucesos.URL.Name);
             
             if(resultado)
@@ -333,7 +331,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         //end  variables de servicio de banco   
         
         setRespuestaPredefinidaCliente: function(modelo){
-            //debugger;
             let casoId = modelo.casoId;
             let textoRespuesta = modelo.respuesta;
             if (casoId.indexOf("{") > -1) {
@@ -346,7 +343,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
     
         setRespuestaFormales: function(modelo){
-            //debugger;
             let fieldName = "xmsbs_plantillaelegida";
             let id = modelo.idPlantilla;
             let name = modelo.nombrePlantilla;
@@ -419,7 +415,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
         executeSucesosAccion: function (executionContext, formContext, modelo) {        
-            debugger;
             RepositorioSucesos.setApiKey(executionContext);
             RepositorioSucesos.setAzureURL(executionContext);
             
@@ -430,105 +425,111 @@ if (typeof (RepositorioSucesos) == "undefined")
             
             for (var i = 0; i < sucesoslength; i ++){
                 switch (modelo.sucesos[i].codigoSuceso){
-                    case 'SUC0001':
+                    case 'SUC0001': // Cambio a etapa siguiente
                         RepositorioSucesos.SUC0001(executionContext, formContext, modelo);
                         break;                    
-                    case 'SUC0002':
+                    case 'SUC0002': // Seleccionar y visualizar respuesta del caso
                         RepositorioSucesos.SUC0002(executionContext);
                         break;                    
-                    case 'SUC0003':
+                    case 'SUC0003': // Registro de Visación - Crear
                         RepositorioSucesos.SUC0003(executionContext);
                         break;
-                    case 'SUC0004':
+                    case 'SUC0004': // Registro de Visación - Aprobar
                         RepositorioSucesos.SUC0004(executionContext);
                         break;
-                    case 'SUC0005':
+                    case 'SUC0005': // Registro de Visación - Rechazar
                         RepositorioSucesos.SUC0005(executionContext);
                         break;
-                    case 'SUC0006':
+                    case 'SUC0006': // Registro de Prorroga - Crear
                         RepositorioSucesos.SUC0006(executionContext);
                         break;
-                    case 'SUC0007':
+                    case 'SUC0007': // Registro de Reverso y Castigo - Crear
                         RepositorioSucesos.SUC0007(executionContext);
                         break;
-                    case 'SUC0008':
+                    case 'SUC0008': // Buscar respuestas pre establecidas del caso
                         RepositorioSucesos.SUC0008();
                         break;
-                    case 'SUC0009':
+                    case 'SUC0009': // Registro de SubRequerimiento - Crear
                         RepositorioSucesos.SUC0009(executionContext);
                         break;                    
-                    case 'SUC0010':
+                    case 'SUC0010': // Preparar respuesta Formales
                         RepositorioSucesos.SUC0010(executionContext);
                         break;
-                    case 'SUC0011':
+                    case 'SUC0011': // Preview Respuesta
                         RepositorioSucesos.SUC0011();
                         break;                
-                    case 'SUC0012':
+                    case 'SUC0012': // Analiza Respuesta para avance
                         RepositorioSucesos.SUC0012();
                         break;
-                    case 'SUC0013':
+                    case 'SUC0013': // Resolver Caso
                         RepositorioSucesos.SUC0013(executionContext, modelo);
                         break;
-                    case 'SUC0014':
+                    case 'SUC0014': // Generar Respuesta
                         RepositorioSucesos.SUC0014(executionContext, modelo);
                         break;                
-                    case 'SUC0015':
+                    case 'SUC0015': // Re-insistencia
                         RepositorioSucesos.SUC0015(executionContext);
                         break;                    
-                    case 'SUC0016':
+                    case 'SUC0016': // Regresa a etapa anterior
                         RepositorioSucesos.SUC0016(executionContext, formContext, modelo);
                         break;                    
-                    case 'SUC0017':
+                    case 'SUC0017': // Cancelar Caso
                         RepositorioSucesos.SUC0017(executionContext, modelo);
                         break;                    
-                    case 'SUC0018':
+                    case 'SUC0018': // Derivar a otra unidad
                         RepositorioSucesos.SUC0018(executionContext, formContext, modelo);
                         break;                    
-                    case 'SUC0019':
+                    case 'SUC0019': // Ventana de reparo
                         RepositorioSucesos.SUC0019(executionContext, formContext, modelo);
                         break; 
-                    case 'SUC0020':
+                    case 'SUC0020': // Finalizar al crear
                         RepositorioSucesos.SUC0020(executionContext, formContext, modelo);
                         break;
-                    case 'SUC0021':
+                    case 'SUC0021': // Enviar respuesta Adquirencia
                         RepositorioSucesos.SUC0021(executionContext);
                         break; 
-                    case 'SUC0022':
+                    case 'SUC0022': // Cierre automático
                         RepositorioSucesos.SUC0022(executionContext, formContext, modelo);
                         break;
-                    case 'SUC0023':
+                    case 'SUC0023': // Descargar PDF
                         RepositorioSucesos.SUC0023(executionContext);
                         break;                    
-                    case 'SUC0024':
+                    case 'SUC0024': // Enviar respuesta adquirencia Manual
                         RepositorioSucesos.SUC0024(executionContext, modelo);
                         break;
-                    case 'SUC0025':
+                    case 'SUC0025': // Generar Documento Contracargos
                         RepositorioSucesos.SUC0025(executionContext, modelo);
                         break; 
-                    case 'SUC0026':
+                    case 'SUC0026': // Generar Documento Cierre Contracargos
                         RepositorioSucesos.SUC0026(executionContext, modelo);
                         break; 
-                    case 'SUC0027':
+                    case 'SUC0027': // Reinsistencia con ventana
                         RepositorioSucesos.SUC0027(executionContext, formContext, modelo);
                         break;
-                    case 'SUC0028':
+                    case 'SUC0028': // Terminado RA
                         RepositorioSucesos.SUC0028(executionContext, modelo);
-                    break;     
-                    case 'SUC0029':
+                    	break;     
+                    case 'SUC0029': // Subrequerimiento Fraude
                         RepositorioSucesos.SUC0029(executionContext, modelo);
-                    break;
-                    case 'SUC0030':
+                    	break;
+                    case 'SUC0030': // Borrado de respuesta
                         RepositorioSucesos.SUC0030(executionContext);
-                    break;
-                    case 'SUC0031':
+                    	break;
+                    case 'SUC0031': // Derivar a Sucursal
                         RepositorioSucesos.SUC0031(executionContext, formContext, modelo);
-                    break;
-                    case 'SUC0032':
+                    	break;
+                    case 'SUC0032': // Termino Inmediato
                         RepositorioSucesos.SUC0032(executionContext, formContext, modelo);
-                    break;
-                    case 'SUC0033':
+                    	break;
+                    case 'SUC0033': // Resuelve No se accede
                         RepositorioSucesos.SUC0033(executionContext, formContext, modelo);
-                    break;
+                    	break;
+                    case 'SUC0034': // Generar Certificado
+                        RepositorioSucesos.SUC0034(executionContext, modelo);
+                    	break;
+                    case 'SUC0035': // Cliente Desiste
+                        RepositorioSucesos.SUC0035(executionContext, modelo);
+                    	break;                    
                 }
             }
             
@@ -536,7 +537,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
     
         SUC0001:function(executionContext, formContext, modelo){
-            debugger;
             //Hace click en avanzar. Primero validamos si está en reparo y si tiene contenido para permitir avanzar o no
             var estado = JumpStartLibXRM.Fx.getValueField(executionContext, "statuscode", null);  
             var observacionesReparo = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_observacionesdevisacion", null);
@@ -571,371 +571,338 @@ if (typeof (RepositorioSucesos) == "undefined")
                     //No hay bitacora actual, por lo que desplegamos un mensaje de que porfavor espere unos segundos
                     var alertStrings = { confirmButtonLabel: "Aceptar", title: "Error", text: "La bitácora del Caso aún se está generando. Favor espere unos segundos y vuelva a avanzar"};
                     var alertOptions = { height: 120, width: 260 };
-                    Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
-                        function (success) {
-                            //console.log("Alert dialog closed");
-                        },
-                        function (error) {
-                            //console.log(error.message);
-                        }
-                    );
+                    Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then( function (success) { }, function (error) { } );
+					return;
                 }
-                else{
-                    //Caso contrario, continúa ejecución normal
-                    Xrm.Utility.closeProgressIndicator();
-                    var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Avance de etapa", subtitle:"Va a avanzar el Caso a la siguiente etapa. ¿Desea Continuar?", text: "Esta acción podría demorar algunos segundos" };
-                    var confirmOptions  = { height: 200, width: 260 };
-                    Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
-                        function (success) {
-                            if(success.confirmed)
-                            {
-                                //Xrm.Utility.showProgressIndicator("Procesando la SUCC0001 ...");
-                                debugger;
-                                //Si confirma
-                                //Parámetros del servicio
-                                var idIncident = modelo.casoId;
-                                var idAccionEtapa = modelo.accionEtapaId;
-                                var codigoSuceso = "SUC0001";
-                                
-                                //llamada al servicio
-                                var response = null;
-                                
-                                var URL= "Caso/EjecutarSuceso/"+idIncident+"/"+idAccionEtapa+"/"+codigoSuceso+"";
-                               // var apiToken = window.sessionStorage.getItem("LokiAuthToken");
-                                var service = RepositorioSucesos.GetRequestObject();
-                                if (service != null) {
-                                    service.open("POST", RepositorioSucesos.URL.Azure + URL, false);
-                                    service.setRequestHeader("X-Requested-Width", "XMLHttpRequest");
-                                    service.setRequestHeader("Accept", "application/json,text/javascript, */*");
-                                    service.setRequestHeader("AuthApi", RepositorioSucesos.ApiKey.Key);
-                                   // service.setRequestHeader("TokenApi", apiToken);
-                                    service.send(null);
-                                    if (service.response != "") {
-                                        response = JSON.parse(service.response);
-                                    }
-                                }
-                                 // Xrm.Utility.closeProgressIndicator();
-                                if (response.success) {
-                                    debugger;
-                                    //actualizar etapa
-                                    var fieldName = "xmsbs_etapa";
-                                    var id = response.suC0001.etapa.id;
-                                    var name = response.suC0001.etapa.name;
-                                    var entityType = response.suC0001.etapa.logicalName;
-                                    var etapa = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
-                                    
-                                    //actualizar Acción 
-                                    var fieldName = "xmsbs_accion";
-                                    var id = response.suC0001.accion.id;
-                                    var name = response.suC0001.accion.name;
-                                    var entityType = response.suC0001.accion.logicalName;
-                                    var flujo = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
-                                    
-                                    //actualizar propietario
-                                    var fieldName = "ownerid";
-                                    var id = response.suC0001.propietario.id;
-                                    var name = response.suC0001.propietario.name;
-                                    var entityType = response.suC0001.propietario.logicalName;
-                                    var propietario = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
-                                    debugger;
-                                    //Rol - lookup
-                                    if(response.suC0001.rol != null){
-                                        if(response.suC0001.rol.name != ""){
-                                            var fieldName = "xmsbs_rol";
-                                            var id = response.suC0001.rol.id;
-                                            var name = response.suC0001.rol.name;
-                                            var entityType = response.suC0001.rol.logicalName;
-                                            var flujo = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
-                                        }
-                                    }
-                                    
-                                    //actualizar UR 
-                                     if(response.suC0001.ur != null){
-                                        var fieldName = "xmsbs_ur";
-                                        var id = response.suC0001.ur.id;
-                                        var name = response.suC0001.ur.name;
-                                        var entityType = response.suC0001.ur.logicalName;
-                                        var flujo = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
-                                    }
-                                    
-                                    // Solo si el estado atual es "En Reparo" y el estado que viene por Matriz es "En espera de documentos" (657130002) 
-									// se realizará la comprobación de si efectivamente existen documentos requeridos que estén pendientes.
-                                    // Si no existen, entonces el estado final será "En Gestión".
-                                    if (estado == 3 && response.suC0001.estado == 657130002){
-                                        var entityType = "xmsbs_documento";
-                                        var query = "$select=xmsbs_id";
-                                        query += "&$filter=_xmsbs_caso_value eq '" + idIncident + "' and xmsbs_obligatoriedad eq true and statuscode eq 657130000&$top=1";
-                                        var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
-                                        if(resultado){
-                                            if(resultado.value.length == 0){
-                                                JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", 2); // En Gestión
-                                                JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_etapareinsistencia", true); // Gatilla actualización SLA
-                                            }
-                                        }
-                                        else{
-                                            // no se pudo evaluar, por lo tanto lo deja en "En espera de Documentos" (valor por default dado por la matriz)
-                                            JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", response.suC0001.estado);    
-                                        }
-                                    }
-                                    else{
-                                        JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", response.suC0001.estado);
-                                    }
-                                    
-                                    //debugger;
-                                    //Validamos si el nuevo usuario es igual al actual para cerrar o refrescar
-                                    var currentUserId = JumpStartLibXRM.Fx.getUserId();
-                                    if (currentUserId.indexOf("{") > -1){currentUserId = currentUserId.substring(1, 37);}
-                                    var newUserID = response.suC0001.propietario.id;
-                                    if (newUserID.indexOf("{") > -1){newUserID = newUserID.substring(1, 37);}
-                                    
-                                    
-                                    // Muestra mensaje de creación del Caso.
-                                    // - Valida que el formulario sea: "Caso Ingreso Único" ; E731458B-5CA5-4AC6-A863-B54FD50C0475
-                                    // - Valida que el estado "desde" sea "En Ingreso".
-                                    // - Muesta Alerta con la información del Caso.
-                                    debugger;
-                                    var FormName = JumpStartLibXRM.Fx.getFormName(executionContext);
-                                    
-                                    var IngresoUnicoFinalizado = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_ingresounicofinalizado", null);
-                                    var CasoPrincipal = JumpStartLibXRM.Fx.getValueField(executionContext, "parentcaseid", null);
-                                    // Si el ingreso único finalizado es SI, omite el mensaje de creación del caso. (ocurre para casos con espera de documentos)
-                                    
-                                    // Estado: 1 En Ingreso
-                                    if ((FormName == "Caso Ingreso Único" || FormName == "Caso") && estado == 1 && 
-                                        (IngresoUnicoFinalizado == null || IngresoUnicoFinalizado == 0 || CasoPrincipal)) 
-                                    {
-                                        //Se actualiza el ingreso unico finalizado a SI
-                                        JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_ingresounicofinalizado", true);
-                                        
-                                        debugger;
-                                        var CorrelativoCaso = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_numerocorrelativo", null);
-                                        var FechaCreacion = JumpStartLibXRM.Fx.getValueField(executionContext, "createdon", null);
-                                        var RUT = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_rut", null);
-                                        var Producto = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_producto", null)[0].name;
-                                        var DetalleTipologia = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_detalledetipologia", null)[0].name;
-                                        var Propietario = response.suC0001.propietario.name;
-                                        var FechaComprometida = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_fechacomprometida", null);
-                                        
-                                        //Actualizar title del caso
-                                        var TipoRequerimiento = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_tipoderequerimiento", null)[0].name;
-                                        var tituloCaso = CorrelativoCaso + " - " + TipoRequerimiento + " - " + Producto + " - " + DetalleTipologia + " - " + RUT;
-                                        JumpStartLibXRM.Fx.setValueField(executionContext, "title", tituloCaso);
-                                        
-                                        // Deja la marca por default: "Tipo Asignación = Por Flujo" en la extensión del caso, PRE "save" del Caso.
-                                        debugger;
-                                        RepositorioSucesos.ActualizarExtensionCaso(executionContext, "xmsbs_tipodeasignacion", 657130000); // 657130000: por flujo
-                                        formContext.data.entity.save();
 
-                                        // consulatar el guardado de "xmsbs_ingresounicofinalizado"
-                                        var testIngresoUnico = RepositorioSucesos.getIncidentIngresoUnicoFinalizado(executionContext,idIncident);
-                                        if (testIngresoUnico && testIngresoUnico.xmsbs_ingresounicofinalizado != true)
-                                        {
-                                            setTimeout(function () {
-                                                formContext.data.entity.save();
-                                                testIngresoUnico = RepositorioSucesos.getIncidentIngresoUnicoFinalizado(executionContext,idIncident);
-                                            }, 2000);
-                                        }
-                                        // si no esta guardado esperar 2 seg y revisar si esta guardado
-                                        if (testIngresoUnico && testIngresoUnico.xmsbs_ingresounicofinalizado != true)
-                                        {
-                                            //no guardado mandar error de problema de registro mno avanzar
-                                            var alertStrings = { confirmButtonLabel: "Aceptar", title: "Reintentar", text: "No se pudo procesar el avance del caso. Favor intente nuevamente o contacte al administrador"};
-                                            var alertOptions = { height: 120, width: 260 };
-                                            Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
-                                                function (success) {
-                                                    //console.log("Alert dialog closed");
-                                                },
-                                                function (error) {
-                                                    //console.log(error.message);
-                                                }
-                                            );
-                                        }                                        
-                                        else
-                                        {                                        
-                                        // Actualiza campo para reporte RDA, determina si el caso es duplicado respecto a: rut, punto de contacto, detalle operación, mes actual.
-                                            var xmsbs_rda50512454 = RepositorioSucesos.oDataCasoDuplicadoMensual(executionContext);
-                                            RepositorioSucesos.ActualizarExtensionCaso(executionContext, "xmsbs_rda50512454", xmsbs_rda50512454);
-            
-                                            var strTitle = "Número de CASO: " + CorrelativoCaso;
-                                            var strConfirmBtn = "Crear Nuevo Caso";
-                                            var strCancelBtn = "Continuar";
-                                            var strBody = "Con fecha " + JumpStartLibXRM.Fx.formatDate(FechaCreacion) + ", " +
-                                                "se ha creado el caso " + CorrelativoCaso + " asociado al cliente " + RUT + ", " +
-                                                "para el producto " + Producto + ", " + 
-                                                "por concepto de " + DetalleTipologia + " y el responsable asignado es " + Propietario + ". " +
-                                                "La fecha comprometida de resolución es: " + JumpStartLibXRM.Fx.formatDate(FechaComprometida);   
-        
-                                            var confirmStrings = { title: strTitle , text:strBody, confirmButtonLabel:strConfirmBtn, cancelButtonLabel:strCancelBtn};
-                                            var confirmOptions = { height: 250, width: 500 };
-                                            Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
-                                            function (success) {   
-                                                
-                                                if (success.confirmed)
-                                                {
-                                                    debugger;
-                                                    var entityFormOptions = {};
-                                                    entityFormOptions["entityName"] = "incident";
-                                                    entityFormOptions["openInNewWindow"] = false;
-                                                    //entityFormOptions["formId"] = JumpStartLibXRM.Fx.getFormID(executionContext);
-                                                    var formParameters = {};
-                                                    setTimeout(function () {
-                                                        Xrm.Navigation.openForm(entityFormOptions,formParameters);
-                                                    }, 3000);
-                                                }
-                                                else{
-                                                    if(currentUserId.toLowerCase() == newUserID.toLowerCase()){
-                                                        //Si los usuarios son iguales, validamos si el flujo es de término inmediato para cerrar. Si no, sigue como antes
-                                                        var etapaID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_etapa");
-                                                        if (etapaID.indexOf("{") > -1){etapaID = etapaID.substring(1, 37);}
-                                                        
-                                                        var resultado = RepositorioSucesos.buscarProcesosDeEtapa(executionContext, etapaID);
-                                                        if(resultado && resultado.value.length > 0){
-                                                            //Encontró procesos, validamos que se llame de Termino Inmediato
-                                                            var nombre = resultado.value[0].xmsbs_proceso.name;
-                                                            if(nombre == "[XMS - Caso] - Termino inmediato"){
-                                                                //El flujo en cuestión es de término inmediato, cerramos la ventana
-                                                                //JumpStartLibXRM.Fx.formClose(executionContext);
-                                                                var alertStrings = { confirmButtonLabel: "Aceptar", title: "Cierre de Caso", text: "El caso se cerrará automáticamente. La ventana se cerrará"};
-                                                                var alertOptions = { height: 120, width: 260 };
-                                                                Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
-                                                                    function (success) {
-                                                                        //Xrm.Utility.closeProgressIndicator();
-                                                                        //JumpStartLibXRM.Fx.formSaveAndClose(executionContext);
-                                                                        var entityFormOptions = {};
-                                                                        entityFormOptions["entityName"] = "incident";
-                                                                        entityFormOptions["openInNewWindow"] = false;
-                                                                        //entityFormOptions["formId"] = JumpStartLibXRM.Fx.getFormID(executionContext);
-                                                                        var formParameters = {};
-                                                                        setTimeout(function () {
-                                                                            Xrm.Navigation.openForm(entityFormOptions,formParameters);
-                                                                        }, 3000);
-                                                                        
-                                                                    },
-                                                                    function (error) {
-                                                                        //Xrm.Utility.closeProgressIndicator();
-                                                                        //console.log(error.message);
-                                                                    }
-                                                                );
-                                                            }
-                                                            else{
-                                                                //El flujo no es de término inmediato, cerramos como antes
-                                                                var entityFormOptions = {};
-                                                                entityFormOptions["entityName"] = formContext.data.entity.getEntityName();
-                                                                entityFormOptions["entityId"] = idIncident;
-                                                                //Guardamos el cambio y refrescamos el formulario
-                                                                setTimeout(function () {
-                                                                    Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), idIncident);
-                                                                }, 3000);
-                                                            }
-                                                        }
-                                                        else{
-                                                            //Son iguales, hacemos el refresco normal
-                                                            var entityFormOptions = {};
-                                                            entityFormOptions["entityName"] = formContext.data.entity.getEntityName();
-                                                            entityFormOptions["entityId"] = idIncident;
-                                                            //Guardamos el cambio y refrescamos el formulario
-                                                            setTimeout(function () {
-                                                                Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), idIncident);
-                                                            }, 3000);
-                                                        }
-                                                    }
-                                                    else{
-                                                        //Son distintos, alertamos que se cerrará la ventana y cerramos
-                                                        var alertStrings = { confirmButtonLabel: "Aceptar", title: "Cambio de responsable", text: "El caso pasó a gestión de un nuevo usuario. La ventana se cerrará"};
-                                                        var alertOptions = { height: 120, width: 260 };
-                                                        Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
-                                                            function (success) {
-                                                                //console.log("Alert dialog closed");
-                                                                Xrm.Utility.closeProgressIndicator();
-                                                                //JumpStartLibXRM.Fx.formSaveAndClose(executionContext);
-                                                                setTimeout(function () {
-                                                                    JumpStartLibXRM.Fx.formClose(executionContext);
-                                                                }, 3000);
-                                                            },
-                                                            function (error) {
-                                                                Xrm.Utility.closeProgressIndicator();
-                                                                //console.log(error.message);
-                                                            }
-                                                        );                            
-                                                    }									
-                                                }
-                                            },
-                                            function (error) { 
-                                                //---
-                                            });
-                                        }
-                                    }
-                                    else
-                                    {
-                                        debugger;
-                                        // Siempre deja la marca por default: "Tipo Asignación = Por Flujo" si la acción es AVANZAR, 
-                                        // La actualización de la extensión, siempre va antes del "save" del Caso.
-                                        RepositorioSucesos.ActualizarExtensionCaso(executionContext, "xmsbs_tipodeasignacion", 657130000);
-                                        
-										// Adquirencia
-										RepositorioSucesos.DisminuyeStockAdquirencia(executionContext);
+				//Caso contrario, continúa ejecución normal
+				Xrm.Utility.closeProgressIndicator();
+				var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Avance de etapa", subtitle:"Va a avanzar el Caso a la siguiente etapa. ¿Desea Continuar?", text: "Esta acción podría demorar algunos segundos" };
+				var confirmOptions  = { height: 200, width: 260 };
+				Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions ).then(
+					function (success) {
+						if(success.confirmed)
+						{
+							//Xrm.Utility.showProgressIndicator("Procesando la SUCC0001 ...");
+							//Si confirma
+							//Parámetros del servicio
+							var idIncident = modelo.casoId;
+							var idAccionEtapa = modelo.accionEtapaId;
+							var codigoSuceso = "SUC0001";
+							
+							//llamada al servicio
+							var response = null;
+							
+							var URL= "Caso/EjecutarSuceso/"+idIncident+"/"+idAccionEtapa+"/"+codigoSuceso+"";
+						   // var apiToken = window.sessionStorage.getItem("LokiAuthToken");
+							var service = RepositorioSucesos.GetRequestObject();
+							if (service != null) {
+								service.open("POST", RepositorioSucesos.URL.Azure + URL, false);
+								service.setRequestHeader("X-Requested-Width", "XMLHttpRequest");
+								service.setRequestHeader("Accept", "application/json,text/javascript, */*");
+								service.setRequestHeader("AuthApi", RepositorioSucesos.ApiKey.Key);
+							   // service.setRequestHeader("TokenApi", apiToken);
+								service.send(null);
+								if (service.response != "") {
+									response = JSON.parse(service.response);
+								}
+							}
+							 // Xrm.Utility.closeProgressIndicator();
+							if (response.success) {
+								//actualizar etapa
+								var fieldName = "xmsbs_etapa";
+								var id = response.suC0001.etapa.id;
+								var name = response.suC0001.etapa.name;
+								var entityType = response.suC0001.etapa.logicalName;
+								var etapa = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
+								
+								//actualizar Acción 
+								var fieldName = "xmsbs_accion";
+								var id = response.suC0001.accion.id;
+								var name = response.suC0001.accion.name;
+								var entityType = response.suC0001.accion.logicalName;
+								var flujo = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
+								
+								//actualizar propietario
+								var fieldName = "ownerid";
+								var id = response.suC0001.propietario.id;
+								var name = response.suC0001.propietario.name;
+								var entityType = response.suC0001.propietario.logicalName;
+								var propietario = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
+								
+								//Rol - lookup
+								if(response.suC0001.rol != null){
+									if(response.suC0001.rol.name != ""){
+										var fieldName = "xmsbs_rol";
+										var id = response.suC0001.rol.id;
+										var name = response.suC0001.rol.name;
+										var entityType = response.suC0001.rol.logicalName;
+										var flujo = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
+									}
+								}
+								
+								//actualizar UR 
+								if(response.suC0001.ur != null){
+									var fieldName = "xmsbs_ur";
+									var id = response.suC0001.ur.id;
+									var name = response.suC0001.ur.name;
+									var entityType = response.suC0001.ur.logicalName;
+									var flujo = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
+								}
+									
+								// Solo si el estado atual es "En Reparo" y el estado que viene por Matriz es "En espera de documentos" (657130002) 
+								// se realizará la comprobación de si efectivamente existen documentos requeridos que estén pendientes.
+								// Si no existen, entonces el estado final será "En Gestión".
+								if (estado == 3 && response.suC0001.estado == 657130002){
+									var entityType = "xmsbs_documento";
+									var query = "$select=xmsbs_id";
+									query += "&$filter=_xmsbs_caso_value eq '" + idIncident + "' and xmsbs_obligatoriedad eq true and statuscode eq 657130000&$top=1";
+									var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
+									if(resultado){
+										if(resultado.value.length == 0){
+											JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", 2); // En Gestión
+											JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_etapareinsistencia", true); // Gatilla actualización SLA
+										}
+									}
+									else{
+										// no se pudo evaluar, por lo tanto lo deja en "En espera de Documentos" (valor por default dado por la matriz)
+										JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", response.suC0001.estado);    
+									}
+								}
+								else{
+									JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", response.suC0001.estado);
+								}
+								
+								//Validamos si el nuevo usuario es igual al actual para cerrar o refrescar
+								var currentUserId = JumpStartLibXRM.Fx.getUserId();
+								if (currentUserId.indexOf("{") > -1){currentUserId = currentUserId.substring(1, 37);}
+								var newUserID = response.suC0001.propietario.id;
+								if (newUserID.indexOf("{") > -1){newUserID = newUserID.substring(1, 37);}
+								
+								// Muestra mensaje de creación del Caso.
+								// - Valida que el formulario sea: "Caso Ingreso Único" ; E731458B-5CA5-4AC6-A863-B54FD50C0475
+								// - Valida que el estado "desde" sea "En Ingreso".
+								// - Muesta Alerta con la información del Caso.
+								var FormName = JumpStartLibXRM.Fx.getFormName(executionContext);
+								
+								var IngresoUnicoFinalizado = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_ingresounicofinalizado", null);
+								var CasoPrincipal = JumpStartLibXRM.Fx.getValueField(executionContext, "parentcaseid", null);
+								// Si el ingreso único finalizado es SI, omite el mensaje de creación del caso. (ocurre para casos con espera de documentos)
+								
+								// Estado: 1 En Ingreso
+								if ((FormName == "Caso Ingreso Único" || FormName == "Caso") && estado == 1 && 
+									(IngresoUnicoFinalizado == null || IngresoUnicoFinalizado == 0 || CasoPrincipal)) 
+								{
+									//Se actualiza el ingreso unico finalizado a SI
+									JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_ingresounicofinalizado", true);
+									var CorrelativoCaso = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_numerocorrelativo", null);
+									var FechaCreacion = JumpStartLibXRM.Fx.getValueField(executionContext, "createdon", null);
+									var RUT = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_rut", null);
+									var Producto = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_producto", null)[0].name;
+									var DetalleTipologia = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_detalledetipologia", null)[0].name;
+									var Propietario = response.suC0001.propietario.name;
+									var FechaComprometida = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_fechacomprometida", null);
+									
+									//Actualizar title del caso
+									var TipoRequerimiento = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_tipoderequerimiento", null)[0].name;
+									var tituloCaso = CorrelativoCaso + " - " + TipoRequerimiento + " - " + Producto + " - " + DetalleTipologia + " - " + RUT;
+									JumpStartLibXRM.Fx.setValueField(executionContext, "title", tituloCaso);
+									
+									// Deja la marca por default: "Tipo Asignación = Por Flujo" en la extensión del caso, PRE "save" del Caso.
+									RepositorioSucesos.ActualizarExtensionCaso(executionContext, "xmsbs_tipodeasignacion", 657130000); // 657130000: por flujo
+									formContext.data.entity.save();
+
+									// consultar el guardado de "xmsbs_ingresounicofinalizado"
+									var testIngresoUnico = RepositorioSucesos.getIncidentIngresoUnicoFinalizado(executionContext,idIncident);
+									if (testIngresoUnico && testIngresoUnico.xmsbs_ingresounicofinalizado != true)
+									{
+										setTimeout(function () {
+											formContext.data.entity.save();
+											testIngresoUnico = RepositorioSucesos.getIncidentIngresoUnicoFinalizado(executionContext,idIncident);
+										}, 2000);
+									}
+									// si no esta guardado esperar 2 seg y revisar si esta guardado
+									if (testIngresoUnico && testIngresoUnico.xmsbs_ingresounicofinalizado != true)
+									{
+										//no guardado mandar error de problema de registro mno avanzar
+										var alertStrings = { confirmButtonLabel: "Aceptar", title: "Reintentar", text: "No se pudo procesar el avance del caso. Favor intente nuevamente o contacte al administrador"};
+										var alertOptions = { height: 120, width: 260 };
+										Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then( function (success) { }, function (error) { } );
 										
-                                        // Forma original
-                                        if(currentUserId.toLowerCase() == newUserID.toLowerCase()){
-                                            //Son iguales, hacemos el refresco normal
-                                            var entityFormOptions = {};
-                                            entityFormOptions["entityName"] = formContext.data.entity.getEntityName();
-                                            entityFormOptions["entityId"] = idIncident;
-                                           
-                                            //Guardamos el cambio y refrescamos el formulario
-                                            formContext.data.entity.save();
-                                           
-                                            setTimeout(function () {
-                                                Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), idIncident);
-                                            }, 3000);
-                                        }
-                                        else{
-                                            //Son distintos, alertamos que se cerrará la ventana y cerramos
-                                            var alertStrings = { confirmButtonLabel: "Aceptar", title: "Cambio de responsable", text: "El caso pasó a gestión de un nuevo usuario. La ventana se cerrará"};
-                                            var alertOptions = { height: 120, width: 260 };
-                                            Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
-                                                function (success) {
-                                                    //console.log("Alert dialog closed");
-                                                    Xrm.Utility.closeProgressIndicator();
-                                                    JumpStartLibXRM.Fx.formSaveAndClose(executionContext);
-                                                },
-                                                function (error) {
-                                                Xrm.Utility.closeProgressIndicator();
-                                                    //console.log(error.message);
-                                                }
-                                            );                            
-                                        }	
-                                	
-                                }
-                            }
-                                else {
-                                    // problema con api
-                                    var alertStrings = { confirmButtonLabel: "Aceptar", title: "Reintentar", text: "No se pudo procesar el avance del caso. Favor intente nuevamente o contacte al administrador"};
-                                    var alertOptions = { height: 120, width: 260 };
-                                    Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
-                                        function (success) {
-                                            //console.log("Alert dialog closed");
-                                        },
-                                        function (error) {
-                                            //console.log(error.message);
-                                        }
-                                    );
-                                }
-                            }
-                            else{
-                                //Si cancela                   
-                            }
-                        },
-                        function (error) {
-                            //console.log(error.message);                            
-                        }
-                    );
-                }
+										return;
+									}                                        
+
+									// Actualiza campo para reporte RDA, determina si el caso es duplicado respecto a: rut, punto de contacto, detalle operación, mes actual.
+									var xmsbs_rda50512454 = RepositorioSucesos.oDataCasoDuplicadoMensual(executionContext);
+									RepositorioSucesos.ActualizarExtensionCaso(executionContext, "xmsbs_rda50512454", xmsbs_rda50512454);
+	
+									var strTitle = "Número de CASO: " + CorrelativoCaso;
+									var strConfirmBtn = "Crear Nuevo Caso";
+									var strCancelBtn = "Continuar";
+									var strBody = "Con fecha " + JumpStartLibXRM.Fx.formatDate(FechaCreacion) + ", " +
+										"se ha creado el caso " + CorrelativoCaso + " asociado al cliente " + RUT + ", " +
+										"para el producto " + Producto + ", " + 
+										"por concepto de " + DetalleTipologia + " y el responsable asignado es " + Propietario + ". " +
+										"La fecha comprometida de resolución es: " + JumpStartLibXRM.Fx.formatDate(FechaComprometida);   
+
+									var confirmStrings = { title: strTitle , text:strBody, confirmButtonLabel:strConfirmBtn, cancelButtonLabel:strCancelBtn};
+									var confirmOptions = { height: 250, width: 500 };
+									Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(
+									function (success) {   
+										if (success.confirmed)
+										{
+											debugger;
+											var entityFormOptions = {};
+											entityFormOptions["entityName"] = "incident";
+											entityFormOptions["openInNewWindow"] = false;
+											//entityFormOptions["formId"] = JumpStartLibXRM.Fx.getFormID(executionContext);
+											var formParameters = {};
+											setTimeout(function () {
+												Xrm.Navigation.openForm(entityFormOptions,formParameters);
+											}, 3000);
+										}
+										else{
+											if(currentUserId.toLowerCase() == newUserID.toLowerCase()){
+												//Si los usuarios son iguales, validamos si el flujo es de término inmediato para cerrar. Si no, sigue como antes
+												var etapaID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_etapa");
+												if (etapaID.indexOf("{") > -1){etapaID = etapaID.substring(1, 37);}
+												
+												var resultado = RepositorioSucesos.buscarProcesosDeEtapa(executionContext, etapaID);
+												if(resultado && resultado.value.length > 0){
+													//Encontró procesos, validamos que se llame de Termino Inmediato
+													var nombre = resultado.value[0].xmsbs_proceso.name;
+													if(nombre == "[XMS - Caso] - Termino inmediato"){
+														//El flujo en cuestión es de término inmediato, cerramos la ventana
+														//JumpStartLibXRM.Fx.formClose(executionContext);
+														var alertStrings = { confirmButtonLabel: "Aceptar", title: "Cierre de Caso", text: "El caso se cerrará automáticamente. La ventana se cerrará"};
+														var alertOptions = { height: 120, width: 260 };
+														Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+															function (success) {
+																//Xrm.Utility.closeProgressIndicator();
+																//JumpStartLibXRM.Fx.formSaveAndClose(executionContext);
+																var entityFormOptions = {};
+																entityFormOptions["entityName"] = "incident";
+																entityFormOptions["openInNewWindow"] = false;
+																//entityFormOptions["formId"] = JumpStartLibXRM.Fx.getFormID(executionContext);
+																var formParameters = {};
+																setTimeout(function () {
+																	Xrm.Navigation.openForm(entityFormOptions,formParameters);
+																}, 3000);
+															},
+															function (error) {
+																//Xrm.Utility.closeProgressIndicator();
+																//console.log(error.message);
+															}
+														);
+													}
+													else{
+														//El flujo no es de término inmediato, cerramos como antes
+														var entityFormOptions = {};
+														entityFormOptions["entityName"] = formContext.data.entity.getEntityName();
+														entityFormOptions["entityId"] = idIncident;
+														//Guardamos el cambio y refrescamos el formulario
+														setTimeout(function () {
+															Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), idIncident);
+														}, 3000);
+													}
+												}
+												else{
+													//Son iguales, hacemos el refresco normal
+													var entityFormOptions = {};
+													entityFormOptions["entityName"] = formContext.data.entity.getEntityName();
+													entityFormOptions["entityId"] = idIncident;
+													//Guardamos el cambio y refrescamos el formulario
+													setTimeout(function () {
+														Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), idIncident);
+													}, 3000);
+												}
+											}
+											else{
+												//Son distintos, alertamos que se cerrará la ventana y cerramos
+												var alertStrings = { confirmButtonLabel: "Aceptar", title: "Cambio de responsable", text: "El caso pasó a gestión de un nuevo usuario. La ventana se cerrará"};
+												var alertOptions = { height: 120, width: 260 };
+												Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+													function (success) {
+														//console.log("Alert dialog closed");
+														Xrm.Utility.closeProgressIndicator();
+														//JumpStartLibXRM.Fx.formSaveAndClose(executionContext);
+														setTimeout(function () {
+															JumpStartLibXRM.Fx.formClose(executionContext);
+														}, 3000);
+													},
+													function (error) {
+														Xrm.Utility.closeProgressIndicator();
+														//console.log(error.message);
+													}
+												);                            
+											}									
+										}
+									},
+									function (error) { 
+										//---
+									});
+									
+								}
+								else
+								{
+									// Siempre deja la marca por default: "Tipo Asignación = Por Flujo" si la acción es AVANZAR, 
+									// La actualización de la extensión, siempre va antes del "save" del Caso.
+									RepositorioSucesos.ActualizarExtensionCaso(executionContext, "xmsbs_tipodeasignacion", 657130000);
+									
+									// Adquirencia
+									RepositorioSucesos.DisminuyeStockAdquirencia(executionContext);
+									
+									// Forma original
+									if(currentUserId.toLowerCase() == newUserID.toLowerCase()){
+										//Son iguales, hacemos el refresco normal
+										var entityFormOptions = {};
+										entityFormOptions["entityName"] = formContext.data.entity.getEntityName();
+										entityFormOptions["entityId"] = idIncident;
+									   
+										//Guardamos el cambio y refrescamos el formulario
+										formContext.data.entity.save();
+									   
+										setTimeout(function () {
+											Xrm.Utility.openEntityForm(formContext.data.entity.getEntityName(), idIncident);
+										}, 3000);
+									}
+									else{
+										//Son distintos, alertamos que se cerrará la ventana y cerramos
+										var alertStrings = { confirmButtonLabel: "Aceptar", title: "Cambio de responsable", text: "El caso pasó a gestión de un nuevo usuario. La ventana se cerrará"};
+										var alertOptions = { height: 120, width: 260 };
+										Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+											function (success) {
+												//console.log("Alert dialog closed");
+												Xrm.Utility.closeProgressIndicator();
+												JumpStartLibXRM.Fx.formSaveAndClose(executionContext);
+											},
+											function (error) {
+											Xrm.Utility.closeProgressIndicator();
+												//console.log(error.message);
+											}
+										);                            
+									}	
+								}
+							}
+							else {
+								// problema con api
+								var alertStrings = { confirmButtonLabel: "Aceptar", title: "Reintentar", text: "No se pudo procesar el avance del caso. Favor intente nuevamente o contacte al administrador"};
+								var alertOptions = { height: 120, width: 260 };
+								Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then( function (success) { }, function (error) { } );
+							}
+						}
+						else{
+							//Si cancela
+						}
+					},
+					function (error) {
+						//console.log(error.message);
+					}
+				);
             }
         },
     
         SUC0002:function(executionContext){
-            //debugger;
             RepositorioSucesos.PopUp = 0;
             globalEC = executionContext;
             let codigoAccion = _modelo.codigoAccion;
@@ -950,7 +917,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                 {                
                     if(RepositorioSucesos.PopUp == 0)
                     {
-                        debugger;
                         RepositorioSucesos.PopUp = RepositorioSucesos.PopUp + 1;
                         RepositorioSucesos.Context.ExecutionContext = executionContext;
                         RepositorioSucesos.Context.FormContext = executionContext.getFormContext();
@@ -1139,7 +1105,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                             if(productoName == "Adquirencia"){
                                 formParameters["xmsbs_esquebrantoadquirencia"] = true; // Para que alguardar, no se gatille ninguna aprobación o validación
                             }
-                            debugger;
                             //Segundo, vemos si es masivo para que tampoco haga nada.
                             var detalleID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
                             if (detalleID.indexOf("{") > -1){detalleID = detalleID.substring(1, 37);}
@@ -1162,7 +1127,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                         if(producto == "No Estandarizado"){	
                                             //Modificamos el tipo de reclamo para que las aprobaciones entren por GSC
                                             formParameters["xmsbs_tipodereclamo"] = "657130002";
-                                            debugger;
                                             var resultado = RepositorioSucesos.buscarBitacoraEtapaCaso(executionContext, incidentId);
                                             if(resultado && resultado.value.length > 1){
                                                 formParameters["xmsbs_bitacoraetapadelcaso"] = resultado.value[0].xmsbs_bitacoraetapaid;
@@ -1236,7 +1200,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                     if(success.confirmed)
                     {
                         //Si confirma
-                        //debugger;
                         var entityFormOptions = {};
                         entityFormOptions["entityName"] = "incident";
                         entityFormOptions["openInNewWindow"] = false;
@@ -1293,19 +1256,17 @@ if (typeof (RepositorioSucesos) == "undefined")
                         
                         //Para enviar subrequerimiento de Hipotecario en Duro en caso que corresponda
                         
-                        debugger;
                         //Set lookup Producto
                         var ProductoId = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_producto");
                         if (ProductoId.indexOf("{") > -1){ProductoId = ProductoId.substring(1, 37);}
                         var ProductoName = JumpStartLibXRM.Fx.getLookupValueName(executionContext, "xmsbs_producto");
     
                         //Set lookup Tipo y Detalle
-                        var DetalleOperacion = JumpStartLibXRM.Fx.getLookupValueName(executionContext, "xmsbs_detalledeoperacion");
+                    	//var DetalleOperacion = JumpStartLibXRM.Fx.getLookupValueName(executionContext, "xmsbs_detalledeoperacion");
                         var codigoTipologia = "";
                         var detalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
     
                         if(detalleOperacionID){
-                            if (detalleOperacionID.indexOf("{") > -1){detalleOperacionID = detalleOperacionID.substring(1, 37);}
                             var resultado = RepositorioSucesos.buscarDetalleOperacion(executionContext, detalleOperacionID);
                             if(resultado){
                                 var codigoDO = resultado.xmsbs_codigo;
@@ -1315,18 +1276,52 @@ if (typeof (RepositorioSucesos) == "undefined")
                                     }
                                     else if (ProductoName.toLowerCase() == "seguros")
                                     {
-                                        debugger;
                                         if (codigoDO == "DO-1235" || codigoDO == "DO-1087" || codigoDO == "DO-1234")
                                             codigoTipologia = "TD-1022";
                                     }
                                     else if (ProductoName.toLowerCase() == "leasing")
                                     {
-                                        debugger;
                                         if (codigoDO == "DO-1253")
                                             codigoTipologia = "TD-1254";
                                         else if (codigoDO == "DO-1279")
                                             codigoTipologia = "TD-1280";
                                     }
+									
+									// Fraude 3.0
+									if (codigoDO == "DO-1472" || codigoDO == "DO-1473" || codigoDO == "DO-1474")
+									{
+										var ResolucionCaso = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_picklist4g_texto", null);
+										// Demanda con abono normativo;Demanda sin abono normativo
+
+										if (ResolucionCaso){
+											if (codigoDO == "DO-1472")
+											{
+												if (ResolucionCaso == "Demanda con abono normativo")
+													codigoTipologia = "TD-1500";
+												else if (ResolucionCaso == "Demanda sin abono normativo")
+													codigoTipologia = "TD-1499";
+											}
+											else if (codigoDO == "DO-1473")
+											{
+												if (ResolucionCaso == "Demanda con abono normativo")
+													codigoTipologia = "TD-1501";
+												else if (ResolucionCaso == "Demanda sin abono normativo")
+													codigoTipologia = "TD-1502";
+											}
+											else if (codigoDO == "DO-1474")
+											{
+												if (ResolucionCaso == "Demanda con abono normativo")
+													codigoTipologia = "TD-1503";
+												else if (ResolucionCaso == "Demanda sin abono normativo")
+													codigoTipologia = "TD-1504";
+											}
+										}
+										
+										// si es FRAUDE, sobreescribe el Canal de Ingreso: siempre será: OTROS CANALES e71e8827-1da9-eb11-b1ac-000d3ab7dc6d
+										PuntoContactoId = "e71e8827-1da9-eb11-b1ac-000d3ab7dc6d";
+										PuntoContactoName = "OTROS CANALES";
+									}
+									// FIN - Fraude 3.0									
                                 }
                             }
                         }
@@ -1337,7 +1332,7 @@ if (typeof (RepositorioSucesos) == "undefined")
                             //Completamo el tipodetalleoperación
                                 var TipoDetalleEspecificoName = respuesta.value[0].xmsbs_name;
                                 var TipoDetalleEspecificoId = respuesta.value[0].xmsbs_tipoydetalledeoperacionid;
-                                if (TipoDetalleEspecificoId.indexOf("{") > -1){TipoDetalleEspecificoId = TipoDetalleEspecificoId.substring(1, 37);}
+                                //if (TipoDetalleEspecificoId.indexOf("{") > -1){TipoDetalleEspecificoId = TipoDetalleEspecificoId.substring(1, 37);}
                             }
                         }
     
@@ -1511,7 +1506,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
     
         SUC0010: function (executionContext) {
-            //debugger;
             globalEC=executionContext;
             let casoId = _modelo.casoId;
             let currentContent= JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_respuestacliente");
@@ -1555,7 +1549,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                 cargoDestinatario: cargoDestinatario
             }
                  
-            //debugger;
             RepositorioSucesos.Context.ExecutionContext = executionContext;
             RepositorioSucesos.Context.FormContext = executionContext.getFormContext();
             RepositorioSucesos.Package.Data = package;
@@ -1576,7 +1569,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
         SUC0011: function () {
-            //debugger;
             let _modeloApi = {
                 idIncident: _modelo.casoId,
                 idPlantilla: null,
@@ -1584,11 +1576,11 @@ if (typeof (RepositorioSucesos) == "undefined")
             };
             let rutaAPI = '/Caso/GetPDFRespuestaManualCaso/';
             RepositorioSucesos.apiPost(rutaAPI, _modeloApi, function (data) {
-                //debugger;
                 if (data && data.success) {
-                    //debugger;
                     let params = 'scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no, width=950,height=700,left=100,top=100';
                     let domain = 'https://midaschiledesa.crm2.dynamics.com//WebResources/xmsbs_previewDocumento';
+					//let domain = 'https://midaschilehomologacion.crm2.dynamics.com//WebResources/xmsbs_previewDocumento';
+					//let domain = 'https://midaschilepro.crm2.dynamics.com//WebResources/xmsbs_previewDocumento';
                     var pop = window.open(domain, 'test', params);
                     let package = {
                         contenido: "data:application/pdf;base64, " +data.respuestaPDFEmailBase64,
@@ -1602,7 +1594,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                     }, 1000);
                     window.addEventListener('message', function (event) {
                         if (event) {
-                            //debugger;
                             clearInterval(timer);
                         }
     
@@ -1631,9 +1622,7 @@ if (typeof (RepositorioSucesos) == "undefined")
             };
             let rutaAPI = '/Caso/GenerarRespuestaManualCaso/';
             RepositorioSucesos.apiPost(rutaAPI, _modeloApi, function (data) {
-                //debugger;
                 if (data && data.success) {
-                    //debugger;
                     let pdfWindow = window.open("")
                     pdfWindow.document.write(
                         "<iframe width='100%' height='100%' src='data:application/pdf;base64, " +
@@ -1667,7 +1656,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                             var formValido = JumpStartLibXRM.Fx.FormGetIsDirty(executionContext);
                             if(!formValido)
                             {             
-                                //debugger;
                                 //Xrm.Utility.showProgressIndicator("Procesando");
                                 RepositorioSucesos.mostrarIndicadorProgreso("Procesando");
                                 let rutaAPI = '/Caso/ResolverCaso';
@@ -1682,7 +1670,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                     //Xrm.Utility.closeProgressIndicator();
                                     //RepositorioSucesos.ocultarIndicadorProgreso();
                                     if (data.success) {
-                                        //debugger;
                                         if(_adquirencia != null && _adquirencia.toLowerCase() == "adquirencia")
                                         {
                                             RepositorioSucesos.EnviarNotificacionCierreAdquirencia(formContext, incidentId);
@@ -1789,7 +1776,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                 {
                     if(success.confirmed)
                     {
-                        //debugger;
                         if(!_cartaRespuestaSubido)
                         {
                             let _modeloApi = {
@@ -1853,7 +1839,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                 function (success) {
                     if(success.confirmed)
                     {
-                        //debugger;
                         //Si confirma
                         //Parámetros del servicio
                         var idIncident = modelo.casoId;
@@ -1881,7 +1866,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                         }
                         if (response.success)
                         {
-                            //debugger;
                             //actualizar etapa
                             var fieldName = "xmsbs_etapa";
                             var id = response.suC0001.etapa.id;
@@ -1992,7 +1976,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                     function (success) {
                         if(success.confirmed)
                         {   
-                            //debugger;
                             //var _response = RepositorioSucesos.EnviarNotificacionesCliente(modelo.casoId, modelo.accionEtapaId);
                             //setTimeout(function () {
                                 //OCultar botonera
@@ -2037,7 +2020,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },	
     
         SUC0018:function(executionContext, formContext, modelo){
-            //debugger;
             var idIncident = modelo.casoId;
             var idAccionEtapa = modelo.accionEtapaId;
             var codigoSuceso = "SUC0018";
@@ -2047,8 +2029,7 @@ if (typeof (RepositorioSucesos) == "undefined")
     
             RepositorioSucesos.apiGet(rutaAPI, function (data) {
                 if (data && data.success) 
-                {
-                    //debugger;                
+                {              
                     RepositorioSucesos.Context.ExecutionContext = executionContext;
                     RepositorioSucesos.Context.FormContext = executionContext.getFormContext();
                     RepositorioSucesos.Package.Data = data;
@@ -2078,7 +2059,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
         SUC0019:function(executionContext, formContext, modelo){
-            debugger; 
             //Hace click en retroceder (Reparar, Reinsistir, etc)
             var estado = JumpStartLibXRM.Fx.getValueField(executionContext, "statuscode", null);  
             var adquirencia = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_institucion", null);
@@ -2130,23 +2110,21 @@ if (typeof (RepositorioSucesos) == "undefined")
                     );
                 }
                 else{
-					
-					// si es adquirencia, y el DO está marcado con un "ID Stock Adquirencia", 
-					// y si el reparo es a una etapa en donde el campo indicado en el DO "Campo Cantidad Solicitada" es editable, 
-					// entonces advierte que además de retroceder, liberará X unidades, las que se sumarán al STOCK de [Nombre ].
-					debugger;
-					var MensajeStockAdquirencia = "";
-					if(esAdquirencia){
-						MensajeStockAdquirencia = RepositorioSucesos.MensajeDevuelveStockAdquirencia(executionContext, modelo.accionEtapaId);
-					}
-					
+                    
+                    // si es adquirencia, y el DO está marcado con un "ID Stock Adquirencia", 
+                    // y si el reparo es a una etapa en donde el campo indicado en el DO "Campo Cantidad Solicitada" es editable, 
+                    // entonces advierte que además de retroceder, liberará X unidades, las que se sumarán al STOCK de [Nombre ].
+                    var MensajeStockAdquirencia = "";
+                    if (esAdquirencia) {
+                        MensajeStockAdquirencia = RepositorioSucesos.MensajeDevuelveStockAdquirencia(executionContext, modelo.accionEtapaId);
+                    }
+                    
                     var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Retrocede el caso", subtitle:"Va a enviar el Caso a la etapa anterior. " + MensajeStockAdquirencia + "¿Desea Continuar?", text: "Esta acción podría demorar algunos segundos" };
                     var confirmOptions  = { height: 200, width: 260 };
                     Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
                         function (success) {
                             if(success.confirmed)
                             {
-                                //debugger;
                                 var idIncident = JumpStartLibXRM.Fx.getEntityId(executionContext);        
                                 let rutaAPI = "/MantenedorWeb/GetCodigosReparo";
     
@@ -2195,7 +2173,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
     
         SUC0020: function (executionContext) {
-            //debugger; 
                //Cierro el caso
             JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_aux_status", 1);  
     
@@ -2228,22 +2205,19 @@ if (typeof (RepositorioSucesos) == "undefined")
                 );
             }
             else{
-			debugger;
-			
                 //Caso contrario, continúa ejecución normal
-			
-				// antes de llamar a la API (que podría cerrar automáticamente el caso) guarda los datos que actualmente están en el form:
-				formContext.data.entity.save();			
-			
-				//Xrm.Utility.closeProgressIndicator();
-
+                
+                // antes de llamar a la API (que podría cerrar automáticamente el caso) guarda los datos que actualmente están en el form:
+                formContext.data.entity.save();			
+                
+                //Xrm.Utility.closeProgressIndicator();
+    
                 var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Avance de etapa", subtitle:"Va a avanzar el Caso a la siguiente etapa. ¿Desea Continuar?", text: "Esta acción podría demorar algunos segundos" };
                 var confirmOptions  = { height: 200, width: 260 };
                 Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
                     function (success) {
                         if(success.confirmed)
                         {
-                            //debugger;
                             //Si confirma
                             //Parámetros del servicio
                             var idIncident = modelo.casoId;
@@ -2252,7 +2226,7 @@ if (typeof (RepositorioSucesos) == "undefined")
                             
                             //llamada al servicio
                             var response = null;
-                            
+                        
                             var URL= "Caso/EjecutarSuceso/"+idIncident+"/"+idAccionEtapa+"/"+codigoSuceso+"";
                            // var apiToken = window.sessionStorage.getItem("LokiAuthToken");
                             var service = RepositorioSucesos.GetRequestObject();
@@ -2281,7 +2255,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                 }
                                     
                                 // si no ocurre el cierre automático, entonces ejecuta la misma lógica que el SUC0001 (cambio a etapa siguiente), excepto por las acciones correspondientes a la ETA001
-                                //debugger;
                                 //actualizar etapa
                                 var fieldName = "xmsbs_etapa";
                                 var id = response.suC0001.etapa.id;
@@ -2302,7 +2275,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                 var name = response.suC0001.propietario.name;
                                 var entityType = response.suC0001.propietario.logicalName;
                                 var propietario = JumpStartLibXRM.Fx.setLookupValue(executionContext, fieldName, id, name, entityType);
-                                debugger;
                                 //Rol - lookup
                                 if(response.suC0001.rol != null){
                                     if(response.suC0001.rol.name != ""){
@@ -2324,8 +2296,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                 }
                                 //actualizar Razón para el estado
                                 JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", response.suC0001.estado);
-                                
-                                //debugger;
                                 //Validamos si el nuevo usuario es igual al actual para cerrar o refrescar
                                 var currentUserId = JumpStartLibXRM.Fx.getUserId();
                                 if (currentUserId.indexOf("{") > -1){currentUserId = currentUserId.substring(1, 37);}
@@ -2337,7 +2307,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                 // - Valida que el formulario sea: "Caso Ingreso Único" ; E731458B-5CA5-4AC6-A863-B54FD50C0475
                                 // - Valida que el estado "desde" sea "En Ingreso".
                                 // - Muesta Alerta con la información del Caso.
-                                debugger;
                                 var FormName = JumpStartLibXRM.Fx.getFormName(executionContext);
                                 
                                 var IngresoUnicoFinalizado = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_ingresounicofinalizado", null);
@@ -2349,9 +2318,7 @@ if (typeof (RepositorioSucesos) == "undefined")
                                     (IngresoUnicoFinalizado == null || IngresoUnicoFinalizado == 0 || CasoPrincipal)) 
                                 {
                                     //Se actualiza el ingreso unico finalizado a SI
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_ingresounicofinalizado", true);
-                                    
-                                    debugger;
+                                    JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_ingresounicofinalizado", true);								
                                     var CorrelativoCaso = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_numerocorrelativo", null);
                                     var FechaCreacion = JumpStartLibXRM.Fx.getValueField(executionContext, "createdon", null);
                                     var RUT = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_rut", null);
@@ -2366,7 +2333,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                     JumpStartLibXRM.Fx.setValueField(executionContext, "title", tituloCaso);
                                     
                                     // Actualiza los datos de la Extensión del Caso. (antes del caso)
-                                    debugger;
                                     RepositorioSucesos.ActualizarExtensionCaso(executionContext, "xmsbs_tipodeasignacion", 657130000);
                                     formContext.data.entity.save();
                                     
@@ -2390,7 +2356,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                         
                                         if (success.confirmed)
                                         {
-                                            debugger;
                                             var entityFormOptions = {};
                                             entityFormOptions["entityName"] = "incident";
                                             entityFormOptions["openInNewWindow"] = false;
@@ -2504,7 +2469,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                 {
                     if(success.confirmed)
                     {
-                        //debugger;
                         let _modeloApi = {
                             idIncident: _modelo.casoId,
                             idPlantilla: null,
@@ -2553,14 +2517,11 @@ if (typeof (RepositorioSucesos) == "undefined")
                 {
                     if(success.confirmed)
                     {
-                        //debugger;
                         //Confirma
                         if(modelo.casoId != null && modelo.accionEtapaId != null)
                         {
-                            debugger;
                             var URL= "CasoAccion/PostEnviarNotificacionesClienteAsync?idIncident=" + modelo.casoId + "&idAccionEtapa=" + modelo.accionEtapaId;
                             RepositorioSucesos.apiPost(URL, null, function (data) {
-                                //debugger;
                                 if (data.success) 
                                 {
                                     _mensaje = data.message;
@@ -2630,7 +2591,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                         let rutaAPI = '/Caso/ContracargoAdquirencia?idIncident=' + modelo.casoId + '&cierreContracargo=false';
                         RepositorioSucesos.apiPost(rutaAPI, null, function (data) 
                         {
-                            //debugger;
                             if (data && data.success) 
                             {
                                 var fileName = "solicitud_contracargos_comercio.pdf";
@@ -2684,7 +2644,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                         let rutaAPI = '/Caso/ContracargoAdquirencia?idIncident=' + modelo.casoId + '&cierreContracargo=true';
                         RepositorioSucesos.apiPost(rutaAPI, null, function (data) 
                         {
-                            //debugger;
                             if (data && data.success) 
                             {
                                 var fileName = "cierre_caso_contracargos.pdf";
@@ -2727,8 +2686,7 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
           
-        SUC0027:function(executionContext, formContext, modelo){
-            //debugger;    
+        SUC0027:function(executionContext, formContext, modelo){ 
             var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Reinsistencia", subtitle:"Va a enviar el Caso a la etapa anterior. ¿Desea Continuar?", text: "Recuerde que al Re-insistir un caso debe informar la nueva fecha comprometida al cliente" };
             var confirmOptions  = { height: 200, width: 260 };
             Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
@@ -2773,10 +2731,8 @@ if (typeof (RepositorioSucesos) == "undefined")
                 function (success) {
                     if(success.confirmed)
                     {   
-                        //debugger;
                         var URL= "CasoAccion/PostEnviarNotificacionesClienteAsync?idIncident=" + modelo.casoId + "&idAccionEtapa=" + modelo.accionEtapaId;
                         RepositorioSucesos.apiPost(URL, null, function (data) {
-                            //debugger;
                             if (data.success) 
                             {
                                 _mensaje = data.message;
@@ -2820,7 +2776,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },		
     
         SUC0029: function (executionContext) {		
-            debugger;
             //Crear subrequerimiento Fraude
             var incidentId = JumpStartLibXRM.Fx.getEntityId(executionContext);
             if(incidentId){ 
@@ -2916,7 +2871,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                         if (ProductoId.indexOf("{") > -1){ProductoId = ProductoId.substring(1, 37);}
                                         var ProductoName = JumpStartLibXRM.Fx.getLookupValueName(executionContext, "xmsbs_producto");
                                         
-                                        debugger;
                                         //Set lookup Tipo y Detalle
                                         var DetalleOperacion = JumpStartLibXRM.Fx.getLookupValueName(executionContext, "xmsbs_detalledeoperacion");
                                         var codigoTipologia = "";
@@ -3153,7 +3107,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },	
         
         SUC0031:function(executionContext, formContext, modelo){
-            //debugger;
             //Hace click en retroceder (Reparar, Reinsistir, etc) 
             var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Derivar a Sucursal", subtitle:"Va a derivar el Caso a una Sucursal. ¿Desea Continuar?", text: "Esta acción podría demorar algunos segundos" };
             var confirmOptions  = { height: 200, width: 260 };
@@ -3161,7 +3114,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                 function (success) {
                     if(success.confirmed)
                     {
-                        //debugger;
                         var idIncident = JumpStartLibXRM.Fx.getEntityId(executionContext);        
     
                         RepositorioSucesos.Context.ExecutionContext = executionContext;
@@ -3197,8 +3149,7 @@ if (typeof (RepositorioSucesos) == "undefined")
             ); 
         },	
         
-        SUC0032:function(executionContext, formContext, modelo){
-            //debugger;    
+        SUC0032:function(executionContext, formContext, modelo){ 
             var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Termino Inmediato", subtitle:"Va a cerrar el Caso como finalizado. ¿Desea Continuar?", text: "Esta acción permite almacenar la atención, sin necesidad de enviar a la UR de gestión" };
             var confirmOptions  = { height: 200, width: 260 };
             Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
@@ -3236,7 +3187,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
         SUC0033: function (executionContext, formContext, modelo) {
-        debugger;
             //Resuelve con No se accede + Observaciones
             
             var formContext = executionContext.getFormContext();
@@ -3279,7 +3229,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                                 RepositorioSucesos.apiPost(rutaAPI, request, function (data) {                                
     
                                     if (data.success) {
-                                        //debugger;
                                         if(_adquirencia != null && _adquirencia.toLowerCase() == "adquirencia")
                                         {
                                             RepositorioSucesos.EnviarNotificacionCierreAdquirencia(formContext, incidentId);
@@ -3334,7 +3283,119 @@ if (typeof (RepositorioSucesos) == "undefined")
                     }
                 );
             }        
-        },	
+        },
+        
+        SUC0034: function (executionContext, modelo) {
+            debugger;
+            //var estado = JumpStartLibXRM.Fx.getValueField(executionContext, "statuscode", null);  
+
+            var adquirencia = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_institucion", null);
+            var esAdquirencia = (adquirencia == "{443E67E1-F271-EB11-A812-00224809A412}");
+            if(esAdquirencia)
+                return;
+
+            // La plantilla se genera respecto a los datos del caso padre
+            var CasoPrincipal = JumpStartLibXRM.Fx.getValueField(executionContext, "parentcaseid", null);
+            var idIncident = CasoPrincipal[0].id;
+
+            RepositorioSucesos.Context.ExecutionContext = executionContext;
+            RepositorioSucesos.Context.FormContext = executionContext.getFormContext();
+            RepositorioSucesos.Package.CasoId = idIncident;
+            RepositorioSucesos.Package.UsuarioId = JumpStartLibXRM.Fx.getUserId();
+            RepositorioSucesos.Package.AccionEtapaId = modelo.accionEtapaId;
+            RepositorioSucesos.Package.CodigoSuceso = "SUC0034";
+            
+            var pageInput = {
+                pageType: "webresource",
+                webresourceName: "xmsbs_viewerHtmlEditor"
+            };
+            var navigationOptions = {
+                target: 2,
+                width: 800,
+                height: 800,
+                position: 1
+            };
+            Xrm.Navigation.navigateTo(pageInput, navigationOptions).then(function success() {}, function error() {});
+        },
+
+        SUC0035: function (executionContext, modelo) {
+            // Este suceso no aplica para Adquirencia
+            var adquirencia = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_institucion", null);
+            var esAdquirencia = (adquirencia == "{443E67E1-F271-EB11-A812-00224809A412}");
+            if(esAdquirencia)
+                return;
+
+            // No debe tener cambios pendientes.
+            var formPendienteGuardado = JumpStartLibXRM.Fx.FormGetIsDirty(executionContext);
+            if(formPendienteGuardado)
+            {
+                alert("Antes de Desistir debe guardar los cambios pendientes.");
+                return;
+            }
+
+            // El Cliente puede Desistir desde el Caso Principal o desde el SubRequerimiento.
+            var CasoPrincipal = JumpStartLibXRM.Fx.getValueField(executionContext, "parentcaseid", null);
+            var esSubRequerimiento = (CasoPrincipal);
+
+            var formContext = executionContext.getFormContext();
+            var incidentId = JumpStartLibXRM.Fx.getEntityId(executionContext);
+            
+
+            var confirmStrings  = { confirmButtonLabel: "Aceptar", title: "Cliente Desiste", subtitle:"Va a iniciar el cierre del caso. ¿Desea Continuar?"};
+            var confirmOptions  = { height: 200, width: 260 };
+            Xrm.Navigation.openConfirmDialog(confirmStrings , confirmOptions ).then(
+                function (success) {
+                    if(success.confirmed)
+                    {
+                        RepositorioSucesos.mostrarIndicadorProgreso("Procesando");
+
+                        if (esSubRequerimiento)
+                        {
+                            // Cliente Desiste desde SubRequerimiento
+
+                            // - 
+
+                            var CasoPrincipalId = CasoPrincipal[0].id;
+                            
+
+
+
+
+                        }
+                        else
+                        {
+                            // Cliente desiste desde el caso principal
+
+                            // - Se obtiene el SubRequerimiento Fraude
+                            // - Se actualiza el SubRequerimiento con: xmsbs_picklist3g = 2 ; xmsbs_picklist3g_texto = "Cliente Desiste" ; xmsbs_motivo = "Cliente desiste desde caso principal"
+                            // - Se realiza la resolución del caso: (basado en SUC0013, pero sin usar el AppService)
+                            // - Se envía notificación desde el Caso Principal
+
+                            var oSubReq = RepositorioSucesos.buscarSubRequerimientoFraude(executionContext, incidentId);
+                            var SubReqId = oSubReq[0].id;
+
+                            var objSubReq = {};
+                            objSubReq["xmsbs_picklist3g"] = 2; 
+                            objSubReq["xmsbs_picklist3g_texto"] = "Cliente Desiste"; 
+                            SDK.WEBAPI.updateRecordImpersonate(executionContext, SubReqId, objSubReq, "incident", RepositorioSucesos.Package.UsuarioAdminID, null, null);
+
+
+                            JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_aux_status", 1); // 1: Finalizado
+                            JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_correodecierreenviado", true);
+
+                            RepositorioSucesos.EnviarNotificacionesCierreCliente(formContext, incidentId, modelo.accionEtapaId);
+
+                            // muestra alert: Caso [Número Correlativo] Resuelto.
+
+
+                            
+                        }
+                    }
+                },
+                function (error) { }
+            );
+        },	        
+
         
     //============================================
     //LLAMADAS CRUD (CREATE, READ, UPDATE, DELETE)
@@ -3378,6 +3439,14 @@ if (typeof (RepositorioSucesos) == "undefined")
             return resultado;
         },
         
+        buscarSubRequerimientoFraude: function (executionContext, incidentid){
+            var entityType = "incident";
+            var query = "$select=xmsbs_numerocorrelativo";
+            query += "&$filter=(statecode eq 0 and _parentcaseid_value eq " + incidentid.replace(/[{}]/g, "") + ")";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        },
+
         buscarTipoDocumento: function (executionContext, codigoDocumento){
             var entityType = "xmsbs_tipodedocumento";
             var query = "$select=xmsbs_codigo,xmsbs_name,xmsbs_tipodocumentalfilenet";
@@ -3423,14 +3492,14 @@ if (typeof (RepositorioSucesos) == "undefined")
             return resultado;
         },
 		
-        buscarCampoDeEtapa: function (executionContext, etapaID, NombreCampo){
+        buscarCampoDeEtapa: function(executionContext, etapaID, NombreCampo) {
             var entityType = "xmsbs_campos";
             var query = "$select=xmsbs_campoid,xmsbs_name,xmsbs_lectura";
-			query += "&$filter=(xmsbs_name eq '" + NombreCampo + "' and _xmsbs_etapa_value eq " + etapaID.replace(/[{}]/g, "") + ")";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
+            query += "&$filter=(xmsbs_name eq '" + NombreCampo + "' and _xmsbs_etapa_value eq " + etapaID.replace(/[{}]/g, "") + ")";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function() {});
             return resultado;
-        },		
-		
+        },
+        
         ordenEtapa: function (executionContext, EtapaID){
             //Preparamos la consulta
             var entityType = "xmsbs_etapas";
@@ -3482,7 +3551,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         
         oDataCasoDuplicadoMensual: function (executionContext){
             // Determina si ya existe un caso para el mismo RUT, DO, Punto de Contacto, y que sea del mismo mes.
-            debugger;
             
             var incidentId = JumpStartLibXRM.Fx.getEntityId(executionContext);
             var rut = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_rut", null);
@@ -3514,7 +3582,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         }, 	
         
         downloadBase64File: function (contentBase64, fileName){
-            //debugger;
             const linkSource = 'data:application/pdf;base64,' + contentBase64;
             const downloadLink = document.createElement("a");
             downloadLink.href = linkSource;
@@ -3523,7 +3590,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
     
         EnviarNotificacionesCliente: function (idIncident, idAccionEtapa){
-            //debugger;
             let _mensaje = "";
             var response = null;
                         
@@ -3563,7 +3629,6 @@ if (typeof (RepositorioSucesos) == "undefined")
             var _mensaje = "";
             var URL= "CasoAccion/PostEnviarNotificacionesClienteAsync?idIncident=" + idIncident + "&idAccionEtapa=" + idAccionEtapa;
             RepositorioSucesos.apiPost(URL, null, function (data) {
-                //debugger;
                 if (data.success) 
                 {
                     _mensaje = data.message;
@@ -3585,7 +3650,6 @@ if (typeof (RepositorioSucesos) == "undefined")
             var _mensaje = "";
             var URL = "CasoAccion/PostEnviarMailCierreCasoAdquirenciaAsync?idIncident=" + idIncident;
             RepositorioSucesos.apiPost(URL, null, function (data) {
-                //debugger;
                 if (data.success) 
                 {
                     _mensaje = data.message;
@@ -3612,7 +3676,6 @@ if (typeof (RepositorioSucesos) == "undefined")
         },
         
         ResolverCaso: function (executionContext, modelo){
-            //debugger;
             var formContext = executionContext.getFormContext();
             var incidentId = JumpStartLibXRM.Fx.getEntityId(executionContext);
             
@@ -3627,7 +3690,6 @@ if (typeof (RepositorioSucesos) == "undefined")
                 var formValido = JumpStartLibXRM.Fx.FormGetIsDirty(executionContext);
                 if(!formValido)
                 {             
-                    //debugger;
                     //Xrm.Utility.showProgressIndicator("Procesando");
                     RepositorioSucesos.mostrarIndicadorProgreso("Procesando");
                     let rutaAPI = '/Caso/ResolverCaso';
@@ -3682,9 +3744,7 @@ if (typeof (RepositorioSucesos) == "undefined")
             }    
         },
         
-        ActualizarExtensionCaso : function(executionContext, AttLogicalName, Valor){
-            debugger;
-            
+        ActualizarExtensionCaso : function(executionContext, AttLogicalName, Valor){	
             var xmsbs_extensioncaso = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_extensioncaso", null);
             if (xmsbs_extensioncaso)
             {
@@ -3712,9 +3772,7 @@ if (typeof (RepositorioSucesos) == "undefined")
     
                     var CorrelativoCaso = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_numerocorrelativo", null);
                     var NombreExtensionCaso = "Extensión del caso: " + CorrelativoCaso;
-                    
-                    debugger;
-                    
+    
                     var CREATEExtCaso = {};
                     CREATEExtCaso[AttLogicalName] = Valor;
                     CREATEExtCaso["xmsbs_name"] = NombreExtensionCaso;
@@ -3750,113 +3808,111 @@ if (typeof (RepositorioSucesos) == "undefined")
                 }			
             }
         },
+
+		DisminuyeStockAdquirencia: function(executionContext) {
+		    var detalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
+		    var oDetalleOperacion = RepositorioSucesos.buscarDetalleOperacion(executionContext, detalleOperacionID);
 		
-		DisminuyeStockAdquirencia: function (executionContext){
-			debugger;
-			var detalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
-			var oDetalleOperacion = RepositorioSucesos.buscarDetalleOperacion(executionContext, detalleOperacionID);
-
-			// solo aplica si en el Detalle de Operación se indica un "ID Stock Adquirencia"
-			if (!oDetalleOperacion.xmsbs_idstockadquirencia)
-				return; 
-			
-			// continúa solo si está pendiente de actualización de stock 
-			var PendienteActualizaStock = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_texto13g", null);
-			if (!PendienteActualizaStock || PendienteActualizaStock != "1")
-				return;
-			
-			// luego de leer la marca, la borra...
-			JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_texto13g", null);
-			
-			var oStockAdquirencia = RepositorioSucesos.oDataGetStockActual(executionContext, oDetalleOperacion.xmsbs_idstockadquirencia);
-			if (!oStockAdquirencia || oStockAdquirencia.value.length == 0)
-				return; // siempre debe existir si es que está indicado en el DO
+		    // solo aplica si en el Detalle de Operación se indica un "ID Stock Adquirencia"
+		    if (!oDetalleOperacion.xmsbs_idstockadquirencia)
+		        return;
 		
-			var StockActual = oStockAdquirencia.value[0].xmsbs_cantidad;
-			var NombreProducto = oStockAdquirencia.value[0].xmsbs_name;
-
-
-			var CantidadSolicitada = JumpStartLibXRM.Fx.getValueField(executionContext, oDetalleOperacion.xmsbs_campocantidadsolicitada, null);
-
-			var objeto = {};
-			objeto["xmsbs_cantidad"] = StockActual - CantidadSolicitada;
-			var resultado = SDK.WEBAPI.updateRecordImpersonate(executionContext, oStockAdquirencia.value[0].xmsbs_stockadquirenciaid, objeto, "xmsbs_stockadquirencias", RepositorioSucesos.Package.UsuarioAdminID, null, null);
-			
-			var alertStrings = "";
-			var alertOptions = { height: 120, width: 260 };
-			
-			if(resultado == "OK"){
-				StockActual = StockActual - CantidadSolicitada;
-				
-				/*
-				alertStrings = { confirmButtonLabel: "Aceptar", title: "Stock Actualizado", text: "Se actualiza el Stock a: " + StockActual + " unidades"};
-				Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
-					function (success) { 
-						var FullDateNow = JumpStartLibXRM.Fx.getDateNOW_ddmmaaaa_hhmmss();
-						JumpStartLibXRM.Fx.setFormNotification(executionContext, "WARNING", "Stock actual " + NombreProducto + ": " + StockActual + " unidades. (última lectura: " + FullDateNow + ")", "NOT_StockAdquirencia");			
-					}, 
-					function (error) { } 
-				);
-				*/
-			
-				// NO SIRVE UN ALERT porque luego de esta función se muestra otro alert, asi que solo se actualiza el mensaje.
-			
-				var FullDateNow = JumpStartLibXRM.Fx.getDateNOW_ddmmaaaa_hhmmss();
-				JumpStartLibXRM.Fx.setFormNotification(executionContext, "WARNING", "Se actualiza el Stock a: " + StockActual + " unidades. (última lectura: " + FullDateNow + ")", "NOT_StockAdquirencia");
-			}
-			else{
-				//alertStrings = { confirmButtonLabel: "Error", title: "Error de Stock", text: "Error al actualizar Stock. Informe al administrador."};
-				//Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(function (success) { }, function (error) { } );
-				
-				JumpStartLibXRM.Fx.setFormNotification(executionContext, "ERROR", "Error al actualizar Stock. Informe al Administrador.", "NOT_StockAdquirencia");
-			}
+		    // continúa solo si está pendiente de actualización de stock 
+		    var PendienteActualizaStock = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_texto13g", null);
+		    if (!PendienteActualizaStock || PendienteActualizaStock != "1")
+		        return;
+		
+		    // luego de leer la marca, la borra...
+		    JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_texto13g", null);
+		
+		    var oStockAdquirencia = RepositorioSucesos.oDataGetStockActual(executionContext, oDetalleOperacion.xmsbs_idstockadquirencia);
+		    if (!oStockAdquirencia || oStockAdquirencia.value.length == 0)
+		        return; // siempre debe existir si es que está indicado en el DO
+		
+		    var StockActual = oStockAdquirencia.value[0].xmsbs_cantidad;
+		    var NombreProducto = oStockAdquirencia.value[0].xmsbs_name;
+		
+		    var CantidadSolicitada = JumpStartLibXRM.Fx.getValueField(executionContext, oDetalleOperacion.xmsbs_campocantidadsolicitada, null);
+		
+		    var objeto = {};
+		    objeto["xmsbs_cantidad"] = StockActual - CantidadSolicitada;
+		    var resultado = SDK.WEBAPI.updateRecordImpersonate(executionContext, oStockAdquirencia.value[0].xmsbs_stockadquirenciaid, objeto, "xmsbs_stockadquirencias", RepositorioSucesos.Package.UsuarioAdminID, null, null);
+		
+		    var alertStrings = "";
+		    var alertOptions = { height: 120, width: 260 };
+		
+		    if (resultado == "OK") {
+		        StockActual = StockActual - CantidadSolicitada;
+		
+		        /*
+		        alertStrings = { confirmButtonLabel: "Aceptar", title: "Stock Actualizado", text: "Se actualiza el Stock a: " + StockActual + " unidades"};
+		        Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+		            function (success) { 
+		                var FullDateNow = JumpStartLibXRM.Fx.getDateNOW_ddmmaaaa_hhmmss();
+		                JumpStartLibXRM.Fx.setFormNotification(executionContext, "WARNING", "Stock actual " + NombreProducto + ": " + StockActual + " unidades. (última lectura: " + FullDateNow + ")", "NOT_StockAdquirencia");			
+		            }, 
+		            function (error) { } 
+		        );
+		        */
+		
+		        // NO SIRVE UN ALERT porque luego de esta función se muestra otro alert, asi que solo se actualiza el mensaje.
+		
+		        var FullDateNow = JumpStartLibXRM.Fx.getDateNOW_ddmmaaaa_hhmmss();
+		        JumpStartLibXRM.Fx.setFormNotification(executionContext, "WARNING", "Se actualiza el Stock a: " + StockActual + " unidades. (última lectura: " + FullDateNow + ")", "NOT_StockAdquirencia");
+		    }
+		    else {
+		        //alertStrings = { confirmButtonLabel: "Error", title: "Error de Stock", text: "Error al actualizar Stock. Informe al administrador."};
+		        //Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(function (success) { }, function (error) { } );
+		
+		        JumpStartLibXRM.Fx.setFormNotification(executionContext, "ERROR", "Error al actualizar Stock. Informe al Administrador.", "NOT_StockAdquirencia");
+		    }
 		},
 		
-		MensajeDevuelveStockAdquirencia: function (executionContext, idAccionEtapa){
-			debugger;
-			var detalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
-			var oDetalleOperacion = RepositorioSucesos.buscarDetalleOperacion(executionContext, detalleOperacionID);
-
-			// solo aplica si en el Detalle de Operación se indica un "ID Stock Adquirencia"
-			if (!oDetalleOperacion.xmsbs_idstockadquirencia)
-				return ""; 
-			// -------------------------------------------------------
-			
-			// valida que en la etapa siguiente el campo indicado en el DO ("Campo Cantidad Solicitada") sea editable
-			var oAccionEtapa = RepositorioSucesos.getAccionEtapa(executionContext, idAccionEtapa);
-			if (!oAccionEtapa || !oAccionEtapa._xmsbs_etapasiguiente_value)
-				return "";
-			
-			var Campo = RepositorioSucesos.buscarCampoDeEtapa(executionContext, oAccionEtapa._xmsbs_etapasiguiente_value, oDetalleOperacion.xmsbs_campocantidadsolicitada);
-			if (Campo == null || 
-				Campo.value.length == 0 || 
-				Campo.value[0].xmsbs_lectura == true)
-				return "";
-			// -------------------------------------------------------
-			
-			var oStockAdquirencia = RepositorioSucesos.oDataGetStockActual(executionContext, oDetalleOperacion.xmsbs_idstockadquirencia);
-			if (!oStockAdquirencia || oStockAdquirencia.value.length == 0)
-				return ""; // siempre debe existir si es que está indicado en el DO
+		MensajeDevuelveStockAdquirencia: function(executionContext, idAccionEtapa) {
+		    var detalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
+		    var oDetalleOperacion = RepositorioSucesos.buscarDetalleOperacion(executionContext, detalleOperacionID);
 		
-			var StockActual = oStockAdquirencia.value[0].xmsbs_cantidad;
-			var NombreProducto = oStockAdquirencia.value[0].xmsbs_name;
-
-			var CantidadEnUso = JumpStartLibXRM.Fx.getValueField(executionContext, oDetalleOperacion.xmsbs_campocantidadsolicitada, null);
-
-			RepositorioSucesos.Package.StockAdquirenciaId = oStockAdquirencia.value[0].xmsbs_stockadquirenciaid;
-			RepositorioSucesos.Package.NuevoStock = (StockActual + CantidadEnUso);
-
-			return "Además, liberará " + CantidadEnUso + " unidades de " + NombreProducto + ". ";
-		},		
+		    // solo aplica si en el Detalle de Operación se indica un "ID Stock Adquirencia"
+		    if (!oDetalleOperacion.xmsbs_idstockadquirencia)
+		        return "";
+		    // -------------------------------------------------------
 		
-		oDataGetStockActual: function(executionContext, idStock){
-			// idStock = Código Stock
-			var entityType = "xmsbs_stockadquirencias";
-			var query = "$select=xmsbs_name, xmsbs_cantidad";
-			query += "&$filter=(xmsbs_idstock eq '" + idStock + "')";
-			var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
-			return resultado;
-		}		
+		    // valida que en la etapa siguiente el campo indicado en el DO ("Campo Cantidad Solicitada") sea editable
+		    var oAccionEtapa = RepositorioSucesos.getAccionEtapa(executionContext, idAccionEtapa);
+		    if (!oAccionEtapa || !oAccionEtapa._xmsbs_etapasiguiente_value)
+		        return "";
+		
+		    var Campo = RepositorioSucesos.buscarCampoDeEtapa(executionContext, oAccionEtapa._xmsbs_etapasiguiente_value, oDetalleOperacion.xmsbs_campocantidadsolicitada);
+		    if (Campo == null ||
+		        Campo.value.length == 0 ||
+		        Campo.value[0].xmsbs_lectura == true)
+		        return "";
+		    // -------------------------------------------------------
+		
+		    var oStockAdquirencia = RepositorioSucesos.oDataGetStockActual(executionContext, oDetalleOperacion.xmsbs_idstockadquirencia);
+		    if (!oStockAdquirencia || oStockAdquirencia.value.length == 0)
+		        return ""; // siempre debe existir si es que está indicado en el DO
+		
+		    var StockActual = oStockAdquirencia.value[0].xmsbs_cantidad;
+		    var NombreProducto = oStockAdquirencia.value[0].xmsbs_name;
+		
+		    var CantidadEnUso = JumpStartLibXRM.Fx.getValueField(executionContext, oDetalleOperacion.xmsbs_campocantidadsolicitada, null);
+		
+		    RepositorioSucesos.Package.StockAdquirenciaId = oStockAdquirencia.value[0].xmsbs_stockadquirenciaid;
+		    RepositorioSucesos.Package.NuevoStock = (StockActual + CantidadEnUso);
+		
+		    return "Además, liberará " + CantidadEnUso + " unidades de " + NombreProducto + ". ";
+		},
+		
+		oDataGetStockActual: function(executionContext, idStock) {
+		    // idStock = Código Stock
+		    var entityType = "xmsbs_stockadquirencias";
+		    var query = "$select=xmsbs_name, xmsbs_cantidad";
+		    query += "&$filter=(xmsbs_idstock eq '" + idStock + "')";
+		    var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () { });
+		    return resultado;
+		}
+
     };
     
     parent.getContext = function (){
@@ -3878,6 +3934,5 @@ if (typeof (RepositorioSucesos) == "undefined")
         return RepositorioSucesos.Package.AccionEtapaId;
     };
     parent.setPopUpZero = function (){
-        //debugger;
         RepositorioSucesos.PopUp = 0;
     };
