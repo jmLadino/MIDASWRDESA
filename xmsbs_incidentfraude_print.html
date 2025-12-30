@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Imprimir Caso</title>
+    
+    <script src="../WebResources/xmsbs_JumpStarLibXRM"></script>
+    <script src="../WebResources/xmsbs_webAPI"></script>
+    <script src="../WebResources/xmsbs_formularioCaso"></script>
+    <script src="../WebResources/xmsbs_jsBotonesRibbonCaso"></script>
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            background: #f4f4f4;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        .section {
+            margin-bottom: 15px;
+        }
+
+        .fields {
+            display: grid;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: left;
+        }
+
+   
+        /* ===== HEADER ===== */
+        .header-image {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ccc;
+        }
+        .header-image img {
+            max-height: 70px;
+            width: auto;
+            object-fit: contain;
+        }
+        .left-image { margin-left: 5px; }
+        .right-image { margin-right: 5px; }
+
+        /* General font */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+        }
+
+        /* Section title */
+        h2 {
+            background: #e9e9e9;
+            padding: 10px 12px;
+            font-size: 15px;
+            font-weight: bold;
+            border-left: 4px solid #cc0000;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        /* Print button */
+        #printButtonContainer {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .print-btn {
+            padding: 10px 18px;
+            background: #cc0000;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            border-radius: 4px;
+        }
+        .print-btn:hover {
+            background: #a80000;
+        }
+        
+        @media print {
+            body, h1, h2, h3, h4, h5, h6, table, td, th, div, span, p {
+                font-size: 14px !important; line-height: 1.2 !important;
+            }
+
+            @page { margin: 10mm !important; }
+
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                zoom: 1 !important;
+            }
+
+            .fields {
+                display: grid !important;
+            }
+
+            .header-image img {
+                max-height: 70px !important;
+                width: auto !important;
+            }
+
+            #printButtonContainer {
+                display: none !important;
+            }
+        }
+    </style>
+    <script>
+
+        var idIncident = null;
+        var numCorrelativo = "";
+        var idDetalleOperacion = null;
+		var parentcaseid = null;
+
+        // Principal
+        var DO1472_TC_Id = "{AC823EC0-E919-EF11-9F89-000D3AD8D133}"; 
+        var DO1473_TD_Id = "{F33F8CE8-EA19-EF11-9F89-000D3AD8D133}"; 
+        var DO1474_CaD_Id = "{08570BFF-EB19-EF11-9F89-000D3AD8D133}";
+
+        // SubReq
+        var DO1499_TC_Id = "{48596975-608E-F011-B4CB-002248E00F9B}";
+        var DO1500_TC_Id = "{54A7F405-4FA5-F011-BBD2-002248E037CF}";
+        var DO1501_TD_Id = "{5D276EA2-50A5-F011-BBD2-002248E037CF}";
+        var DO1502_TD_Id = "{95476234-51A5-F011-BBD2-002248E037CF}";
+        var DO1503_CaD_Id = "{9EE0748B-53A5-F011-BBD2-002248E037CF}";
+        var DO1504_CaD_Id = "{0A5634C7-53A5-F011-BBD2-002248E037CF}";
+
+
+        // DataType: Picklist, DateTime, Memo, Money, String, Lookup, Boolean, Integer
+        var DO1472_TC_Campos = [
+            {
+                "Seccion": "Datos necesarios del caso",
+                "Orden": 1,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_aplicadevolucion', 'DisplayName': '¿Cliente autorizó y/o realizó las transacciones?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_chequessolcanjeyprotestos', 'DisplayName': '¿Cliente sufrió el robo o hurto de sus productos?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_cumplesaldopromedio', 'DisplayName': '¿Tiene cliente la tarjeta en su poder?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_direcciondecontacto', 'DisplayName': 'Dirección del Cliente', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_fechadebloqueo', 'DisplayName': 'Fecha de Bloqueo Tarjeta', 'DataType': 'DateTime' },
+                    { 'LogicalName': 'xmsbs_incidenciamasiva', 'DisplayName': 'Incidencia Masiva', 'DataType': 'Boolean' },
+                    { 'LogicalName': 'xmsbs_memo1g', 'DisplayName': 'Análisis del Caso', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_montoreclamado', 'DisplayName': 'Monto Reclamado', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_montoreclamadousd', 'DisplayName': 'Monto Reclamado USD', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_observacionesdevisacion', 'DisplayName': 'Observaciones', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_picklist1g', 'DisplayName': 'Autoriza Bloqueo Definitivo', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist2g', 'DisplayName': 'Categoría del Reclamo', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist3g', 'DisplayName': 'Análisis de Fraude', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist4g', 'DisplayName': 'Resolución del Caso', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_tarjetainvolucrada', 'DisplayName': 'Tarjeta Involucrada', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_texto4g', 'DisplayName': 'Hora de Bloqueo', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_transaccionvalidadasporcliente', 'DisplayName': '¿Autorizó con Santander Pass?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_valorconversiondolar', 'DisplayName': 'Valor Conversión Dólar', 'DataType': 'Decimal' },
+                    { 'LogicalName': 'xmsbs_valorconversionuf', 'DisplayName': 'Valor Conversión UF', 'DataType': 'Decimal' }
+                ]
+            },
+            {
+                "Seccion": "Observaciones del Caso",
+                "Orden": 2,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_observacionesdevisacion", "DisplayName": "Observaciones de caso", "DataType": "Memo" },
+                    { "LogicalName": "xmsbs_observacionlectura", "DisplayName": "Observaciones lectura", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Datos del cliente",
+                "Orden": 3,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo de documento", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_rut", "DisplayName": "RUT", "DataType": "String" },
+                    { "LogicalName": "xmsbs_nombrecliente", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidopaterno", "DisplayName": "Apellido paterno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidomaterno", "DisplayName": "Apellido materno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_clientesantander", "DisplayName": "Cliente Santander", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_emailcliente", "DisplayName": "E-Mail", "DataType": "String" },
+                    { "LogicalName": "xmsbs_telefonocelular", "DisplayName": "Teléfono Celular", "DataType": "String" },
+                    { "LogicalName": "xmsbs_preferenciasdecontacto", "DisplayName": "Canal de notificación y/o respuesta cliente", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_sucursalcliente", "DisplayName": "Sucursal", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_segmentocliente", "DisplayName": "Segmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_subsegmentocliente", "DisplayName": "Subsegmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_ejecutivocliente", "DisplayName": "Ejecutivo", "DataType": "String" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Ingreso",
+                "Orden": 4,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_origen", "DisplayName": "Origen", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_idllamada", "DisplayName": "ID Llamada", "DataType": "String" },
+                    { "LogicalName": "xmsbs_puntodecontacto", "DisplayName": "Canal de ingreso", "DataType": "Lookup" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Caso",
+                "Orden": 5,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_producto", "DisplayName": "Producto", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_detalledetipologia", "DisplayName": "Detalle de Tipología", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_solucionesperada", "DisplayName": "Que solución espera el cliente", "DataType": "Memo" },
+                    { "LogicalName": "description", "DisplayName": "Observaciones", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Contratos",
+                "Orden": 6,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_contratosdelcaso",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_numerodeoperacionocontrato', 'DisplayName': 'Número de Operación o Contrato', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_numerodetarjeta', 'DisplayName': 'Número de Tarjeta', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_glosadelproducto', 'DisplayName': 'Glosa del Producto', 'DataType': 'String' }
+                ]
+            },
+            {
+                "Seccion": "Movimientos",
+                "Orden": 7,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_movimiento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_fechamovimiento', 'DisplayName': 'Fecha Movimiento', 'DataType': 'DateTime' },
+                    { 'LogicalName': 'xmsbs_descripciontipofactura', 'DisplayName': 'Descripción', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_importecompratotal', 'DisplayName': 'Importe Total', 'DataType': 'Decimal' },
+                    { 'LogicalName': 'xmsbs_monedadelmovimiento', 'DisplayName': 'Moneda Movimiento', 'DataType': 'String' }
+                ]
+            },
+            {
+                "Seccion": "Documentos del Caso",
+                "Orden": 8,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            }         
+        ];
+
+        var DO1473_TD_Campos = [
+            {
+                "Seccion": "Datos necesarios del caso",
+                "Orden": 1,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_aplicadevolucion', 'DisplayName': '¿Cliente autorizó y/o realizó las transacciones?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_chequessolcanjeyprotestos', 'DisplayName': '¿Cliente sufrió el robo o hurto de sus productos?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_cumplesaldopromedio', 'DisplayName': '¿Tiene cliente la tarjeta en su poder?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_direcciondecontacto', 'DisplayName': 'Dirección del Cliente', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_fechadebloqueo', 'DisplayName': 'Fecha de Bloqueo Tarjeta', 'DataType': 'DateTime' },
+                    { 'LogicalName': 'xmsbs_incidenciamasiva', 'DisplayName': 'Incidencia Masiva', 'DataType': 'Boolean' },
+                    { 'LogicalName': 'xmsbs_memo1g', 'DisplayName': 'Análisis del Caso', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_montoreclamado', 'DisplayName': 'Monto Reclamado', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_montoreclamadousd', 'DisplayName': 'Monto Reclamado USD', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_observacionesdevisacion', 'DisplayName': 'Observaciones', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_picklist1g', 'DisplayName': 'Autoriza Bloqueo Definitivo', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist2g', 'DisplayName': 'Categoría del Reclamo', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist3g', 'DisplayName': 'Análisis de Fraude', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist4g', 'DisplayName': 'Resolución del Caso', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_tarjetainvolucrada', 'DisplayName': 'Tarjeta Involucrada', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_texto4g', 'DisplayName': 'Hora de Bloqueo', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_transaccionvalidadasporcliente', 'DisplayName': '¿Autorizó con Santander Pass?', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_valorconversiondolar', 'DisplayName': 'Valor Conversión Dólar', 'DataType': 'Decimal' },
+                    { 'LogicalName': 'xmsbs_valorconversionuf', 'DisplayName': 'Valor Conversión UF', 'DataType': 'Decimal' }
+                ]
+            },
+            {
+                "Seccion": "Observaciones del Caso",
+                "Orden": 2,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_observacionesdevisacion", "DisplayName": "Observaciones de caso", "DataType": "Memo" },
+                    { "LogicalName": "xmsbs_observacionlectura", "DisplayName": "Observaciones lectura", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Datos del cliente",
+                "Orden": 3,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo de documento", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_rut", "DisplayName": "RUT", "DataType": "String" },
+                    { "LogicalName": "xmsbs_nombrecliente", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidopaterno", "DisplayName": "Apellido paterno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidomaterno", "DisplayName": "Apellido materno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_clientesantander", "DisplayName": "Cliente Santander", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_emailcliente", "DisplayName": "E-Mail", "DataType": "String" },
+                    { "LogicalName": "xmsbs_telefonocelular", "DisplayName": "Teléfono Celular", "DataType": "String" },
+                    { "LogicalName": "xmsbs_preferenciasdecontacto", "DisplayName": "Canal de notificación y/o respuesta cliente", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_sucursalcliente", "DisplayName": "Sucursal", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_segmentocliente", "DisplayName": "Segmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_subsegmentocliente", "DisplayName": "Subsegmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_ejecutivocliente", "DisplayName": "Ejecutivo", "DataType": "String" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Ingreso",
+                "Orden": 4,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_origen", "DisplayName": "Origen", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_idllamada", "DisplayName": "ID Llamada", "DataType": "String" },
+                    { "LogicalName": "xmsbs_puntodecontacto", "DisplayName": "Canal de ingreso", "DataType": "Lookup" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Caso",
+                "Orden": 5,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_producto", "DisplayName": "Producto", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_detalledetipologia", "DisplayName": "Detalle de Tipología", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_solucionesperada", "DisplayName": "Que solución espera el cliente", "DataType": "Memo" },
+                    { "LogicalName": "description", "DisplayName": "Observaciones", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Contratos",
+                "Orden": 6,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_contratosdelcaso",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_numerodeoperacionocontrato', 'DisplayName': 'Número de Operación o Contrato', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_numerodetarjeta', 'DisplayName': 'Número de Tarjeta', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_glosadelproducto', 'DisplayName': 'Glosa del Producto', 'DataType': 'String' }
+                ]
+            },
+            {
+                "Seccion": "Movimientos",
+                "Orden": 7,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_movimiento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_fechamovimiento', 'DisplayName': 'Fecha Movimiento', 'DataType': 'DateTime' },
+                    { 'LogicalName': 'xmsbs_descripciontipofactura', 'DisplayName': 'Descripción', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_importecompratotal', 'DisplayName': 'Importe Total', 'DataType': 'Decimal' },
+                    { 'LogicalName': 'xmsbs_monedadelmovimiento', 'DisplayName': 'Moneda Movimiento', 'DataType': 'String' }
+                ]
+            },
+            {
+                "Seccion": "Documentos del Caso",
+                "Orden": 8,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            }         
+        ];
+
+        var DO1474_CaD_Campos = [
+            {
+                "Seccion": "Datos necesarios del caso",
+                "Orden": 1,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_aplicadevolucion", "DisplayName": "¿Cliente autorizó y/o realizó las transacciones?", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_chequessolcanjeyprotestos", "DisplayName": "¿Cliente sufrió el robo o hurto de sus productos?", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_contratoseleccion", "DisplayName": "Contrato", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_fechadebloqueo", "DisplayName": "Fecha eliminación de claves", "DataType": "DateTime" },
+                    { "LogicalName": "xmsbs_memo1g", "DisplayName": "Análisis del Caso", "DataType": "Memo" },
+                    { "LogicalName": "xmsbs_monto", "DisplayName": "Monto", "DataType": "Money" },
+                    { "LogicalName": "xmsbs_picklist2g", "DisplayName": "Categoría del Reclamo", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_picklist4g", "DisplayName": "Resolución del Caso", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_picklist7g", "DisplayName": "Análisis de Fraude", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_texto5g", "DisplayName": "Hora eliminación de claves", "DataType": "String" },
+                    { "LogicalName": "xmsbs_transaccionvalidadasporcliente", "DisplayName": "¿Autorizó con Santander Pass?", "DataType": "Picklist" }
+                ]
+            },
+            {
+                "Seccion": "Observaciones del Caso",
+                "Orden": 2,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_observacionesdevisacion", "DisplayName": "Observaciones de caso", "DataType": "Memo" },
+                    { "LogicalName": "xmsbs_observacionlectura", "DisplayName": "Observaciones lectura", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Datos del cliente",
+                "Orden": 3,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo de documento", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_rut", "DisplayName": "RUT", "DataType": "String" },
+                    { "LogicalName": "xmsbs_nombrecliente", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidopaterno", "DisplayName": "Apellido paterno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidomaterno", "DisplayName": "Apellido materno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_clientesantander", "DisplayName": "Cliente Santander", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_emailcliente", "DisplayName": "E-Mail", "DataType": "String" },
+                    { "LogicalName": "xmsbs_telefonocelular", "DisplayName": "Teléfono Celular", "DataType": "String" },
+                    { "LogicalName": "xmsbs_preferenciasdecontacto", "DisplayName": "Canal de notificación y/o respuesta cliente", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_sucursalcliente", "DisplayName": "Sucursal", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_segmentocliente", "DisplayName": "Segmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_subsegmentocliente", "DisplayName": "Subsegmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_ejecutivocliente", "DisplayName": "Ejecutivo", "DataType": "String" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Ingreso",
+                "Orden": 4,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_origen", "DisplayName": "Origen", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_idllamada", "DisplayName": "ID Llamada", "DataType": "String" },
+                    { "LogicalName": "xmsbs_puntodecontacto", "DisplayName": "Canal de ingreso", "DataType": "Lookup" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Caso",
+                "Orden": 5,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_producto", "DisplayName": "Producto", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_detalledetipologia", "DisplayName": "Detalle de Tipología", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_solucionesperada", "DisplayName": "Que solución espera el cliente", "DataType": "Memo" },
+                    { "LogicalName": "description", "DisplayName": "Observaciones", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Documentos del Caso",
+                "Orden": 6,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            },
+            {
+                "Seccion": "Detalle de Transacciones",
+                "Orden": 7,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_grillacaso",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_ndeproducto', 'DisplayName': 'N° de Producto', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_monto', 'DisplayName': 'Monto', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_fechatransacciones', 'DisplayName': 'Fecha transacciones', 'DataType': 'DateTime' },
+                    { 'LogicalName': 'xmsbs_productoscanalesadist', 'DisplayName': 'Productos Canales a Distancia', 'DataType': 'Picklist' }
+                ]                
+            },
+            {
+                "Seccion": "Movimientos",
+                "Orden": 8,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_movimiento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_fechamovimiento', 'DisplayName': 'Fecha Movimiento', 'DataType': 'DateTime' },
+                    { 'LogicalName': 'xmsbs_descripciontipofactura', 'DisplayName': 'Descripción', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_importecompratotal', 'DisplayName': 'Importe Total', 'DataType': 'Decimal' },
+                    { 'LogicalName': 'xmsbs_monedadelmovimiento', 'DisplayName': 'Moneda Movimiento', 'DataType': 'String' }
+                ]                
+            }            
+        ];
+
+        var DO1499_TC_Campos = [
+            {
+                "Seccion": "Información de Caso Relacionado",
+                "Orden": 1,
+                "Tipo": "List",
+                "Columnas": 1,
+                "Campos": [
+                    { "LogicalName": "parentcaseid", "DisplayName": "Caso principal", "DataType": "Lookup" }
+                ]
+            },        
+            {
+                "Seccion": "Datos necesarios del caso",
+                "Orden": 2,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_divisa1gen', 'DisplayName': 'Monto de Pago por Conciliación', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_motivo', 'DisplayName': 'Detalle de Cierre', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_observacionesdevisacion', 'DisplayName': 'Analisis del Caso', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_picklist2g', 'DisplayName': 'Resolución del Juicio', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist3g', 'DisplayName': 'Motivo Cierre', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_texto2g', 'DisplayName': 'N° Causa / ROL', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_texto3g', 'DisplayName': 'N° de Tribunal', 'DataType': 'String' }
+                ]
+            },
+            {
+                "Seccion": "Datos del cliente",
+                "Orden": 3,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo de documento", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_rut", "DisplayName": "RUT", "DataType": "String" },
+                    { "LogicalName": "xmsbs_nombrecliente", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidopaterno", "DisplayName": "Apellido paterno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidomaterno", "DisplayName": "Apellido materno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_clientesantander", "DisplayName": "Cliente Santander", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_emailcliente", "DisplayName": "E-Mail", "DataType": "String" },
+                    { "LogicalName": "xmsbs_telefonocelular", "DisplayName": "Teléfono Celular", "DataType": "String" },
+                    { "LogicalName": "xmsbs_preferenciasdecontacto", "DisplayName": "Canal de notificación y/o respuesta cliente", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_sucursalcliente", "DisplayName": "Sucursal", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_segmentocliente", "DisplayName": "Segmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_subsegmentocliente", "DisplayName": "Subsegmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_ejecutivocliente", "DisplayName": "Ejecutivo", "DataType": "String" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Ingreso",
+                "Orden": 4,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_origen", "DisplayName": "Origen", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_idllamada", "DisplayName": "ID Llamada", "DataType": "String" },
+                    { "LogicalName": "xmsbs_puntodecontacto", "DisplayName": "Canal de ingreso", "DataType": "Lookup" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Caso",
+                "Orden": 5,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_producto", "DisplayName": "Producto", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_detalledetipologia", "DisplayName": "Detalle de Tipología", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_solucionesperada", "DisplayName": "Que solución espera el cliente", "DataType": "Memo" },
+                    { "LogicalName": "description", "DisplayName": "Observaciones", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Documentos del Caso Principal",
+                "Orden": 6,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "parentcaseid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            },
+            {
+                "Seccion": "Documentos del SubRequerimiento",
+                "Orden": 7,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            }
+        ];
+
+        var DO1501_TD_Campos = [
+            {
+                "Seccion": "Información de Caso Relacionado",
+                "Orden": 1,
+                "Tipo": "List",
+                "Columnas": 1,
+                "Campos": [
+                    { "LogicalName": "parentcaseid", "DisplayName": "Caso principal", "DataType": "Lookup" }
+                ]
+            },        
+            {
+                "Seccion": "Datos necesarios del caso",
+                "Orden": 2,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_divisa1gen', 'DisplayName': 'Monto de Pago por Conciliación', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_motivo', 'DisplayName': 'Detalle de Cierre', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_observacionesdevisacion', 'DisplayName': 'Analisis del Caso', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_picklist2g', 'DisplayName': 'Resolución del Juicio', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist3g', 'DisplayName': 'Motivo Cierre', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_texto2g', 'DisplayName': 'N° Causa / ROL', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_texto3g', 'DisplayName': 'N° de Tribunal', 'DataType': 'String' }
+                ]
+            },
+            {
+                "Seccion": "Datos del cliente",
+                "Orden": 3,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo de documento", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_rut", "DisplayName": "RUT", "DataType": "String" },
+                    { "LogicalName": "xmsbs_nombrecliente", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidopaterno", "DisplayName": "Apellido paterno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidomaterno", "DisplayName": "Apellido materno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_clientesantander", "DisplayName": "Cliente Santander", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_emailcliente", "DisplayName": "E-Mail", "DataType": "String" },
+                    { "LogicalName": "xmsbs_telefonocelular", "DisplayName": "Teléfono Celular", "DataType": "String" },
+                    { "LogicalName": "xmsbs_preferenciasdecontacto", "DisplayName": "Canal de notificación y/o respuesta cliente", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_sucursalcliente", "DisplayName": "Sucursal", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_segmentocliente", "DisplayName": "Segmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_subsegmentocliente", "DisplayName": "Subsegmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_ejecutivocliente", "DisplayName": "Ejecutivo", "DataType": "String" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Ingreso",
+                "Orden": 4,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_origen", "DisplayName": "Origen", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_idllamada", "DisplayName": "ID Llamada", "DataType": "String" },
+                    { "LogicalName": "xmsbs_puntodecontacto", "DisplayName": "Canal de ingreso", "DataType": "Lookup" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Caso",
+                "Orden": 5,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_producto", "DisplayName": "Producto", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_detalledetipologia", "DisplayName": "Detalle de Tipología", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_solucionesperada", "DisplayName": "Que solución espera el cliente", "DataType": "Memo" },
+                    { "LogicalName": "description", "DisplayName": "Observaciones", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Documentos del Caso Principal",
+                "Orden": 6,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "parentcaseid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            },
+            {
+                "Seccion": "Documentos del SubRequerimiento",
+                "Orden": 7,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            }
+        ];
+
+        var DO1503_CaD_Campos = [
+            {
+                "Seccion": "Información de Caso Relacionado",
+                "Orden": 1,
+                "Tipo": "List",
+                "Columnas": 1,
+                "Campos": [
+                    { "LogicalName": "parentcaseid", "DisplayName": "Caso principal", "DataType": "Lookup" }
+                ]
+            },        
+            {
+                "Seccion": "Datos necesarios del caso",
+                "Orden": 2,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { 'LogicalName': 'xmsbs_divisa1gen', 'DisplayName': 'Monto de Pago por Conciliación', 'DataType': 'Money' },
+                    { 'LogicalName': 'xmsbs_motivo', 'DisplayName': 'Detalle de Cierre', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_observacionesdevisacion', 'DisplayName': 'Analisis del Caso', 'DataType': 'Memo' },
+                    { 'LogicalName': 'xmsbs_picklist2g', 'DisplayName': 'Resolución del Juicio', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_picklist3g', 'DisplayName': 'Motivo Cierre', 'DataType': 'Picklist' },
+                    { 'LogicalName': 'xmsbs_texto2g', 'DisplayName': 'N° Causa / ROL', 'DataType': 'String' },
+                    { 'LogicalName': 'xmsbs_texto3g', 'DisplayName': 'N° de Tribunal', 'DataType': 'String' },
+                ]
+            },
+            {
+                "Seccion": "Datos del cliente",
+                "Orden": 3,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo de documento", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_rut", "DisplayName": "RUT", "DataType": "String" },
+                    { "LogicalName": "xmsbs_nombrecliente", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidopaterno", "DisplayName": "Apellido paterno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_apellidomaterno", "DisplayName": "Apellido materno", "DataType": "String" },
+                    { "LogicalName": "xmsbs_clientesantander", "DisplayName": "Cliente Santander", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_emailcliente", "DisplayName": "E-Mail", "DataType": "String" },
+                    { "LogicalName": "xmsbs_telefonocelular", "DisplayName": "Teléfono Celular", "DataType": "String" },
+                    { "LogicalName": "xmsbs_preferenciasdecontacto", "DisplayName": "Canal de notificación y/o respuesta cliente", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_sucursalcliente", "DisplayName": "Sucursal", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_segmentocliente", "DisplayName": "Segmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_subsegmentocliente", "DisplayName": "Subsegmento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_ejecutivocliente", "DisplayName": "Ejecutivo", "DataType": "String" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Ingreso",
+                "Orden": 4,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_origen", "DisplayName": "Origen", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_idllamada", "DisplayName": "ID Llamada", "DataType": "String" },
+                    { "LogicalName": "xmsbs_puntodecontacto", "DisplayName": "Canal de ingreso", "DataType": "Lookup" }
+                ]
+            },
+            {
+                "Seccion": "Datos del Caso",
+                "Orden": 5,
+                "Tipo": "List",
+                "Columnas": 2,
+                "Campos": [
+                    { "LogicalName": "xmsbs_producto", "DisplayName": "Producto", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_detalledetipologia", "DisplayName": "Detalle de Tipología", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_solucionesperada", "DisplayName": "Que solución espera el cliente", "DataType": "Memo" },
+                    { "LogicalName": "description", "DisplayName": "Observaciones", "DataType": "Memo" }
+                ]
+            },
+            {
+                "Seccion": "Documentos del Caso Principal",
+                "Orden": 6,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "parentcaseid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            },
+            {
+                "Seccion": "Documentos del SubRequerimiento",
+                "Orden": 7,
+                "Tipo": "Grilla",
+				"AttKeyOrigen": "incidentid",
+                "TargetEntity": "xmsbs_documento",
+                "AttKeyTarget": "xmsbs_caso",
+                "Campos": [
+                    { "LogicalName": "statuscode", "DisplayName": "Razón para el estado", "DataType": "Picklist" },
+                    { "LogicalName": "xmsbs_obligatoriedad", "DisplayName": "Obligatorio", "DataType": "Boolean" },
+                    { "LogicalName": "xmsbs_tipodocumento", "DisplayName": "Tipo Documento", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_name", "DisplayName": "Nombre", "DataType": "String" },
+                    { "LogicalName": "xmsbs_etapa", "DisplayName": "Etapa", "DataType": "Lookup" },
+                    { "LogicalName": "xmsbs_fechaalta", "DisplayName": "Fecha alta", "DataType": "DateTime" },
+                    { "LogicalName": "createdon", "DisplayName": "Fecha de creación", "DataType": "DateTime" }
+                ]
+            }
+        ];
+
+
+        function getIncident(idCaso, selectFields) {
+            debugger;
+            var entityType = "incident";
+            var query = "$select=" + selectFields;
+            query += "&$filter=incidentid eq '" + idCaso.replace(/[{}]/g, "") + "'";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+
+        function getRelatedEntity(EntityLogicalName, AttSelect, AttKey, AttKeyValueId) {
+            var entityType = EntityLogicalName;
+            var query = "$select=" + AttSelect;
+            query += "&$filter=_" + AttKey + "_value eq '" + AttKeyValueId.replace(/[{}]/g, "") + "'";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+
+
+        function renderSections() {
+            const container = document.getElementById("content");
+			
+            config.sort((a, b) => a.Orden - b.Orden).forEach(async section => {
+                const div = document.createElement("div");
+                div.className = "section";
+                div.innerHTML = `<h2>${section.Seccion}</h2>`;
+
+                if (section.Tipo === "List") {
+                    debugger;
+
+                    var columnas = section.Campos.map(function (campo) {
+                        return {
+                            displayName: campo.DisplayName,
+                            dataType: campo.DataType,
+                            logicalNameRead: campo.LogicalName,
+                            logicalNameSelect: getStrAttributeLogicalName(campo.LogicalName, campo.DataType)
+                        };
+                    });
+
+                    const selectFields = columnas.map(function (c) { return c.logicalNameSelect; }).join(",");
+                    //var selectFields = section.Campos.map(c => c.LogicalName).join(",");
+
+                    var incidentData = getIncident(idIncident, selectFields);
+
+                    const grid = document.createElement("div");
+                    grid.className = "fields";
+                    grid.style.gridTemplateColumns = `repeat(${section.Columnas}, 1fr)`;
+                    section.Campos.forEach(campo => {
+                        let value = getStrAttributeValue(incidentData.value[0], campo.LogicalName, campo.DataType);
+                        grid.innerHTML += `<div><strong>${campo.DisplayName}:</strong> ${value}</div>`;
+                    });
+                    div.appendChild(grid);
+                }
+                else if (section.Tipo === "Grilla") {
+                    debugger;
+
+                    var columnas = section.Campos.map(function (campo) {
+                        return {
+                            displayName: campo.DisplayName,
+                            dataType: campo.DataType,
+                            logicalNameRead: campo.LogicalName,
+                            logicalNameSelect: getStrAttributeLogicalName(campo.LogicalName, campo.DataType)
+                        };
+                    });
+
+                    const selectFields = columnas.map(function (c) { return c.logicalNameSelect; }).join(",");
+
+					var _attKeyOrigen = null;
+					if (section.AttKeyOrigen == "incidentid"){
+						_attKeyOrigen = idIncident;
+					}
+					else if (section.AttKeyOrigen == "parentcaseid"){
+						_attKeyOrigen = parentcaseid;
+					}
+
+                    const listEnt = getRelatedEntity(section.TargetEntity, selectFields, section.AttKeyTarget, _attKeyOrigen);
+
+                    const table = document.createElement("table");
+                    const thead = document.createElement("thead");
+                    const tbody = document.createElement("tbody");
+                    const trHead = document.createElement("tr");
+
+                    columnas.forEach(function (col) {
+                        const th = document.createElement("th");
+                        th.textContent = col.displayName;
+                        trHead.appendChild(th);
+                    });
+
+                    thead.appendChild(trHead);
+                    table.appendChild(thead);
+
+					if (!listEnt.value || listEnt.value.length === 0) {
+					
+						const tr = document.createElement("tr");
+						const td = document.createElement("td");
+
+						td.setAttribute("colspan", columnas.length);
+						td.style.textAlign = "center";
+						td.style.fontStyle = "italic";
+						td.style.color = "#666";
+						td.textContent = "Sin registros";
+
+						tr.appendChild(td);
+						tbody.appendChild(tr);
+
+						table.appendChild(tbody);
+						div.appendChild(table);
+					}
+					else{
+						listEnt.value.forEach(function (oEnt) {
+							const tr = document.createElement("tr");
+
+							columnas.forEach(function (col) {
+								const td = document.createElement("td");
+								td.textContent = getStrAttributeValue(oEnt, col.logicalNameRead, col.dataType);
+								tr.appendChild(td);
+							});
+
+							tbody.appendChild(tr);
+						});
+
+						table.appendChild(tbody);
+						div.appendChild(table);					
+					}
+                }
+
+
+                container.appendChild(div);
+            });
+        }
+
+        function getStrAttributeLogicalName(attLogicalName, attDataType){
+            if (attDataType === "Lookup"){
+                attLogicalName = "_" + attLogicalName + "_value";
+            }
+            else if (attDataType === "Picklist" && attLogicalName.includes("xmsbs_picklist")) {
+                attLogicalName = attLogicalName + "_texto";
+            }
+
+            return attLogicalName;
+        }
+
+
+        function getStrAttributeValue(EntityData, attLogicalName, attDataType){
+            let value = "";
+
+            if (attDataType === "Lookup"){
+                attLogicalName = "_" + attLogicalName + "_value";
+            }
+            else if (attDataType === "Picklist" && attLogicalName.includes("xmsbs_picklist")) {
+                attLogicalName = attLogicalName + "_texto";
+            }
+
+            // ---------------------------------------------
+
+            if (!EntityData[attLogicalName])
+                return value;
+
+            if (attDataType === "Picklist" || attDataType === "Money" || attDataType === "DateTime" || attDataType === "Boolean" || attDataType === "Lookup") {
+                value = EntityData[attLogicalName + "@OData.Community.Display.V1.FormattedValue"];
+            }
+            else{
+                value = EntityData[attLogicalName];
+            }
+
+            return value;
+        }
+        
+        function ImprimirPDF() {
+            debugger;
+
+            const parentWindow = window.parent;
+            const originalParentTitle = parentWindow.document.title;
+            const btn =  document.getElementById("btnImprimir");
+            if (btn) btn.style.display = "none";
+
+            let newTitle = 'Print_Caso' + numCorrelativo;
+            parentWindow.document.title = newTitle;
+
+            window.print();
+            
+            setTimeout(() => { 
+                    parentWindow.document.title = originalParentTitle; 
+                    if (btn) btn.style.display = "inline-block";
+            }, 500);
+        }        
+
+        window.onload = function () {
+            window._executionContext = window.parent.getExecutionContext();
+            window._formContext = window.parent.getExecutionFormContext();
+            idIncident = JumpStartLibXRM.Fx.getEntityId(window._executionContext);
+
+            if (idIncident) {
+                debugger;
+                idDetalleOperacion = window._formContext.getAttribute("xmsbs_detalledeoperacion").getValue()[0].id;
+                numCorrelativo = window._formContext.getAttribute("xmsbs_numerocorrelativo").getValue();
+				var control = window._formContext.getAttribute("parentcaseid");
+				if (control)
+					parentcaseid = control.getValue()[0].id;
+
+                if (idDetalleOperacion == DO1472_TC_Id)
+                    config = DO1472_TC_Campos;
+                else if (idDetalleOperacion == DO1473_TD_Id)
+                    config = DO1473_TD_Campos;
+                else if (idDetalleOperacion == DO1474_CaD_Id)
+                    config = DO1474_CaD_Campos;
+                else if (idDetalleOperacion == DO1499_TC_Id || idDetalleOperacion == DO1500_TC_Id)
+                    config = DO1499_TC_Campos;
+                else if (idDetalleOperacion == DO1501_TD_Id || idDetalleOperacion == DO1502_TD_Id)
+                    config = DO1501_TD_Campos;
+                else if (idDetalleOperacion == DO1503_CaD_Id || idDetalleOperacion == DO1504_CaD_Id)
+                    config = DO1503_CaD_Campos;
+
+                renderSections();
+            } else {
+                document.getElementById("content").innerHTML = "<p>No se encontró el ID del caso.</p>";
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <div id="printButtonContainer">
+        <div class="print-button">
+            <button id="btnImprimir" type="button" class="print-btn" onclick="ImprimirPDF()">Imprimir</button>
+        </div>            
+    </div>
+
+    <div class="header-image">
+        <img src="../WebResources/xmsbs_logomidas" alt="MIDAS" width="220px" height="100px" class="left-image">
+        <img src="../WebResources/xmsbs_logosantander" alt="Santander" width="400px" height="90px" class="right-image">
+    </div>
+    
+    <div style="clear: both;"></div>
+
+    <div id="content"></div>
+</body>
+
+</html>

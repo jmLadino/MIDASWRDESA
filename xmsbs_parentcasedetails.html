@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Caso Principal</title>
+
+  <!-- Libs existentes -->
+  <script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+  <script src="/WebResources/xmsbs_webAPI"></script>
+  <script src="/WebResources/xmsbs_util"></script>
+  <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+  <!-- NUEVO: repositorio / FileNet -->
+  <script src="/WebResources/xmsbs_repositorioSucesos"></script>
+
+  <style>
+    :root { --bg:#f5f6fa; --card:#fff; --muted:#616161; --text:#1f1f1f; --border:#e1e4ea; --primary:#0F6CBD; --chip:#eef4ff; --row:#fafbfc; }
+    html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial, sans-serif;color:var(--text);background:var(--bg);}
+    .wrap{padding:14px 16px 18px;}
+    .header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .title{font-size:18px;font-weight:600;letter-spacing:.2px;}
+    .sub{color:var(--muted);font-size:12px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+    .section{padding:14px 16px;}
+    .section h3{margin:0 0 10px;font-size:13px;font-weight:700;color:#2b2b2b;text-transform:uppercase;letter-spacing:.6px;}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;}
+    .row{display:flex;flex-direction:column;gap:4px;}
+    .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+    .value{font-size:13px;}
+    .mono{font-family:ui-monospace, Menlo, Consolas, monospace;font-size:12px;}
+    .toolbar{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;justify-content:space-between;}
+    .hint{color:var(--muted);font-size:12px;}
+    .btn{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;}
+    .btn:hover{border-color:#c8ccd6;}
+    .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+    .table{width:100%;border-collapse:separate;border-spacing:0 0;}
+    .th,.td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid var(--border);text-align:left;}
+    .th{font-weight:700;color:#2b2b2b;background:#f8f9fb;text-transform:uppercase;letter-spacing:.4px;}
+    .tr:nth-child(even) .td{background:var(--row);}
+    .link{color:var(--primary);text-decoration:none;}
+    .link:hover{text-decoration:underline;}
+    .empty{padding:16px;color:var(--muted);font-size:13px;}
+    .badge{font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid var(--border);background:#fafafa;display:inline-block;}
+    .skeleton{background:linear-gradient(90deg,#f2f4f7 25%,#eceff3 37%,#f2f4f7 63%);animation:shimmer 1.4s infinite;background-size:400% 100%;border-radius:6px;display:inline-block;}
+    @keyframes shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+    .skeleton.row{height:14px;width:70%;}
+    .skeleton.small{height:10px;width:35%;}
+    /* Botón de descarga */
+    .btn-icon{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:#fff;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;}
+    .btn-icon:hover{border-color:#c8ccd6;background:#f7f7f7;}
+    .icon{width:16px;height:16px;display:inline-block;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <div class="title">Caso Principal: <div class="value" id="p_title"><span class="skeleton row"></span></div></div>
+      </div>
+    </div>
+
+    <div class="card" id="card-parent">
+      <div class="section">
+        <h3>Datos del Caso</h3>
+        <div class="grid">
+          <div class="row"><div class="label">Correlativo</div><div class="value" id="p_xmsbs_numerocorrelativo"><span class="skeleton row"></span></div></div>
+          <div class="row"><div class="label">Rut Cliente</div><div class="value" id="p_xmsbs_rut"><span class="skeleton row"></span></div></div>
+          <div class="row"><div class="label">Nombre Cliente</div><div class="value mono" id="p_xmsbs_nombrecliente"><span class="skeleton small"></span></div></div>
+          <div class="row"><div class="label">Apellido paterno</div><div class="value mono" id="p_xmsbs_apellidopaterno"><span class="skeleton small"></span></div></div>
+          <div class="row"><div class="label">Apellido materno</div><div class="value mono" id="p_xmsbs_apellidomaterno"><span class="skeleton small"></span></div></div>
+          <div class="row"><div class="label">Cliente Santander</div><div class="value mono" id="p_xmsbs_clientesantander"><span class="skeleton small"></span></div></div>
+          <div class="row"><div class="label">Propietario</div><div class="value" id="p_owner"><span class="skeleton row"></span></div></div>
+          <div class="row"><div class="label">Estado</div><div class="value" id="p_state"><span class="skeleton small"></span></div></div>
+          <div class="row"><div class="label">Razón de estado</div><div class="value" id="p_status"><span class="skeleton small"></span></div></div>
+          <div class="row"><div class="label">Fecha de creación</div><div class="value" id="p_createdon"><span class="skeleton small"></span></div></div>
+          <div class="row"><div class="label">Fecha de modificación</div><div class="value" id="p_modifiedon"><span class="skeleton small"></span></div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Datos necesarios del caso</h3>
+        <div class="grid" id="datosCasoGrid"></div>
+      </div>
+
+      <div class="section" style="padding-top:0">
+        <table class="table" id="doc-table">
+          <thead>
+            <tr>
+              <th class="th">Nombre</th>
+              <th class="th">Estado</th>
+              <th class="th">Razón</th>
+              <th class="th">Obligatorio</th>
+              <th class="th">Tipo Documento</th>
+              <th class="th">Descargar</th><!-- NUEVO -->
+            </tr>
+          </thead>
+          <tbody id="doc-body">
+            <tr class="tr"><td class="td" colspan="6"><span class="skeleton row" style="width:55%"></span></td></tr>
+            <tr class="tr"><td class="td" colspan="6"><span class="skeleton row" style="width:60%"></span></td></tr>
+          </tbody>
+        </table>
+        <div class="empty" id="doc-empty" style="display:none;">Sin documentos relacionados.</div>
+      </div>
+
+      <!--<div class="toolbar">
+        <div>
+          <button class="btn" id="btn-refresh">Refrescar</button>
+          <button class="btn btn-primary" id="btn-open">Abrir Caso Principal</button>
+        </div>
+      </div>!-->
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const TYPE = { TEXTO:1, OPCIONES:2, OPCIONES_MULTI:3, DOS_OPCIONES:4, ENTERO:5, DIVISA:6, MEMO:7, FECHA:8, BUSQUEDA:9, DECIMAL:11 };
+
+      async function init() {
+        // Contextos para WebApi y Repositorio
+        window._executionContext = window.parent.getExecutionContext();
+        window._formContext = window._executionContext?.getFormContext?.() || window.parent.Xrm?.Page || null;
+
+        var casoPrincipalID = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "parentcaseid");
+        if (!casoPrincipalID) { setHtml("p_description", "<span class='sub'>Este caso no tiene un Caso Principal.</span>"); return; }
+        window._parentIncidentId = casoPrincipalID;
+
+        try {
+          var oCasoPrincipal = getCasoPrincipal(casoPrincipalID);
+          DibujaDatosCasoPrincipal(oCasoPrincipal.value[0]);
+
+          await loadDocuments(casoPrincipalID);
+
+          //document.getElementById("btn-refresh").onclick = () => loadDocuments(casoPrincipalID);
+          //document.getElementById("btn-open").onclick    = () => openRecord("incident", casoPrincipalID);
+
+          // Delegación: click en botón de descarga por fila
+          const tbody = document.getElementById("doc-body");
+          tbody.addEventListener("click", async (e) => {
+            const btn = e.target.closest(".btn-download");
+            if (!btn) return;
+            const fileNetId = btn.getAttribute("data-filenet");
+            const filename  = btn.getAttribute("data-filename") || "documento";
+            if (!fileNetId) {
+              openConfirmDialog({ confirmButtonLabel:"Aceptar", title:"Error", subtitle:"El documento no tiene Id de FileNet (xmsbs_id)." }, {height:200,width:300});
+              return;
+            }
+            await descargarDocumentoFileNet(fileNetId, filename);
+          });
+        } catch (e) {
+          console.error(e);
+          alert("No se pudo cargar el Caso Principal.");
+        }
+      }
+
+      // ========= ODATA / DIBUJO CABECERA =========
+      function getCasoPrincipal(incidentId) {
+        var entityType = "incident";
+        var query = "$select=incidentid,createdon,modifiedon,_ownerid_value,statecode,statuscode,title,xmsbs_apellidomaterno,xmsbs_apellidopaterno,xmsbs_clientesantander,xmsbs_nombrecliente,xmsbs_numerocorrelativo,xmsbs_rut,_xmsbs_etapa_value";
+        query += "&$filter=(incidentid eq '" + incidentId.replace(/[{}]/g, "") + "')";
+        return SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function(){});
+      }
+
+      function DibujaDatosCasoPrincipal(p) {
+        setText("p_title", p.title);
+        setText("p_xmsbs_numerocorrelativo", p.xmsbs_numerocorrelativo);
+        setText("p_xmsbs_rut", p.xmsbs_rut);
+        setText("p_xmsbs_nombrecliente", p.xmsbs_nombrecliente);
+        setText("p_xmsbs_apellidopaterno", p.xmsbs_apellidopaterno);
+        setText("p_xmsbs_apellidomaterno", p.xmsbs_apellidomaterno);
+        setText("p_xmsbs_clientesantander", p.xmsbs_clientesantander);
+        const owner = p.ownerid && p.ownerid.fullname ? p.ownerid.fullname : getFormatted(p,"_ownerid_value","—");
+        setText("p_owner", owner);
+        setText("p_state",  getFormatted(p, "statecode", "—"), true);
+        setText("p_status", getFormatted(p, "statuscode", "—"), true);
+        setText("p_createdon", getFormatted(p, "createdon", "—"));
+        setText("p_modifiedon", getFormatted(p, "modifiedon", "—"));
+        MostrarCamposDinamicos(p._xmsbs_etapa_value);
+      }
+
+      function MostrarCamposDinamicos(etapaId){
+        const CamposCaso = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, "xmsbs_campo",
+          "?$select=xmsbs_campoid,xmsbs_label,xmsbs_name,xmsbs_nombreesquema,xmsbs_nombremostrar,xmsbs_tipocampo,xmsbs_visible,xmsbs_integracion&$filter=(statecode eq 0 and _xmsbs_etapa_value eq '" + etapaId.replace(/[{}]/g, "") +"')");
+        const gridContainer = document.getElementById("datosCasoGrid");
+        const respuesta = [];
+        for (let i=0;i<CamposCaso.value.length;i++){
+          const r = CamposCaso.value[i];
+          if (r["xmsbs_visible"] === false) continue;
+          if (r["xmsbs_integracion"] != null) continue;
+          const meta = {
+            xmsbs_campoid: r["xmsbs_campoid"],
+            xmsbs_label: r["xmsbs_label"] || r["xmsbs_nombremostrar"],
+            xmsbs_nombremostrar: r["xmsbs_nombremostrar"],
+            xmsbs_name: r["xmsbs_name"],
+            xmsbs_nombreesquema: r["xmsbs_nombreesquema"],
+            xmsbs_tipodato: r["xmsbs_tipocampo"],
+            xmsbs_tipodato_formatted: r["xmsbs_tipocampo@OData.Community.Display.V1.FormattedValue"]
+          };
+          // normalizador de picklist*_g a *_texto
+          if (["xmsbs_picklist1g","xmsbs_picklist2g","xmsbs_picklist3g","xmsbs_picklist4g","xmsbs_picklist5g","xmsbs_picklist6g","xmsbs_picklist7g","xmsbs_picklistmultiselect1g"].includes(meta.xmsbs_nombreesquema)){
+            meta.xmsbs_nombreesquema = meta.xmsbs_nombreesquema + "_texto";
+            meta.xmsbs_tipodato = TYPE.TEXTO;
+            meta.xmsbs_tipodato_formatted = "Texto";
+          }
+          respuesta.push(meta);
+
+          const row = document.createElement("div"); row.className="row";
+          const labelDiv = document.createElement("div"); labelDiv.className="label"; labelDiv.textContent = meta.xmsbs_label;
+          const valueDiv = document.createElement("div"); valueDiv.className="value"; valueDiv.id = meta.xmsbs_nombreesquema;
+          const span = document.createElement("span"); span.className="skeleton row";
+          valueDiv.appendChild(span); row.appendChild(labelDiv); row.appendChild(valueDiv); gridContainer.appendChild(row);
+        }
+        pintarDatosNecesariosCaso(respuesta);
+      }
+
+      // ========= DOCUMENTOS + DESCARGA =========
+      async function loadDocuments(incidentId) {
+        const tbody = document.getElementById("doc-body");
+        const empty = document.getElementById("doc-empty");
+        tbody.innerHTML = `<tr class="tr"><td class="td" colspan="6"><span class="skeleton row" style="width:55%"></span></td></tr>`;
+
+        const fetch = [
+          "<fetch top='100' no-lock='true'>",
+          "<entity name='xmsbs_documento'>",
+          "<attribute name='xmsbs_documentoid'/>",
+          "<attribute name='xmsbs_name'/>",
+          "<attribute name='xmsbs_id'/>",             /* NUEVO: FileNet Id */
+          "<attribute name='statecode'/>",
+          "<attribute name='statuscode'/>",
+          "<attribute name='xmsbs_obligatoriedad'/>",
+          "<attribute name='xmsbs_tipodocumento'/>",
+          "<filter>",
+          "<condition attribute='xmsbs_caso' operator='eq' value='", incidentId, "'/>",
+          "<condition attribute='statuscode' operator='eq' value='657130001'/>",
+          "</filter>",
+          "<order attribute='createdon' descending='true'/>",
+          "</entity>",
+          "</fetch>"
+        ].join("");
+
+        try {
+          const lstDocumentos = await SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, "xmsbs_documento", "?fetchXml=" + encodeURIComponent(fetch));
+          const rows = lstDocumentos.value || [];
+          if (rows.length === 0) { tbody.innerHTML = ""; empty.style.display = "block"; return; }
+
+          empty.style.display = "none";
+          const frag = document.createDocumentFragment();
+          rows.forEach(o => {
+            const id = o["xmsbs_documentoid"];
+            const name = o["xmsbs_name"] || "(sin nombre)";
+            const fileNetId = o["xmsbs_id"] || ""; // requerido para descargar
+            const codState = getFormatted(o, "statecode", "—");
+            const codStatus = getFormatted(o, "statuscode", "—");
+            const oblig = o["xmsbs_obligatoriedad"];
+            const obligTxt = (oblig === true || oblig === "Yes" || oblig === "Sí") ? "Sí" : (oblig === false || oblig === "No") ? "No" : "—";
+            const tipoDoc = getFormatted(o, "_xmsbs_tipodocumento_value", "—");
+
+            const tr = document.createElement("tr"); tr.className = "tr";
+            //<td class="td"><a href="#" class="link" data-id="${id}">${escapeHtml(name)}</a></td>
+            tr.innerHTML = `
+              <td class="td"><b>${escapeHtml(name)}</b></td>
+              <td class="td">${escapeHtml(codState)}</td>
+              <td class="td">${escapeHtml(codStatus)}</td>
+              <td class="td">${escapeHtml(obligTxt)}</td>
+              <td class="td">${escapeHtml(tipoDoc)}</td>
+              <td class="td">
+                <button type="button" class="btn-icon btn-download" data-filenet="${escapeHtml(fileNetId)}" data-filename="${escapeHtml(name)}" title="Descargar">
+                  <span class="icon" aria-hidden="true">⬇️</span><span>Descargar</span>
+                </button>
+              </td>
+            `;
+            frag.appendChild(tr);
+          });
+          tbody.innerHTML = "";
+          tbody.appendChild(frag);
+
+          // Click para abrir el documento (registro) en CRM
+          tbody.querySelectorAll("a.link[data-id]").forEach(a => {
+            a.addEventListener("click", e => {
+              e.preventDefault();
+              const id = a.getAttribute("data-id");
+              if (id) openRecord(DOC_LOGICAL, id);
+            });
+          });
+        } catch (e) {
+          console.error(e);
+          tbody.innerHTML = "";
+          empty.style.display = "block";
+          empty.textContent = "Error al cargar documentos.";
+        }
+      }
+
+      // ======= LÓGICA DE DESCARGA (adaptada de ejemploDownloadDoc) =======
+      async function descargarDocumentoFileNet(idFileNet, filename){
+        // Alerta no bloqueante
+        openAlertaDescarga({
+          confirmButtonLabel: "Aceptar",
+          text: "Se está obteniendo el archivo para descarga. Dependiendo del peso del archivo, esta operación podría demorar varios segundos",
+          title: "Descarga de Documento"
+        }, { height: 200, width: 320 });
+
+        try {
+          // Configurar hosts para Repositorio
+          RepositorioSucesos.setMidasHost(window._formContext);
+          RepositorioSucesos.setMidasHostBody(window._formContext);
+          RepositorioSucesos.setFileNetConsultaHost(window._formContext);
+          RepositorioSucesos.setFileNetConsultaBody(window._formContext);
+
+          // Token MIDAS
+          RepositorioSucesos.apiTokenMidas(function(data){
+            if(!data || !data.access_token){
+              openConfirmDialog({ confirmButtonLabel:"Aceptar", title:"Error", subtitle:"No fue posible obtener el token." }, {height:200,width:300});
+              return;
+            }
+            const tipoMIME = inferMimeFromFilename(filename);
+            RepositorioSucesos.apiFileNetConsultaV1(data.access_token, idFileNet, tipoMIME, function(resp){
+              if(resp && resp.Documento){
+                // descarga local segura (por si no existe downloadBase64File global)
+                downloadBase64FileLocal(resp.Documento, filename, tipoMIME);
+              }else{
+                openConfirmDialog({ confirmButtonLabel:"Aceptar", title:"Error", subtitle:"No se obtuvo contenido desde FileNet." }, {height:200,width:300});
+              }
+            });
+          });
+        } catch(err){
+          console.error(err);
+          openConfirmDialog({ confirmButtonLabel:"Aceptar", title:"Error", subtitle:String(err?.message||err) }, {height:200,width:320});
+        }
+      }
+
+      function inferMimeFromFilename(filename){
+        const ext = String(filename||"").split(".").pop().toLowerCase();
+        if (ext==="xlsx"||ext==="xls") return "application/vnd.ms-excel";
+        if (ext==="pdf") return "application/pdf";
+        if (ext==="jpg"||ext==="jpeg") return "image/jpeg";
+        if (ext==="png") return "image/png";
+        return "application/octet-stream";
+      }
+
+      function downloadBase64FileLocal(base64, filename, mime){
+        try{
+          const bstr = atob(base64);
+          const len = bstr.length;
+          const u8 = new Uint8Array(len);
+          for(let i=0;i<len;i++) u8[i] = bstr.charCodeAt(i);
+          const blob = new Blob([u8], {type: mime || "application/octet-stream"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename || "archivo";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }catch(e){
+          console.error("Fallo descarga local:", e);
+        }
+      }
+
+      // ========= DINÁMICOS =========
+      function buildSelectForField(meta){ const logical = meta.xmsbs_nombreesquema; return (meta.xmsbs_tipodato===TYPE.BUSQUEDA)?`_${logical}_value`:logical; }
+      function getFormattedDynamic(row, meta){
+        const logical = meta.xmsbs_nombreesquema;
+        const fmtKey = (attr)=>`${attr}@OData.Community.Display.V1.FormattedValue`;
+        switch(meta.xmsbs_tipodato){
+          case TYPE.TEXTO:
+          case TYPE.MEMO: return row[fmtKey(logical)] ?? row[logical] ?? "—";
+          case TYPE.OPCIONES: return row[fmtKey(logical)] ?? row[logical] ?? "—";
+          case TYPE.OPCIONES_MULTI:{
+            const fv=row[fmtKey(logical)]; if(fv) return fv.split(/[;|,]\s*/).filter(Boolean).join(", ");
+            const raw=row[logical]; if(typeof raw==="string") return raw.split(",").map(s=>s.trim()).filter(Boolean).join(", ");
+            if(Array.isArray(raw)) return raw.join(", "); return "—";
+          }
+          case TYPE.DOS_OPCIONES:{ const vf=row[fmtKey(logical)]; if(vf!==undefined) return vf; const v=row[logical]; if(v===true) return "Sí"; if(v===false) return "No"; return "—";}
+          case TYPE.ENTERO:
+          case TYPE.DECIMAL:
+          case TYPE.DIVISA: return row[fmtKey(logical)] ?? row[logical] ?? "—";
+          case TYPE.FECHA:{ const raw=row[logical]; if(raw) return formatDateDMY(raw); const vf=row[fmtKey(logical)]; return vf?formatDateDMY(vf):"—"; }
+          case TYPE.BUSQUEDA:{ const attr=`_${logical}_value`; const name=row[fmtKey(attr)]; const id=row[attr]; return name ?? id ?? "—"; }
+          default: return row[fmtKey(logical)] ?? row[logical] ?? "—";
+        }
+      }
+      function setValueInGrid(targetId, text){
+        const el = document.getElementById(targetId); if(!el) return;
+        el.innerHTML=""; const div=document.createElement("div"); div.textContent=(text==null||text==="")?"—":String(text); el.appendChild(div);
+      }
+      async function loadDynamicValues(incidentId, camposMeta){
+        try{
+          if(!incidentId||!camposMeta||!camposMeta.length) return;
+          const selectSet = new Set(); camposMeta.forEach(m=>selectSet.add(buildSelectForField(m)));
+          const selectList = Array.from(selectSet); if(!selectList.length) return;
+          const cleanId = incidentId.replace(/[{}]/g,"");
+          const result = await Xrm.WebApi.retrieveRecord("incident", cleanId, `?$select=${encodeURIComponent(selectList.join(","))}`);
+          const row = result || null;
+          if(!row){ camposMeta.forEach(m=>setValueInGrid(m.xmsbs_nombreesquema,"—")); return; }
+          camposMeta.forEach(meta => setValueInGrid(meta.xmsbs_nombreesquema, getFormattedDynamic(row, meta)));
+        }catch(e){
+          console.error("Error al cargar valores dinámicos:", e);
+          if(Array.isArray(camposMeta)){ camposMeta.forEach(m=>setValueInGrid(m.xmsbs_nombreesquema,"—")); }
+        }
+      }
+      async function pintarDatosNecesariosCaso(camposMeta){
+        if(!window._parentIncidentId){
+          try{
+            const formCtx = window._executionContext?.getFormContext?.() || Xrm.Page;
+            const parentId = formCtx.getAttribute("parentincidentid")?.getValue?.()?.[0]?.id;
+            if(parentId) window._parentIncidentId = parentId;
+          }catch{}
+        }
+        await loadDynamicValues(window._parentIncidentId, camposMeta);
+      }
+
+      // ========= UTILIDADES =========
+      function fmt(v,fallback="—"){ return (v===null||v===undefined||v==="")?fallback:v; }
+      function setText(id,text,isChip=false){ const el=document.getElementById(id); if(!el) return; el.innerHTML=""; const span=document.createElement(isChip?"span":"div"); if(isChip) span.className="chip"; span.textContent=fmt(text); el.appendChild(span); }
+      function setHtml(id,html){ const el=document.getElementById(id); if(!el) return; el.innerHTML=html; }
+      function openRecord(entityName,id){ try{ parent.Xrm.Navigation.openForm({entityName,entityId:id}); }catch(e){ console.error(e); alert("No se pudo abrir el registro."); } }
+      function getFormatted(o, logical, fallback){ const k = logical + "@OData.Community.Display.V1.FormattedValue"; return o && o[k] ? o[k] : (o && o[logical] !== undefined ? o[logical] : fallback); }
+      function escapeHtml(s){ if(s==null) return ""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+      function formatDateDMY(input){
+        if(!input) return "—"; try{
+          const d = new Date(input);
+          if(!isNaN(d.valueOf())){ const dd=String(d.getUTCDate()).padStart(2,"0"); const mm=String(d.getUTCMonth()+1).padStart(2,"0"); const yyyy=d.getUTCFullYear(); return `${dd}-${mm}-${yyyy}`; }
+          const s=String(input); const m1=s.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/); if(m1) return `${m1[1]}-${m1[2]}-${m1[3]}`;
+          const m2=s.match(/^(\d{4})[\/\-](\d{2})[\/\-](\d{2})$/); if(m2) return `${m2[3]}-${m2[2]}-${m2[1]}`;
+          return s;
+        }catch{ return "—"; }
+      }
+
+      // Diálogos (adaptados del WR de descarga)
+      function openConfirmDialog(confirmStrings, confirmOptions){
+        window.Xrm.Navigation.openConfirmDialog(confirmStrings, confirmOptions).then(function(success){ if(success.confirmed){ JumpStartLibXRM.Fx.formSave(window._formContext); } });
+      }
+      function openAlertaDescarga(alertStrings, alertOptions){
+        window.Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(function(){}); 
+      }
+
+      // Cargar
+      if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", init); } else { init(); }
+      // Lógico de documento (para openRecord)
+      const DOC_LOGICAL = "xmsbs_documento";
+    })();
+  </script>
+</body>
+</html>

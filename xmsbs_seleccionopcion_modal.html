@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seleccionar Opción</title>
+    <meta charset="utf-8">
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+	<script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+	<script src="/WebResources/xmsbs_webAPI"></script>
+	<script src="/WebResources/xmsbs_util"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 15px; 
+            background-color: #f4f6f9;
+        }
+
+        .field-container { 
+            margin-bottom: 25px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px;
+            background-color: #fff; 
+            padding: 12px 15px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .field-title { 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+            border-bottom: 2px solid #0078d4; 
+            padding-bottom: 6px; 
+            color: #0078d4;
+            font-size: 1.05em;
+        }
+
+        .option-item { 
+            border: 1px solid #d0d0d0; 
+            margin-bottom: 6px; 
+            padding: 10px; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+
+        .option-item:hover { 
+            background-color: #e6f0ff; 
+            border-color: #0078d4;
+        }
+
+        .option-item.selected {
+            /*background-color: #0078d4;*/
+            /*color: white;*/
+            border-color: #005a9e;
+            position: relative;
+        }
+
+        .option-item.selected::after {
+            content: "✔";
+            position: absolute;
+            right: 12px;
+            top: 10px;
+            font-size: 1.1em;
+        }
+
+        .option-name { font-weight: bold; }
+        .option-description { font-size: 0.9em; color: #333; }
+        .no-options { color: #888; font-style: italic; }
+
+        button {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #005a9e;
+        }
+    </style>
+
+	<script>
+function initializeModal() {
+	window._executionContext = window.parent.getExecutionContext();
+	try {
+		loadDynamicOptions();
+	} catch (e) {
+		document.getElementById('dynamicContent').innerHTML = "<div class='no-options'>Error al procesar datos: " + e.message + "</div>";
+	}
+}
+
+function loadDynamicOptions() {
+    var dynamicContentDiv = document.getElementById('dynamicContent');
+    dynamicContentDiv.innerHTML = '';
+
+	var flujoId = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "xmsbs_flujosantander");
+	if (!flujoId){
+		dynamicContentDiv.innerHTML = "<div class='no-options'>Error al cargar datos: No existe Flujo</div>";
+		return;
+	}
+
+	var etapaId = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "xmsbs_etapa");
+	if (!etapaId){
+		dynamicContentDiv.innerHTML = "<div class='no-options'>Error al cargar datos: No existe etapa</div>";
+		return;
+	}
+
+    // respecto al Flujo, leo todos los conjuntos de opciones (para todos los campos)
+    
+
+    // de la Etapa, leo todos los campos marcados con fncOnChange: "Seleccion Opcion"
+
+	var lstCampos = buscarCamposTextoSeleccionOpcion(etapaId);
+	var htmlContent = '';
+	var hasContent = false;
+			
+	for (var oCampo of lstCampos.value){
+		var lstSel = buscarSeleccionOpciones(flujoId, oCampo.xmsbs_name);
+        var currentValue = JumpStartLibXRM.Fx.getValueField(window._executionContext, oCampo.xmsbs_name);
+
+		hasContent = true;
+		htmlContent += "<div class='field-container'>";
+		htmlContent += "<div class='field-title'>" + oCampo.xmsbs_nombremostrar + "</div>";
+					
+		for (var oItem of lstSel.value){
+            var isSelected = (currentValue && currentValue.trim() === oItem.xmsbs_name.trim());
+            var selectedClass = isSelected ? " selected" : "";
+			htmlContent += "<div class='option-item" + selectedClass + "' ";
+            htmlContent += "onclick=\"toggleOption('" + oCampo.xmsbs_name + "', '" + oItem.xmsbs_name.replace(/'/g, "\\'") + "', this)\">";
+			htmlContent += "<div class='option-name'>" + oItem.xmsbs_name + "</div>";
+			htmlContent += "<div class='option-description'>" + (oItem.xmsbs_descripcion || '') + "</div>";
+			htmlContent += "</div>";
+		}
+		htmlContent += "</div>";
+	}
+	
+	if (hasContent) {
+		dynamicContentDiv.innerHTML = htmlContent;
+	} else {
+		dynamicContentDiv.innerHTML = "<div class='no-options'>No hay opciones configuradas para los campos evaluados.</div>";
+	}	
+}
+
+// --- ODATA ---
+function buscarCamposTextoSeleccionOpcion(etapaId){
+	var entityType = "xmsbs_campo";
+	var query = "$select=xmsbs_campoid,xmsbs_name,xmsbs_nombremostrar";
+	query += "&$filter=(_xmsbs_etapa_value eq '" + etapaId.replace(/[{}]/g, "") + "' and xmsbs_tipocampo eq 1 and xmsbs_fncjsonchange eq 657130010)";
+	return SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+}	
+
+function buscarSeleccionOpciones(flujoId, nombrecampo){
+	var entityType = "xmsbs_conjuntodeopcionesgenerico";
+	var query = "$select=_xmsbs_campoconjuntodeopciones_value,xmsbs_descripcion,xmsbs_name";
+    query += "&$expand=xmsbs_campoconjuntodeopciones($select=_xmsbs_flujosantander_value,xmsbs_name)";
+    query += "&$filter=(statecode eq 0) and (xmsbs_campoconjuntodeopciones/_xmsbs_flujosantander_value eq '" + flujoId.replace(/[{}]/g, "") + "' and xmsbs_campoconjuntodeopciones/xmsbs_name eq '"+nombrecampo+"')";
+	return SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+}			
+
+function toggleOption(fieldName, optionName, element) {
+    var container = element.closest('.field-container');
+    var items = container.querySelectorAll('.option-item');
+
+    if (element.classList.contains('selected')) {
+        element.classList.remove('selected');
+        JumpStartLibXRM.Fx.setValueField(window._executionContext, fieldName, "(Clic en Botón: Seleccionar Opción)");
+        return;
+    }
+
+    items.forEach(i => i.classList.remove('selected'));
+
+    element.classList.add('selected');
+    JumpStartLibXRM.Fx.setValueField(window._executionContext, fieldName, optionName);
+}
+
+function closeModal() {
+	window.close();
+}
+</script>
+</head>
+<body onload="initializeModal()">
+    <div id="dynamicContent">
+        Cargando opciones...
+    </div>
+    <div style="text-align: right; margin-top: 20px;">
+        <button onclick="closeModal()">Cerrar</button>
+    </div>
+</body>
+</html>

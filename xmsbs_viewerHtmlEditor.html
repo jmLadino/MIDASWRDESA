@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editor de Plantilla Dinámica y Exportación a PDF</title>
+    <meta charset="utf-8" />
+    <script src="ClientGlobalContext.js.aspx" type="text/javascript"></script>
+	<script src="/WebResources/xmsbs_JumpStarLibXRM"></script>
+	<script src="/WebResources/xmsbs_webAPI"></script>
+	<script src="/WebResources/xmsbs_util"></script>    
+    <style>
+		body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f7f7f7; padding-top: 100px; }
+        .header-and-controls-container { position: fixed; top: 0; left: 0; right: 0; z-index: 100;  background-color: #f7f7f7;  padding: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .control-panel { display: flex; flex-wrap: wrap; gap: 5px; padding: 10px; border: 1px solid #c2c2c2; background-color: #ffffff; margin-bottom: 0px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        .format-button, .format-select { padding: 6px 10px; cursor: pointer; font-size: 16px; background-color: #e6e6e6; border: 1px solid #ccc; border-radius: 3px; min-width: 30px; transition: background-color 0.2s, border-color 0.2s; }
+        .format-button:hover, .format-select:hover { background-color: #d1d1d1; border-color: #b3b3b3; }
+        .format-button:active { background-color: #c0c0c0; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+
+        .separator { border-left: 1px solid #ccc; margin: 0 8px; }
+
+        #editor-content { border: 1px solid #a3a3a3; min-height: 250px; padding: 15px; background-color: white; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); overflow-y: auto;  border-radius: 4px; margin: 0 10px 10px 10px;  height: calc(100vh - 120px); }
+
+        .print-button { padding: 10px 15px; background-color: #e81123; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: background-color 0.2s; }
+        .print-button:hover { background-color: #c40f1f; }
+
+        @media print {
+            .editor-header, .control-panel, .header-and-controls-container { display: none; }
+            #editor-content { border: none; box-shadow: none; padding: 0; max-width: 100%;  height: auto; }
+            body { background-color: white; padding-top: 0; }
+        }
+        
+        .resizable-image-wrapper { display: inline-block; position: relative; cursor: move; border: 2px solid #0078d4; }
+        .resize-handle { position: absolute; width: 10px; height: 10px; background-color: #0078d4; border: 1px solid white; z-index: 1000; cursor: grab; }
+        .resize-handle.bottom-right { bottom: -5px; right: -5px; cursor: nwse-resize; }
+        .resize-handle.bottom-left { bottom: -5px; left: -5px; cursor: nesw-resize; }
+        .resize-handle.top-right { top: -5px; right: -5px; cursor: nesw-resize; }
+        .resize-handle.top-left { top: -5px; left: -5px; cursor: nwse-resize; }
+		
+        /* COLORES */
+		.color-control-group { display: flex; align-items: center; gap: 5px; }
+        .color-palette { display: flex; gap: 2px; border: 1px solid #ccc; padding: 2px; border-radius: 3px; }
+        .color-square { width: 18px; height: 18px; cursor: pointer; border: 1px solid #333;  transition: transform 0.1s; box-shadow: 0 0 1px rgba(0,0,0,0.5); }
+        .color-square:hover { transform: scale(1.1); border-color: #000; }		
+    </style>
+</head>
+<body>
+
+    <div class="header-and-controls-container">
+        <div class="editor-header">
+            <h3>Certificado</h3>
+            <div>
+                <button onclick="ImprimirPDF()" class="print-button">
+                    🖨️ Imprimir / Guardar PDF
+                </button>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <select id="formatBlock" class="format-select" onchange="ejecutarComando('formatBlock', this.value)">
+                <option value="P">Párrafo</option>
+                <option value="H1">Encabezado 1</option>
+                <option value="H2">Encabezado 2</option>
+                <option value="H3">Encabezado 3</option>
+            </select>
+
+            <span class="separator"></span>
+
+            <button class="format-button" onclick="ejecutarComando('bold')" title="Negrita">𝐁</button>
+            <button class="format-button" onclick="ejecutarComando('italic')" title="Cursiva">𝑰</button>
+            <button class="format-button" onclick="ejecutarComando('underline')" title="Subrayado">𝐔̲</button>
+            <button class="format-button" onclick="ejecutarComando('strikeThrough')" title="Tachado">S̶</button>
+            
+            <span class="separator"></span>
+
+            <button class="format-button" onclick="ejecutarComando('insertUnorderedList')" title="Viñetas">• Lista</button>
+            <button class="format-button" onclick="ejecutarComando('insertOrderedList')" title="Lista Numerada">1. Lista</button>
+            <button class="format-button" onclick="ejecutarComando('indent')" title="Aumentar Sangría">⇉</button>
+            <button class="format-button" onclick="ejecutarComando('outdent')" title="Disminuir Sangría">⇇</button>
+
+            <span class="separator"></span>
+            
+            <button class="format-button" onclick="ejecutarComando('justifyLeft')" title="Alinear Izquierda">⇤</button>
+            <button class="format-button" onclick="ejecutarComando('justifyCenter')" title="Centrar">–</button>
+            <button class="format-button" onclick="ejecutarComando('justifyRight')" title="Alinear Derecha">⇥</button>
+            
+            <span class="separator"></span>
+            
+            <label for="colorSelect" style="font-weight: bold; margin-left: 5px;">Color:</label>
+            <select id="colorSelect" class="format-select" onchange="aplicarColor(this.value)" title="Seleccionar Color de Texto"></select>
+            
+            <label for="backgroundColorSelect" style="font-weight: bold; margin-left: 5px;">Fondo:</label>
+            <select id="backgroundColorSelect" class="format-select" onchange="aplicarColorFondo(this.value)" title="Seleccionar Color de Fondo"></select>
+            
+            <span class="separator"></span>
+
+            <button class="format-button" onclick="recargarPlantilla()" title="Recargar Plantilla desde Dynamics">🔄 Recargar Plantilla</button>
+
+            </div>
+    </div>
+
+    <div id="editor-content" contenteditable="true">
+        </div>
+
+	<script>
+        let currentResizableWrapper = null;
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight;
+        let incidentId = null;
+        let numCorrelativo = "";
+		
+        window.onload = function() {
+			generarPicklistColores();
+			generarPicklistColoresFondo();		
+			getPackage();
+			cargarPlantilla();
+		
+            document.getElementById('formatBlock').value = 'P';
+            
+            const editor = document.getElementById('editor-content');
+			editor.addEventListener('paste', handlePasteEvent);
+            editor.addEventListener('click', handleImageClick);
+            document.addEventListener('mousemove', resizeImage);
+            document.addEventListener('mouseup', stopResize);
+            editor.focus();
+			
+            document.execCommand('enableObjectResizing', false, false);
+        };
+
+        function getPackage()
+        {
+            debugger;
+            let _package = parent.getPackage();
+            
+            if(_package){
+                if(_package.CasoId)
+                    incidentId = _package.CasoId.replace(/[{}]/g, '');
+            }
+
+            window._executionContext = parent.getContext();
+            window._formContext = window._executionContext.getFormContext();
+        }
+        
+		// --- FUNCIONES DE CARGA Y PROCESAMIENTO DE PLANTILLA (WEB API) ---
+		
+		async function cargarPlantilla() {
+			const editor = document.getElementById('editor-content');
+			editor.innerHTML = 'Cargando Plantilla del Certificado';
+			
+			try {
+                var oCaso = getCaso();
+                var oPlantilla = getPlantilla(oCaso.xmsbs_detalledeoperacion._xmsbs_editorplantillashtml_value);
+				if (!oPlantilla || !oPlantilla.xmsbs_plantillahtml) {
+					editor.innerHTML = 'ERROR: No se encontró la Plantilla HTML.';
+					return;
+				}
+                
+                debugger;				
+                numCorrelativo = oCaso.xmsbs_numerocorrelativo;
+
+                // lee registros para realizar el replace:
+                var oCliente = getClienteCaso(oCaso._xmsbs_cliente_value);
+                var oPrimerContrato = getContrato();
+
+                // Evalua según Tipología 
+                // DO-1472 o DO-1473 ==> lstMovCaso
+                // DO-1474 ==> lstTransCaso
+
+                var cantTrans = 0;
+                if (oCaso.xmsbs_detalledeoperacion.xmsbs_codigo == 'DO-1472' || oCaso.xmsbs_detalledeoperacion.xmsbs_codigo == 'DO-1473'){
+                    var lstMovCaso = getMovimientosCaso();
+                    cantTrans = lstMovCaso?.value?.length || 0;
+                }
+                else if (oCaso.xmsbs_detalledeoperacion.xmsbs_codigo == 'DO-1472'){
+                    var lstTransCaso = getTransaccionesCaso();
+                    cantTrans = lstTransCaso?.value?.length || 0;
+                }
+
+				const finalHtml = sustituirPlaceholders(oPlantilla.xmsbs_plantillahtml, oCaso, oCliente, oPrimerContrato, cantTrans);
+				
+				editor.innerHTML = finalHtml;
+				editor.focus();
+
+			} catch (e) {
+				console.error("Error al cargar y procesar la plantilla:", e);
+				editor.innerHTML = `Error al cargar la plantilla: ${e.message}`;
+			}
+		}
+
+        // --- ODATA ---
+        function getPlantilla(plantillaId){
+            var entityType = "xmsbs_editorplantillashtml";
+            var query = "$select=xmsbs_plantillahtml";
+            query += "&$filter=(xmsbs_editorplantillashtmlid eq " + plantillaId.replace(/[{}]/g, "") + ")";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado.value[0];
+        }
+
+        function getCaso(){
+            var entityType = "incident";
+            var query = "$select=_xmsbs_detalledeoperacion_value,";
+            // campos SELECT para los campos que actualmente están soportados
+            query += "_xmsbs_cliente_value,createdon,xmsbs_numerocorrelativo,xmsbs_rut,title,xmsbs_fechadebloqueo,xmsbs_texto5g,xmsbs_monto,xmsbs_contratotexto,";
+            query += "xmsbs_fechadebloqueo,xmsbs_texto4g,xmsbs_montoreclamado,xmsbs_montoreclamadousd,xmsbs_fechadebloqueo,xmsbs_texto4g,xmsbs_montoreclamado,";
+            query += "xmsbs_montoreclamadousd,xmsbs_apellidomaterno,xmsbs_apellidopaterno,xmsbs_nombrecliente";
+            
+            query += "&$orderby=createdon desc";
+            query += "&$expand=xmsbs_detalledeoperacion($select=_xmsbs_editorplantillashtml_value,xmsbs_codigo)";
+            query += "&$filter=(incidentid eq " + incidentId.replace(/[{}]/g, "") + ") and (xmsbs_detalledeoperacion/xmsbs_detalleoperacionid ne null)";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado.value[0];
+        }
+
+        function getClienteCaso(clienteId){
+            var entityType = "contact";
+            var query = "$select=contactid,emailaddress1,address1_line1,mobilephone";
+            query += "&$filter=(contactid eq " + clienteId.replace(/[{}]/g, "") + ")";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado.value[0];
+        }
+
+        function getContrato(){
+            // solo trae el primer contrato
+            var entityType = "xmsbs_contratosdelcaso";
+            var query = "$select=xmsbs_contratosdelcasoid,xmsbs_numerodecuenta,xmsbs_numerodetarjeta";
+            query += "&$filter=(_xmsbs_caso_value eq " + incidentId.replace(/[{}]/g, "") + ")";
+            query += "&$top=1";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            // puede ser vacío
+            return resultado;
+        }
+
+        function getMovimientosCaso(){
+            var entityType = "xmsbs_movimiento";
+            var query = "$select=xmsbs_movimientoid,xmsbs_numerotarjeta";
+            query += "&$filter=(_xmsbs_caso_value eq " + incidentId.replace(/[{}]/g, "") + ") and xmsbs_borrador eq false";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;
+        }
+
+        function getTransaccionesCaso(){
+            var entityType = "xmsbs_grillacaso";
+            var query = "$select=xmsbs_grillacasoid";
+            query += "&$filter=(_xmsbs_caso_value eq " + incidentId.replace(/[{}]/g, "") + ")";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            return resultado;            
+        }
+
+		function sustituirPlaceholders(plantillahtml, oCaso, oCliente, oPrimerContrato, CantTrans) {
+			let output = plantillahtml;
+
+			const mappingPlantillas = {
+				'emailaddress1': { entity: 'contact', field: 'emailaddress1' },
+				'address1_line1': { entity: 'contact', field: 'address1_line1' },
+				'mobilephone': { entity: 'contact', field: 'mobilephone' },
+				'CALC_NombreCompletoCliente': { entity: 'CONCAT', field: 'CALC_NombreCompletoCliente' },
+				'xmsbs_numerodecuenta': { entity: 'xmsbs_contratosdelcaso', field: 'xmsbs_numerodecuenta' },
+				'xmsbs_numerodetarjeta': { entity: 'xmsbs_contratosdelcaso', field: 'xmsbs_numerodetarjeta' },
+				'CANT_TRANSACCIONES': { entity: 'COUNT', field: 'CANT_TRANSACCIONES' },
+				'xmsbs_fechadebloqueo': { entity: 'incident', field: 'xmsbs_fechadebloqueo' },
+				'createdon': { entity: 'incident', field: 'createdon' },
+				'CALC_FechaHoraActual': { entity: 'NOW', field: 'CALC_FechaHoraActual' },
+				'xmsbs_texto4g': { entity: 'incident', field: 'xmsbs_texto4g' },
+				'xmsbs_texto5g': { entity: 'incident', field: 'xmsbs_texto5g' },
+				'xmsbs_monto': { entity: 'incident', field: 'xmsbs_monto' },
+				'xmsbs_montoreclamado': { entity: 'incident', field: 'xmsbs_montoreclamado' },
+				'xmsbs_montoreclamadousd': { entity: 'incident', field: 'xmsbs_montoreclamadousd' },
+				'xmsbs_numerocorrelativo': { entity: 'incident', field: 'xmsbs_numerocorrelativo' },
+				'xmsbs_contratotexto': { entity: 'incident', field: 'xmsbs_contratotexto' },
+				'xmsbs_rut': { entity: 'incident', field: 'xmsbs_rut' },
+				'title': { entity: 'incident', field: 'title' }
+			};
+
+			for (const placeholder in mappingPlantillas) {
+				const map = mappingPlantillas[placeholder];
+				let value = '';
+
+				switch (map.entity) {
+					case "CONCAT":
+						if (map.field === "CALC_NombreCompletoCliente") {
+							value = `${oCaso.xmsbs_nombrecliente || ''} ${oCaso.xmsbs_apellidopaterno || ''} ${oCaso.xmsbs_apellidomaterno || ''}`.trim();
+						}
+						break;
+
+					case "COUNT":
+						if (map.field === "CANT_TRANSACCIONES") {
+							value = CantTrans;
+						}
+						break;
+
+					case "NOW":
+						if (map.field === "CALC_FechaHoraActual") {
+							const d = new Date();
+							value = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+						}
+						break;
+
+					case "incident":
+						const val = oCaso[map.field];
+						if (val == null) { value = ''; break; }
+
+						if (map.field.toLowerCase() == "createdon" || map.field.toLowerCase().includes('fecha')) {
+							const date = new Date(val);
+							value = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+						} else if (map.field.toLowerCase().includes('montoreclamadousd')) {
+							value = parseFloat(val).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+						} else if (map.field.toLowerCase().includes('monto')) {
+							value = parseInt(val).toLocaleString('es-CL', { maximumFractionDigits: 0 });
+						} else {
+							value = val;
+						}
+						break;
+
+					case "contact":
+						value = oCliente?.[map.field] || '';
+						break;
+
+					case "xmsbs_contratosdelcaso":
+						if (oPrimerContrato?.value?.length > 0) {
+							value = oPrimerContrato.value[0][map.field] || '';
+						}
+						break;
+				}
+
+				const regex = new RegExp(`{{${placeholder}}}`, 'g');
+				output = output.replace(regex, value);
+			}
+
+			return output;
+		}
+
+
+		function recargarPlantilla() {
+			const confirmacion = confirm("ADVERTENCIA: Si recarga el contenido los cambios se PERDERÁN. ¿Desea continuar?");
+			
+			if (confirmacion) {
+				const editor = document.getElementById('editor-content');
+				editor.innerHTML = 'Cargando...'; 
+				
+				cargarPlantilla()
+					.then(() => {
+						console.log("Recarga forzada completada.");
+					})
+					.catch(e => {
+						alert(`Ocurrió un error al recargar la plantilla: ${e.message}`);
+						editor.innerHTML = 'Error al cargar. Intente de nuevo.';
+					});
+			}
+			document.getElementById('editor-content').focus();
+		}
+
+		// ----------- COLORES
+		const PICKLIST_COLORES = {
+			'Negro': '#000000',
+			'Rojo': '#FF0000',
+			'Azul': '#0000FF',
+			'Verde': '#008000',
+			'Naranja': '#FFA500',
+			'Púrpura': '#800080',
+			'Gris': '#808080',
+			'Blanco': '#FFFFFF' 
+		};
+
+		function aplicarColor(color) {
+			if (color) {
+				document.execCommand('foreColor', false, color);
+			}
+			document.getElementById('editor-content').focus();
+		}
+		
+		function aplicarColorFondo(color) {
+			if (color === 'transparent') {
+				document.execCommand('backColor', false, 'transparent'); 
+				document.execCommand('removeFormat', false, 'backColor'); 
+			} else if (color) {
+				document.execCommand('backColor', false, color);
+			}
+			document.getElementById('editor-content').focus();
+		}		
+
+		function generarPicklistColores() {
+			const select = document.getElementById('colorSelect');
+			let defaultOption = document.createElement('option');
+			defaultOption.value = '';
+			defaultOption.textContent = 'Seleccionar...';
+			select.appendChild(defaultOption);
+
+			for (const [nombre, valor] of Object.entries(PICKLIST_COLORES)) {
+				let option = document.createElement('option');
+				option.value = valor;
+				option.textContent = nombre;
+				option.style.color = valor; 
+				option.style.backgroundColor = (valor === '#FFFFFF') ? '#f0f0f0' : '#FFFFFF'; 
+				select.appendChild(option);
+			}
+			
+			select.addEventListener('change', function() {
+				if (this.value !== '') {
+					setTimeout(() => this.value = '', 100); 
+				}
+			});
+		}
+
+		function generarPicklistColoresFondo() {
+			const select = document.getElementById('backgroundColorSelect');
+			let defaultOption = document.createElement('option');
+			defaultOption.value = '';
+			defaultOption.textContent = 'Fondo...';
+			select.appendChild(defaultOption);
+			
+			let removeOption = document.createElement('option');
+			removeOption.value = 'transparent'; 
+			removeOption.textContent = '⚠️ Limpiar Fondo';
+			select.appendChild(removeOption);
+
+			for (const [nombre, valor] of Object.entries(PICKLIST_COLORES)) {
+				if (valor === '#000000') continue; 
+				
+				let option = document.createElement('option');
+				option.value = valor;
+				option.textContent = nombre;
+				option.style.backgroundColor = valor; 
+				option.style.color = (valor === '#FFFFFF' || valor === '#C0C0C0' || valor === '#FFA500') ? '#000000' : '#FFFFFF';
+				select.appendChild(option);
+			}
+			
+			select.addEventListener('change', function() {
+				if (this.value !== '') {
+					setTimeout(() => this.value = '', 100); 
+				}
+			});
+		}		
+		// ----------- FIN COLORES
+		
+		// ----------- CONTROLAR IMAGENES
+        function handleImageClick(e) {
+            if (currentResizableWrapper) {
+                removeResizeWrapper(currentResizableWrapper);
+            }
+            
+            if (e.target && e.target.tagName === 'IMG' && e.target.closest('#editor-content')) {
+                wrapImage(e.target);
+            }
+        }
+        
+        function wrapImage(imgElement) {
+            if (imgElement.parentNode.classList && imgElement.parentNode.classList.contains('resizable-image-wrapper')) {
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'resizable-image-wrapper';
+            
+            wrapper.style.width = imgElement.offsetWidth + 'px';
+            wrapper.style.height = imgElement.offsetHeight + 'px';
+            
+            imgElement.parentNode.insertBefore(wrapper, imgElement);
+            wrapper.appendChild(imgElement);
+            
+            ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = `resize-handle ${pos}`;
+                handle.addEventListener('mousedown', startResize);
+                wrapper.appendChild(handle);
+            });
+            
+            currentResizableWrapper = wrapper;
+        }
+        
+        function startResize(e) {
+            e.preventDefault();
+            e.stopPropagation(); 
+            isResizing = true;
+            currentResizableWrapper = e.target.parentNode;
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = parseInt(document.defaultView.getComputedStyle(currentResizableWrapper).width, 10);
+            startHeight = parseInt(document.defaultView.getComputedStyle(currentResizableWrapper).height, 10);
+        }
+
+        function resizeImage(e) {
+            if (!isResizing || !currentResizableWrapper) return;
+            
+            const newWidth = startWidth + (e.clientX - startX);
+            const newHeight = startHeight + (e.clientY - startY);
+
+            currentResizableWrapper.style.width = newWidth + 'px';
+            currentResizableWrapper.style.height = newHeight + 'px';
+
+            const img = currentResizableWrapper.querySelector('img');
+            if (img) {
+                img.style.width = '100%';
+                img.style.height = '100%';
+            }
+        }
+        
+        function stopResize() {
+            if (isResizing) {
+                isResizing = false;
+            }
+        }
+        
+        function removeResizeWrapper(wrapper) {
+            const img = wrapper.querySelector('img');
+            if (img) {
+                img.style.width = wrapper.style.width; 
+                img.style.height = wrapper.style.height; 
+                img.style.removeProperty('max-width'); 
+                img.style.removeProperty('max-height');
+                wrapper.parentNode.insertBefore(img, wrapper);
+            }
+            wrapper.remove();
+            currentResizableWrapper = null;
+        }
+		// ----------- FIN CONTROLAR IMAGENES
+
+		// --- Funciones de Edición, Pegado ---		
+        function handlePasteEvent(event) {
+            event.preventDefault(); 
+            const clipboardData = event.clipboardData || window.clipboardData;
+            
+            if (clipboardData.items) {
+                for (let i = 0; i < clipboardData.items.length; i++) {
+                    const item = clipboardData.items[i];
+                    
+                    if (item.type.indexOf("image") !== -1) {
+                        const file = item.getAsFile();
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                document.execCommand('insertImage', false, e.target.result);
+                                
+                                setTimeout(() => {
+                                    const img = document.getElementById('editor-content').querySelector(`img[src="${e.target.result}"]`);
+                                    if(img) wrapImage(img);
+                                }, 50);
+                            };
+                            reader.readAsDataURL(file);
+                            return; 
+                        }
+                    } else if (item.type === "text/plain") {
+                        const plainText = clipboardData.getData('text/plain');
+                        document.execCommand('insertText', false, plainText);
+                        return; 
+                    }
+                }
+            } else {
+                const plainText = clipboardData.getData('Text');
+                if (plainText) {
+                    document.execCommand('insertText', false, plainText);
+                }
+            }
+        }
+
+        function ejecutarComando(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('editor-content').focus();
+        }
+        
+        function ImprimirPDF() {
+            debugger;
+
+            const parentWindow = window.parent;
+            const originalParentTitle = parentWindow.document.title;
+
+            let newTitle = 'CertificadoFraude_Caso' + numCorrelativo; 
+            
+
+            //const date = new Date();
+            //const dateString = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
+            //newTitle = `${newTitle}_${dateString}`;
+            
+            parentWindow.document.title = newTitle;
+
+            window.print();
+            
+            setTimeout(() => {
+                parentWindow.document.title = originalParentTitle;
+            }, 500);
+        }
+
+
+    </script>
+</body>
+</html>
