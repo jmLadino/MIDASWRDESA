@@ -732,7 +732,7 @@ AccionValidator = {
                             
                             
                         }
-                         //Flujo merchandising a logistica
+                        //Flujo merchandising a logistica
                         else if(_campo == "FNC_ValidacionETA002_merchandisinnogAdquirencia")
                         {   
                             debugger;
@@ -1033,6 +1033,115 @@ AccionValidator = {
                                 _mensajeErrorValidacion = _mensajeError;
                                 break;
                             }							
+                        }	
+                        else if (_campo == "FNC_ValidaSubrequerimiento")
+                        {
+                            debugger;
+                            // Se ejecuta en los Reparos, valida que no existan Subrequerimientos, de caso contrario impedirá el reparo y mostrará el mensaje de error configurado en la matriz
+                            // se consideran activos/inactivos
+
+                            var RegistrosSubRequerimientos = [];
+                            RegistrosSubRequerimientos = AccionValidator.buscarSubRequerimientos(idIncident);
+                            _campoValor = null;
+                            _campoValido = false;
+                            if (RegistrosSubRequerimientos != null)
+                                _campoValor = RegistrosSubRequerimientos.value.length;
+                            
+                            if (_campoValor == null || _campoValor == 0)
+                                _campoValido = true;
+                            else{
+                                if (RegistrosSubRequerimientos.value[0]["_xmsbs_etapa_value@OData.Community.Display.V1.FormattedValue"].toLowerCase().includes("demanda"))
+                                {
+                                    _mensajeError = _mensajeError + ". El SubRequerimiento no está visible porque está en Fiscalía.";
+                                }
+                            }
+                        }
+                        else if (_campo == "FNC_Valida_ClienteDesiste_SubReq_Fraude")
+                        {
+                            debugger;
+                            
+                            // Por ahora no existen validaciones para cuando se presiona el botón "Cliente Desiste" en el Caso Principal.
+
+                            var CasoPrincipal = JumpStartLibXRM.Fx.getValueField(_formContext, "parentcaseid", null);
+                            
+                            //default:
+                            _validado = true;
+                            _mensajeErrorValidacion = "";
+
+                            if (CasoPrincipal){
+                                // se ejecuta la función de validación DESDE un SUBRequerimiento:
+
+                                var MotivoCierre = JumpStartLibXRM.Fx.getValueField(_formContext, "xmsbs_picklist3g_texto", null);
+                                var DetalleCierre =  JumpStartLibXRM.Fx.getValueField(_formContext, "xmsbs_motivo", null);
+
+                                if (!MotivoCierre || !DetalleCierre || MotivoCierre == "" || DetalleCierre == ""){
+                                    _validado = false;
+                                    _mensajeErrorValidacion = "Para cerrar el caso debe completar el campo Motivo Cierre y Detalle de Cierre.";
+                                    break;
+                                }
+
+                            
+                                // Evalúa el motivo de cierre
+                                if (MotivoCierre == "Cliente Desiste" || MotivoCierre == "Banco Desiste")
+                                {
+                                    // si el caso principal está finalizado entonces no permite seleccionar la opción de Cliente Desiste.
+
+                                    var oCasoPrincipal = AccionValidator.getCaso(CasoPrincipal[0].id);
+                                    var statecodeCasoPrincipal = oCasoPrincipal.value[0]["statecode"];
+                                    
+                                    if (statecodeCasoPrincipal != 0) // 0: Activo
+                                    {
+                                        var StrStateCode = "Cancelado";
+                                        if(statecodeCasoPrincipal==1)
+                                            StrStateCode = "Resuelto";
+                                        
+                                        _validado = false;
+                                        _mensajeErrorValidacion = "El Caso Principal está " + StrStateCode + ", no puede seleccionar esta opción.";
+                                        break;
+                                    }
+                                    
+                                    // Además valida que el Caso Principal en la Etapa Actual tenga configurado el Botón Cliente Desiste.
+                                    var accionEtapaIdCasoPrincipal = AccionValidator.getAccionEtapaClienteDesiste(oCasoPrincipal.value[0]._xmsbs_etapa_value);
+                                    if (!accionEtapaIdCasoPrincipal || accionEtapaIdCasoPrincipal.value.length == 0){
+                                        _validado = false;
+                                        _mensajeErrorValidacion = "El Caso Principal no tiene configurado Cliente Desiste en la Etapa Actual.";
+                                        break;
+                                    }
+                                }
+                                else if (MotivoCierre == "Conciliación")
+                                {
+                                    // valida que el "Monto de Pago por Conciliación" (xmsbs_divisa1gen) contenga datos.
+                                    var MontoConciliacion = JumpStartLibXRM.Fx.getValueField(_formContext, "xmsbs_divisa1gen", null);
+                                    if (!MontoConciliacion || MontoConciliacion == 0)
+                                    {
+                                        _validado = false;
+                                        _mensajeErrorValidacion = "Debe Ingresar el Monto de Pago por Conciliación.";
+                                        break;
+                                    }
+                                }
+                            }
+                            else{
+                                // Se ejecuta la función de validación desde un Caso Principal (FRAUDE)
+
+                                // valida que haya seleccionado la opción Cliente Desiste en el campo: xmsbs_picklist3g
+                                var AnalisisFraude = JumpStartLibXRM.Fx.getValueField(_formContext, "xmsbs_picklist3g_texto", null);
+
+                                debugger;
+                                var flujosantander = JumpStartLibXRM.Fx.getValueField(_formContext, "xmsbs_flujosantander", null);
+                                if (flujosantander[0].id.toLowerCase().replace(/[{}]/g, "") == "da8ec7a5-b882-f011-b4cc-6045bd39511e"){
+                                    AnalisisFraude = JumpStartLibXRM.Fx.getValueField(_formContext, "xmsbs_picklist7g_texto", null);
+                                }
+
+                                if (!AnalisisFraude || AnalisisFraude == "" || AnalisisFraude != "Cliente Desiste"){
+                                    _validado = false;
+                                    _mensajeErrorValidacion = "Para aplicar Cliente Desiste debe seleccionar 'Cliente Desiste' en el campo: Análisis de Fraude.";
+                                    break;
+                                }
+                            }
+
+                            _validado = true;
+                            _mensajeErrorValidacion = "";
+                            break;                              
                         }
                         else
                         {
@@ -1424,6 +1533,52 @@ AccionValidator = {
 		}
 		return null;
 	},
+
+	getCaso: function (idIncident) {
+		let executionContext = window._executionContext;
+		if (executionContext != null)
+		{
+			let entityType = "incident";
+			let query = "$select=incidentid,statecode,statuscode,_xmsbs_etapa_value";
+			query += "&$filter=(incidentid eq '" + idIncident.replace(/[{}]/g, "") + "')";
+            
+            var adminId = JumpStartLibXRM.Fx.getUserAdminID();
+			let resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(executionContext, entityType, query, adminId);
+			return resultado;
+		}
+		return null;
+	},
+    
+    getAccionEtapaClienteDesiste: function(etapaId){
+		let executionContext = window._executionContext;
+		if (executionContext != null)
+		{
+            let entityType = "xmsbs_accionetapa";
+            let query = "$select=xmsbs_accionetapaid,xmsbs_codigo,_xmsbs_accion_value,xmsbs_name";
+            query += "&$expand=xmsbs_accion($select=xmsbs_codigo)";
+            query += "&$filter=(_xmsbs_etapa_value eq '" + etapaId.replace(/[{}]/g, "") + "') and (xmsbs_accion/xmsbs_codigo eq 'ACC0032')";
+            let resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () { });
+            return resultado;
+        }
+        return null;
+    },    
+    
+	buscarSubRequerimientos: function (idIncident) {
+		let executionContext = window._executionContext;
+		if (executionContext != null)
+		{
+			// Devuelve solo 1 registro, con eso basta para determinar si existen registros de subrequerimientos
+			let entityType = "incident";
+			let query = "$select=incidentid,xmsbs_numerocorrelativo,_xmsbs_etapa_value";
+			query += "&$filter=(_parentcaseid_value eq '" + idIncident + "')&$top=1";
+
+            var adminId = JumpStartLibXRM.Fx.getUserAdminID();
+			let resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(executionContext, entityType, query, adminId);
+			return resultado;			
+		}
+		return null;
+	},
+
 	buscarRegistrosGrillaPolizas: function (idIncident) {
 		let executionContext = window._executionContext;
 		if (executionContext != null)

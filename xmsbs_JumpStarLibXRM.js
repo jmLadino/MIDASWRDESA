@@ -29,6 +29,23 @@ JumpStartLibXRM.Fx = {
 		
 		return formContext;
 	},	
+    getEnvironmentName: function(){
+        var url = Xrm.Utility.getGlobalContext().getClientUrl().toLowerCase();
+
+        if(url.includes("midaschiledesa")) 
+            return "DESA";
+        if(url.includes("midaschilehomologacion")) 
+            return "HOMO";
+        if(url.includes("midaschilepro")) 
+            return "PROD";
+    },
+    getUserAdminID: function(){
+        var Ambiente = JumpStartLibXRM.Fx.getEnvironmentName();
+        if(Ambiente == "DESA")
+            return "d43af6f7-e875-eb11-a812-000d3ab23035"; // (DESA) Dynamics_CRM_MIDAS_CL_DEV
+        else
+            return "a533cb3f-6583-eb11-a812-000d3abd3579"; // (HOMO y PROD) Dynamics_CRM_MIDAS_CL_DEV
+    },
     // xrm get
     getField: function (executionContext, fieldName) {
 		var formContext = JumpStartLibXRM.Fx.getFormContext(executionContext);

@@ -108,6 +108,8 @@
         let startX, startY, startWidth, startHeight;
         let incidentId = null;
         let numCorrelativo = "";
+        //let UsuarioAdminID = "d43af6f7-e875-eb11-a812-000d3ab23035"; // (DESA) Dynamics_CRM_MIDAS_CL_DEV
+        let UsuarioAdminID = "a533cb3f-6583-eb11-a812-000d3abd3579"; // (HOMO y PROD) Dynamics_CRM_MIDAS_CL_DEV
 		
         window.onload = function() {
 			generarPicklistColores();
@@ -192,7 +194,7 @@
             var entityType = "xmsbs_editorplantillashtml";
             var query = "$select=xmsbs_plantillahtml";
             query += "&$filter=(xmsbs_editorplantillashtmlid eq " + plantillaId.replace(/[{}]/g, "") + ")";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            var resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, entityType, query, UsuarioAdminID, null, null, function () {});
             return resultado.value[0];
         }
 
@@ -207,7 +209,7 @@
             query += "&$orderby=createdon desc";
             query += "&$expand=xmsbs_detalledeoperacion($select=_xmsbs_editorplantillashtml_value,xmsbs_codigo)";
             query += "&$filter=(incidentid eq " + incidentId.replace(/[{}]/g, "") + ") and (xmsbs_detalledeoperacion/xmsbs_detalleoperacionid ne null)";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            var resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, entityType, query, UsuarioAdminID, null, null, function () {});
             return resultado.value[0];
         }
 
@@ -215,7 +217,7 @@
             var entityType = "contact";
             var query = "$select=contactid,emailaddress1,address1_line1,mobilephone";
             query += "&$filter=(contactid eq " + clienteId.replace(/[{}]/g, "") + ")";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            var resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, entityType, query, UsuarioAdminID, null, null, function () {});
             return resultado.value[0];
         }
 
@@ -225,7 +227,7 @@
             var query = "$select=xmsbs_contratosdelcasoid,xmsbs_numerodecuenta,xmsbs_numerodetarjeta";
             query += "&$filter=(_xmsbs_caso_value eq " + incidentId.replace(/[{}]/g, "") + ")";
             query += "&$top=1";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            var resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, entityType, query, UsuarioAdminID, null, null, function () {});
             // puede ser vacío
             return resultado;
         }
@@ -234,7 +236,7 @@
             var entityType = "xmsbs_movimiento";
             var query = "$select=xmsbs_movimientoid,xmsbs_numerotarjeta";
             query += "&$filter=(_xmsbs_caso_value eq " + incidentId.replace(/[{}]/g, "") + ") and xmsbs_borrador eq false";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            var resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, entityType, query, UsuarioAdminID, null, null, function () {});
             return resultado;
         }
 
@@ -242,7 +244,7 @@
             var entityType = "xmsbs_grillacaso";
             var query = "$select=xmsbs_grillacasoid";
             query += "&$filter=(_xmsbs_caso_value eq " + incidentId.replace(/[{}]/g, "") + ")";
-            var resultado = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function () {});
+            var resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, entityType, query, UsuarioAdminID, null, null, function () {});
             return resultado;            
         }
 

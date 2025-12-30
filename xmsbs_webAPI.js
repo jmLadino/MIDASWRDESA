@@ -269,6 +269,63 @@ SDK.WEBAPI = {
         
         return data;
     },
+    retrieveRecordImpersonate: function (executionContext, id, type, select, expand, impersonateUserId) {
+
+        this._stringParameterCheck(id, "retrieveRecordImpersonate requiere el id.");
+        this._stringParameterCheck(type, "retrieveRecordImpersonate requiere el type.");
+
+        if (select != null)
+            this._stringParameterCheck(select, "retrieveRecordImpersonate: el select debe ser string.");
+
+        if (expand != null)
+            this._stringParameterCheck(expand, "retrieveRecordImpersonate: el expand debe ser string.");
+
+        if (!impersonateUserId)
+            throw new Error("retrieveRecordImpersonate requiere impersonateUserId");
+
+        if (type.slice(-1) != "s") {
+            type = type + "s";
+        }
+
+        var systemQueryOptions = "";
+
+        if (select != null || expand != null) {
+            systemQueryOptions = "?";
+            if (select != null) {
+                systemQueryOptions += "$select=" + select;
+            }
+            if (expand != null) {
+                systemQueryOptions += "&$expand=" + expand;
+            }
+        }
+
+        var url = encodeURI(this._WebAPIPath(executionContext) + type + "(" + id + ")" + systemQueryOptions);
+
+        var req = new XMLHttpRequest();
+        req.open("GET", url, false);
+        req.setRequestHeader("Accept", "application/json");
+        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        req.setRequestHeader("OData-MaxVersion", "4.0");
+        req.setRequestHeader("OData-Version", "4.0");
+        req.setRequestHeader("MSCRMCallerID", impersonateUserId);
+
+        var data = null;
+
+        req.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                req.onreadystatechange = null;
+                if (this.status === 200) {
+                    data = JSON.parse(this.response, SDK.WEBAPI._dateReviver);
+                } else {
+                    data = null;
+                }
+            }
+        };
+
+        req.send();
+        return data;
+    },
+    
     updateRecord: function(executionContext, id, object, type, successCallback, errorCallback) {
         ///
         /// Sends an asynchronous request to update a record.
@@ -342,7 +399,7 @@ SDK.WEBAPI = {
         
         var data = null;
         var req = new XMLHttpRequest();
-        req.open("PATCH", encodeURI(this._WebAPIPath(executionContext) + type + "(" + id + ")"), false);
+        req.open("PATCH", encodeURI(this._WebAPIPath(executionContext) + type + "(" + id.replace(/[{}]/g, "") + ")"), false);
         req.setRequestHeader("Accept", "application/json");
         req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         req.setRequestHeader("OData-MaxVersion", "4.0");
@@ -503,7 +560,105 @@ SDK.WEBAPI = {
         req.send();
         
         return data;
-    },	
+    },
+    retrieveMultipleRecordsImpersonate: function (executionContext, type, options, impersonateUserId) {
+
+        this._stringParameterCheck(type, "retrieveMultipleRecordsImpersonate requiere el type.");
+
+        if (options != null)
+            this._stringParameterCheck(options, "retrieveMultipleRecordsImpersonate requiere options string.");
+
+        if (!impersonateUserId)
+            throw new Error("retrieveMultipleRecordsImpersonate requiere impersonateUserId");
+
+        if (type.slice(-1) != "s") {
+            type = type + "s";
+        }
+
+        var optionsString = "";
+        if (options != null) {
+            optionsString = options.charAt(0) != "?" ? "?" + options : options;
+        }
+
+        var url = this._WebAPIPath(executionContext) + type + optionsString;
+
+        var req = new XMLHttpRequest();
+        req.open("GET", url, false);
+        req.setRequestHeader("Accept", "application/json");
+        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        req.setRequestHeader("OData-MaxVersion", "4.0");
+        req.setRequestHeader("OData-Version", "4.0");
+        req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
+        req.setRequestHeader("MSCRMCallerID", impersonateUserId);
+
+        var data = null;
+
+        req.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                req.onreadystatechange = null;
+                if (this.status === 200) {
+                    data = JSON.parse(this.response, SDK.WEBAPI._dateReviver);
+                } else {
+                    data = null;
+                }
+            }
+        };
+
+        req.send();
+        return data;
+    },
+	setStateImpersonate: function (executionContext, entityId, entityName, stateCode, statusCode, impersonateUserId) {
+
+		this._stringParameterCheck(entityName, "setStateImpersonate requiere entityName como string.");
+		this._stringParameterCheck(entityId, "setStateImpersonate requiere entityId como string.");
+
+		if (stateCode === null || stateCode === undefined)
+			throw new Error("setStateImpersonate requiere stateCode.");
+
+		if (statusCode === null || statusCode === undefined)
+			throw new Error("setStateImpersonate requiere statusCode.");
+
+		if (!impersonateUserId)
+			throw new Error("setStateImpersonate requiere impersonateUserId.");
+
+		var body = {
+			"EntityMoniker": {
+				"id": entityId,
+				"logicalName": entityName,
+				"name": entityName
+			},
+			"State": stateCode,
+			"Status": statusCode
+		};
+
+		var url = this._WebAPIPath(executionContext) + "Microsoft.Dynamics.CRM.SetState";
+
+		var req = new XMLHttpRequest();
+		req.open("POST", url, false);
+		req.setRequestHeader("Accept", "application/json");
+		req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+		req.setRequestHeader("OData-MaxVersion", "4.0");
+		req.setRequestHeader("OData-Version", "4.0");
+		req.setRequestHeader("MSCRMCallerID", impersonateUserId); 
+
+		var result = null;
+
+		req.onreadystatechange = function () {
+			if (this.readyState === 4) {
+				req.onreadystatechange = null;
+
+				if (this.status === 200 || this.status === 204) {
+					result = true; // OK
+				} else {
+					console.error("SetState Error:", this.responseText);
+					result = false;
+				}
+			}
+		};
+
+		req.send(JSON.stringify(body));
+		return result;
+	},
     activateCustomAction: function(entity, currentRecordId, actionName, actionParams) {
     	//Chequeo de parametros
     	this._stringParameterCheck(entity, "SDK.WEBAPI.activateCustomAction requires the entity parameter.");

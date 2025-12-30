@@ -33,9 +33,7 @@ CasoIngresoCRM = {
         FormNoOKMotivo:"",
 		ValidacionGenerica_Parametros:[],
 		VisibilidadCamposSecundarios:[],
-        VisibilidadCamposSecundarios2:[],
 		VisibilidadCampos:[],
-		VisibilidadCampos2:[],
 		DetalleOperacionID:null,
 		IndexBloqueadosPicklistGenerico:[],
         UsuarioHabilitadoCreacionCaso:false
@@ -149,7 +147,7 @@ CasoIngresoCRM = {
             CasoIngresoCRM.onChange_canalIngreso(executionContext);
             
             executionContext.getFormContext().getControl("xmsbs_preferenciasdecontacto").removeOption(657130000);
-
+            
             
             var casopadre = JumpStartLibXRM.Fx.getValueField(executionContext, "parentcaseid", null);
             if(marcaReiterado || casopadre){ //si es reiterado, hay que forzar el onchange del producto y tipoydetalle
@@ -262,9 +260,9 @@ CasoIngresoCRM = {
 			JumpStartLibXRM.Fx.enableDisableSection(executionContext,"general", "resolucion", true);
         }
         
-        //Validamos si el caso está pendiente de ingreso para alertarle al usuario
-        CasoIngresoCRM.alertaCasoPendienteIngreso(executionContext);
-    },
+        
+        CasoIngresoCRM.NotificacionesLoad(executionContext);
+	},
     
     AlertCaso: function(executionContext){
         var formContext = executionContext.getFormContext();
@@ -427,15 +425,8 @@ CasoIngresoCRM = {
         CasoIngresoCRM.formContext = executionContext.getFormContext();
         var formContext = executionContext.getFormContext();  
         let array = new Array ();
-        CasoIngresoCRM.RolesArray.SystemUser.forEach( 
-        function (x){
-            array.push(x);
-        }
-        );
-        CasoIngresoCRM.RolesArray.SantanderUrAdmin.forEach( 
-            function (x){
-                array.push(x);
-            });
+        CasoIngresoCRM.RolesArray.SystemUser.forEach( function (x) { array.push(x); });
+        CasoIngresoCRM.RolesArray.SantanderUrAdmin.forEach( function (x) { array.push(x); });
         let found = JumpStartLibXRM.Fx.UserHasRolesArray(executionContext, array);
         if (found){                
             formContext.ui.tabs.get("general").sections.get("general_section_botonera").setVisible(true);
@@ -778,7 +769,7 @@ CasoIngresoCRM = {
             return "";
         }
     },
-
+    	
     validaUsuarioCreacionCaso: function(executionContext){
         // 06-10-2025; JM: Comprueba que el usuario en sesión esté activo en una UR (Banco), se considera activo en los siguientes escenarios:
         // - Cuando el usuario tiene un registro de Integrante de UR Activo para una UR de Banco (Disponible/No Disponible)
@@ -801,7 +792,7 @@ CasoIngresoCRM = {
         if (CasoIngresoCRM.Form.UsuarioHabilitadoCreacionCaso == false){
             // solo muestra mensaje, no restringe la carga del formulario.
             // pero si lo bloquea, lo cual impide la creación del caso.
-            
+
             var alertStrings = { confirmButtonLabel: "Aceptar", 
                                  title: "ERROR", 
                                  text: "Su usuario no está habilitado para crear casos." +
@@ -810,7 +801,7 @@ CasoIngresoCRM = {
             Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(function (success) {
                 JumpStartLibXRM.Fx.disableForm(executionContext);
             },function (error) {});
-        }        
+        }
     },
     	
 	bloqueoTipificacion: function (executionContext){
@@ -850,10 +841,17 @@ CasoIngresoCRM = {
 		}
 	},
     
-    alertaCasoPendienteIngreso: function (executionContext){
+    NotificacionesLoad: function (executionContext){
+
+        if (CasoIngresoCRM.Form.formContext != JumpStartLibXRM.FormState.UPDATE && 
+            CasoIngresoCRM.Form.formContext != JumpStartLibXRM.FormState.READ_ONLY)
+            return;
+
+        //Validamos si el caso está pendiente de ingreso para alertarle al usuario
+        // 1. Alerta Caso Pendiente Ingreso
+
         var estado = JumpStartLibXRM.Fx.getValueField(executionContext, "statuscode", null);
         var ingresoUnicoFinalizado = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_ingresounicofinalizado", null);
-        
         if(estado == 2 && ingresoUnicoFinalizado == false){
             //Si está con el ingresoUnicoFinalizado en no y está en gestión, es un caso a medias y se alerta
             var alertStrings = { confirmButtonLabel: "Aceptar", title: "Ingreso No Finalizado", text: "Este caso no completó el ingreso, y no ha sido derivado a la UR"};
@@ -868,6 +866,12 @@ CasoIngresoCRM = {
                 }
             );
         }
+
+        // 2. En caso de que sea un caso Fraude, y si existe un SubRequerimiento en Fiscalía, entonces notifica al usuario informando el detalle del SubRequerimiento, 
+        // ya que, como el caso está en Fiscalía, entonces no es visible.
+
+        // ya se hace en la fnc mostrarFichaSecciones
+
     },
 	
 	buscarInstitucion: function (executionContext){
@@ -3001,7 +3005,6 @@ CasoIngresoCRM = {
     },		
 	
 	onChangeSoloLetra: function(executionContext){
-        debugger;
         var myControl = executionContext.getEventSource().getName();
         var campo = Xrm.Page.getControl(myControl).getValue();
         if(campo != null) {
@@ -3013,7 +3016,6 @@ CasoIngresoCRM = {
 	},
 
     onChangeFormatoHHMMSS: function (executionContext){
-        debugger;
         var myControl = executionContext.getEventSource().getName();
         var campo = Xrm.Page.getControl(myControl).getValue();
         const regex = /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/;
@@ -3033,7 +3035,32 @@ CasoIngresoCRM = {
             );
         }
 	},
+	
+	onChangeFormatoHHMM: function (executionContext) {
+		var attribute = executionContext.getEventSource();
 
+		var attributeName = attribute.getName();
+		var control = CasoIngresoCRM.formContext.getControl(attributeName);
+		if (!control) return;
+
+		var campo = control.getValue();
+		const regex = /^(?:[01]\d|2[0-3]):[0-5]\d$/; // hh:mm
+
+		if (campo != null && typeof campo === "string" && campo.trim() !== "" && !regex.test(campo.trim())) {
+			var alertStrings = { confirmButtonLabel: "Aceptar", text: "El texto debe cumplir el formato hh:mm (00:00 a 23:59)", title: "Hora incorrecta" };
+			var alertOptions = { height: 120, width: 260 };
+			Xrm.Navigation.openAlertDialog(alertStrings, alertOptions).then(
+				function () {
+					JumpStartLibXRM.Fx.setValueField(executionContext, attributeName, null);
+					JumpStartLibXRM.Fx.setFocus(executionContext, attributeName);
+				},
+				function (error) {
+					//console.log(error.message);
+				}
+			);
+		}
+	},
+	
 	onChangeSoloLetras: function(executionContext) {
         var campo = JumpStartLibXRM.Fx.getValueField(executionContext, "xmsbs_nombredelfuncionarioquesolicita", null);
         campo = campo.replace(/[^a-zA-Z ]/g, '');
@@ -3847,14 +3874,27 @@ CasoIngresoCRM = {
         var incidentId = JumpStartLibXRM.Fx.getEntityId(executionContext);
         if(incidentId){
             formContext.ui.tabs.get("tab_10").setVisible(false); //Subrequerimientos
-            CasoIngresoCRM.MostrarSubrequerimientos(executionContext, incidentId);
-            // var respuesta = CasoIngresoCRM.buscarSubrequerimientos(executionContext, incidentId);
-            // if(respuesta.value.length){
-            //     formContext.ui.tabs.get("tab_10").setVisible(true); //Subrequerimientos
-            // }
-            // else{
-            //     formContext.ui.tabs.get("tab_10").setVisible(false); //Subrequerimientos
-            // }
+            JumpStartLibXRM.Fx.clearFormNotification(executionContext, "MsgSubReq");
+
+            //CasoIngresoCRM.MostrarSubrequerimientos(executionContext, incidentId);
+            var LstSubReqImp = CasoIngresoCRM.buscarSubrequerimientosImp(executionContext, incidentId);
+            var LstSubReq = CasoIngresoCRM.buscarSubrequerimientos(executionContext, incidentId);
+
+            if(LstSubReqImp.value.length > 0 && LstSubReq.value.length > 0 ){
+                 formContext.ui.tabs.get("tab_10").setVisible(true); //Subrequerimientos
+            }
+            else{
+                if (LstSubReqImp.value.length > 0){
+                    // muestro los datos del Subrequerimiento como Texto (Notificación)
+                    let strSubReq = "SubRequerimiento derivado a FISCALIA: " + LstSubReqImp.value[0].xmsbs_numerocorrelativo + ", " +
+                         "Propietario: " + LstSubReqImp.value[0]["_ownerid_value@OData.Community.Display.V1.FormattedValue"] + ", " + 
+                         " Estado: " + LstSubReqImp.value[0]["statuscode@OData.Community.Display.V1.FormattedValue"] + ".";
+
+                    JumpStartLibXRM.Fx.setFormNotification(executionContext, "INFO", strSubReq, "MsgSubReq");
+                }
+
+                formContext.ui.tabs.get("tab_10").setVisible(false); //Subrequerimientos
+            }
         }
 		
         //ocultamos la sección de ingreso general
@@ -4428,7 +4468,6 @@ CasoIngresoCRM = {
                             
             // Solo si el Tipo de Requerimiento: "Reclamo no estandarizado", valida que el usuario en sesión sea Responsable de UR de alguna UR del Contact Center, si no es uno de esos usuarios, se mostrará un mensaje de error.
             // esta validación se aplica antes de cualquier otra validación.
-			debugger;
             let oTipoDetalleOp = CasoIngresoCRM.datosTipoDetalleOp(executionContext, CasoIngresoCRM.tipoDetalleOperacion.id);
 			let TDCodigo = oTipoDetalleOp.xmsbs_tiporequerimiento.xmsbs_codigo;
 			if (TDCodigo == "RNE"){
@@ -4481,7 +4520,6 @@ CasoIngresoCRM = {
 						var esDigital = CasoIngresoCRM.validaTipologiaDigitalizacion(executionContext, CasoIngresoCRM.tipoDetalleOperacion.id);
 						if (esDigital){
 						//if (CasoIngresoCRM.tipoDetalleOperacion.id.toLowerCase() == "91c45e53-23e1-ec11-bb3c-0022489c84b8" || CasoIngresoCRM.tipoDetalleOperacion.id.toLowerCase() == "6c05cd5a-b2e2-ec11-bb3c-0022489c8271" || CasoIngresoCRM.tipoDetalleOperacion.id.toLowerCase() == "695e75d9-1ff7-ec11-bb3d-0022489dfc73" || CasoIngresoCRM.tipoDetalleOperacion.id.toLowerCase() == "bc2fb061-b002-ed11-82e5-000d3ab69bbf" || CasoIngresoCRM.tipoDetalleOperacion.id.toLowerCase() == "c7375b11-490c-ed11-82e4-000d3addbec7") {
-							debugger;
 							_title = "IMPORTANTE";
 							_height = 340;
 							_width = 460;
@@ -4504,7 +4542,7 @@ CasoIngresoCRM = {
 					}					
                 }
 
-				CasoIngresoCRM.limpiaUltimaPregunta(executionContext, _title, _width, _height);
+                CasoIngresoCRM.limpiaUltimaPregunta(executionContext, _title, _width, _height);
             }
             else{
 				CasoIngresoCRM.Form.FormOKSave = true;
@@ -5505,6 +5543,16 @@ CasoIngresoCRM = {
 		if (tipoFormulario != JumpStartLibXRM.FormState.UPDATE)
 			return;
 		
+        CasoIngresoCRM.Form.DetalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
+        // 2025.12.18 : JM Se actualiza, por feedback de usuarios se deja esta funcionalidad solo para Fraude 3.0
+        // DO-1472: ac823ec0-e919-ef11-9f89-000d3ad8d133
+        // DO-1473: f33f8ce8-ea19-ef11-9f89-000d3ad8d133
+        // DO-1474: 08570bff-eb19-ef11-9f89-000d3ad8d133        
+        if (CasoIngresoCRM.Form.DetalleOperacionID.toLowerCase() != '{ac823ec0-e919-ef11-9f89-000d3ad8d133}' &&
+            CasoIngresoCRM.Form.DetalleOperacionID.toLowerCase() != '{f33f8ce8-ea19-ef11-9f89-000d3ad8d133}' &&
+            CasoIngresoCRM.Form.DetalleOperacionID.toLowerCase() != '{08570bff-eb19-ef11-9f89-000d3ad8d133}')
+            return;    
+
 		// Valida si existen documentos pendientes en el caso.
 		// si no existen, entonces cambia el estado del caso a: En Ingreso  
 			// 27.05.2024 (JM): Se solicita que esta validación aplique en cualquier etapa, entonces al actualizar el estado aplicará de la siguiente forma:
@@ -5553,25 +5601,50 @@ CasoIngresoCRM = {
 			// }
 		}
 		else{
+
+            // Determinar si en la Etapa Actual existen documentos Obligatorios.
 			var entityType = "xmsbs_documento";
-			var query = "$select=xmsbs_id";
-			query += "&$filter=_xmsbs_caso_value eq '" + incidentId.replace(/[{}]/g, "") + "' and _xmsbs_etapa_value eq '" + EtapaID.replace(/[{}]/g, "") + "' and xmsbs_obligatoriedad eq true and statuscode eq 657130000&$top=1"; // 657130000: Pendiente
-			var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
+			var query = "$select=xmsbs_id,statuscode";
+			query += "&$filter=_xmsbs_caso_value eq '" + incidentId.replace(/[{}]/g, "") + "' and _xmsbs_etapa_value eq '" + EtapaID.replace(/[{}]/g, "") + "' and xmsbs_obligatoriedad eq true";
+            var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function () {});
+
+            // 657130000: Pendiente
 			if(resultado){
-				if(resultado.value.length == 0){
-					// cambia el estado a En Gestión
-					JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", 2); // En Gestión
-					JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_etapareinsistencia", true); // Gatilla actualización SLA
-					JumpStartLibXRM.Fx.formSave(executionContext);
-				}
-                else if(resultado.value.length == 1){
-                    // aplica el cambio de estado en el caso solo si corresponde.
-                    if (StatusCode != 657130002) // En espera de documentos
-                    {
-                        JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", 657130002); // En espera de documentos
-                        JumpStartLibXRM.Fx.formSave(executionContext);
+				if(resultado.value.length > 0){
+
+                    // Evalúa si el existe algún documento obligatorio pendiente de subida.
+                    // Si existe alguno entonces deja el caso con "En espera de documentos"
+                    // Si no existe ninguno entonces deja el caso con estado "En Gestión*" solo si el estado actual del caso es "En Espera de Documentos"
+                    // solo para los SubRequerimientos Fraude el estado posible es: Análisis Demanda 657130009
+
+                    const existeDocPendiente = Array.isArray(resultado.value) && resultado.value.some(item => item.statuscode === 657130000);
+
+                    if (existeDocPendiente){
+                    
+                        if (StatusCode != 657130002) // En espera de documentos
+                        {
+                            JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", 657130002); // En espera de documentos
+                            JumpStartLibXRM.Fx.formSave(executionContext);
+                        }
                     }
-                }
+                    else{
+                        if (StatusCode == 657130002) // En espera de documentos
+                        {
+                            // Solo para SubRequerimientos Fraude se 
+                            // 31d7b247-d58c-f011-b4cb-000d3ac0d3a3 ; FS945 Sub-Requerimiento Fraude 3.0 Base 1
+                            var flujoid = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_flujosantander");
+                            if (flujoid == "{31D7B247-D58C-F011-B4CB-000D3AC0D3A3}"){
+                                JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", 657130009); // Análisis Demanda
+                            }
+                            else{
+                                JumpStartLibXRM.Fx.setValueField(executionContext, "statuscode", 2); // En Gestión
+                            }
+
+                            JumpStartLibXRM.Fx.setValueField(executionContext, "xmsbs_etapareinsistencia", true); // Gatilla actualización SLA
+                            JumpStartLibXRM.Fx.formSave(executionContext);
+                        }
+                    }
+				}
 			}
 		}
     },
@@ -5611,7 +5684,7 @@ CasoIngresoCRM = {
 																	"xmsbs_integracion,xmsbs_fncjsonchange,xmsbs_valoreseningresoformunico," +
 																	"xmsbs_campocalidadparticipacion,xmsbs_campoglosasubproducto,xmsbs_ocultarenestadocreate,xmsbs_visibilidadpicklist2g," +
 																	"xmsbs_mayoroigualque,xmsbs_menoroigualque," +
-																	"xmsbs_filtrovisibilidad,xmsbs_condicion,xmsbs_camposecundario,xmsbs_visiblecamposec,xmsbs_requeridocamposec" +
+																	"xmsbs_filtrovisibilidad,xmsbs_condicion,xmsbs_camposecundario,xmsbs_visiblecamposec,xmsbs_requeridocamposec," +
                                                                     "xmsbs_filtrovisibilidad2,xmsbs_condicion2,xmsbs_camposecundario2,xmsbs_visiblecamposec2,xmsbs_requeridocamposec2" +
 																    "&$filter=(statecode eq 0 and _xmsbs_etapa_value eq '" + etapaId.replace(/[{}]/g, "") +"')").then(
             function success(results) { 
@@ -5651,7 +5724,7 @@ CasoIngresoCRM = {
 					respObj.xmsbs_camposecundario = results.entities[i]["xmsbs_camposecundario"];
 					respObj.xmsbs_visiblecamposec = results.entities[i]["xmsbs_visiblecamposec"];
 					respObj.xmsbs_requeridocamposec = results.entities[i]["xmsbs_requeridocamposec"];
-
+					
 					respObj.xmsbs_filtrovisibilidad2 = results.entities[i]["xmsbs_filtrovisibilidad2"];
 					respObj.xmsbs_condicion2 = results.entities[i]["xmsbs_condicion2"];
 					respObj.xmsbs_camposecundario2 = results.entities[i]["xmsbs_camposecundario2"];
@@ -5664,47 +5737,30 @@ CasoIngresoCRM = {
                 }
 
 				CasoIngresoCRM.Form.VisibilidadCamposSecundarios = [];
-                CasoIngresoCRM.Form.VisibilidadCamposSecundarios2 = [];
 				CasoIngresoCRM.Form.VisibilidadCampos = [];
-				CasoIngresoCRM.Form.VisibilidadCampos2 = [];
 				
 				//debugger;
 				CasoIngresoCRM.Form.IndexBloqueadosPicklistGenerico = [];
 				CasoIngresoCRM.Form.DetalleOperacionID = JumpStartLibXRM.Fx.getLookupValueId(executionContext, "xmsbs_detalledeoperacion");
 				
+                // Aqui agrega elementos en: VisibilidadCamposSecundarios
                 CasoIngresoCRM.MostraroDataCamposSeccionesRespuesta(executionContext, respuesta);
                 
 				// comprobar solo en caso de existir campos de visibilidad.
 				if (CasoIngresoCRM.Form.VisibilidadCamposSecundarios.length > 0)
 				{	
-					//debugger;
-					// si todo está ok, entonces aplica la visualización por default para todos los campos que tienen visualización secundaria
-					CasoIngresoCRM.Form.VisibilidadCampos.forEach(campo => {
-						CasoIngresoCRM.fncVisibilidadCamposSecundarios(executionContext, campo);
-					});
-						
 					// todos los campos indicados en la visibilidad de secundarios DEBEN existir en el array de campos de la Etapa.
 					let CamposOK = CasoIngresoCRM.Form.VisibilidadCamposSecundarios.every(obj => ArrCampos.includes(obj.campo));
 					if (!CamposOK){
 						Xrm.Utility.alertDialog("Error de configuración para la visibilidad de campos secundarios.");
 						throw new Error("Error de configuración para la visibilidad de campos secundarios.");	
 					}
-				}
-				if (CasoIngresoCRM.Form.VisibilidadCamposSecundarios2.length > 0)
-				{	
-					//debugger;
+
 					// si todo está ok, entonces aplica la visualización por default para todos los campos que tienen visualización secundaria
-					CasoIngresoCRM.Form.VisibilidadCampos2.forEach(campo => {
-						CasoIngresoCRM.fncVisibilidadCamposSecundarios2(executionContext, campo);
+					CasoIngresoCRM.Form.VisibilidadCampos.forEach(campo => {
+						CasoIngresoCRM.fncVisibilidadCamposSecundarios(executionContext, campo);
 					});
-						
-					// todos los campos indicados en la visibilidad de secundarios DEBEN existir en el array de campos de la Etapa.
-					let CamposOK = CasoIngresoCRM.Form.VisibilidadCamposSecundarios2.every(obj => ArrCampos.includes(obj.campo));
-					if (!CamposOK){
-						Xrm.Utility.alertDialog("Error de configuración para la visibilidad de campos secundarios.");
-						throw new Error("Error de configuración para la visibilidad de campos secundarios.");
-					}
-				}                
+				}
 				
 				//Llamar las reglas de negocio
 				CasoIngresoCRM.ReglasDeNegocio(executionContext); 
@@ -5800,64 +5856,64 @@ CasoIngresoCRM = {
 
                         if(valorCampo == null || valorCampo == "")
                         {
-                            switch (respuesta[i].xmsbs_tipocampo)
-                            {
-                                case 1:
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, respuesta[i].xmsbs_predeterminado);
-                                    break;
-                                case 2:
-                                    var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
-                                    break;
-                                case 3:
-                                    var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
-                                    break;
-                                case 4:
-                                    if (respuesta[i].xmsbs_predeterminado == "true")
-                                    {
-                                        JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, true);
-                                    }
-                                    else if (respuesta[i].xmsbs_predeterminado == "false")
-                                    {
-                                        JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, false);
-                                    }
-                                    break;
-                                case 5:
-                                    var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
-                                    break;
-                                case 6:
-                                    var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
-                                    break;
-                                case 7:
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, respuesta[i].xmsbs_predeterminado);
-                                    break;
-                                case 8:
-                                    var date = respuesta[i].xmsbs_predeterminado;
-                                    var array = new Array();
-                                    array = date.split('-');
-                                    var anio = parseInt(array[2]);
-                                    var mes = parseInt(array[1]) - 1;
-                                    var dias = parseInt(array[0]);
-                                    var dateParse = new Date(anio, mes, dias);
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, dateParse);
-                                    break;
-                                case 9:
-                                    //campo búsqueda no se puede colocar valor predeterminado
-                                    break;
-                                case 10:
-                                    //campo cliente no se puede colocar valor predeterminado
-                                    break;
-                                case 11:
-                                    var valorInt = parseFloat(respuesta[i].xmsbs_predeterminado);
-                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
+	                        switch (respuesta[i].xmsbs_tipocampo)
+	                        {
+	                            case 1:
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, respuesta[i].xmsbs_predeterminado);
+	                                break;
+	                            case 2:
+	                                var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
+	                                break;
+	                            case 3:
+	                                var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
+	                                break;
+	                            case 4:
+	                                if (respuesta[i].xmsbs_predeterminado == "true")
+	                                {
+	                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, true);
+	                                }
+	                                else if (respuesta[i].xmsbs_predeterminado == "false")
+	                                {
+	                                    JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, false);
+	                                }
+	                                break;
+	                            case 5:
+	                                var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
+	                                break;
+	                            case 6:
+	                                var valorInt = parseInt(respuesta[i].xmsbs_predeterminado);
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
+	                                break;
+	                            case 7:
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, respuesta[i].xmsbs_predeterminado);
+	                                break;
+	                            case 8:
+	                                var date = respuesta[i].xmsbs_predeterminado;
+	                                var array = new Array();
+	                                array = date.split('-');
+	                                var anio = parseInt(array[2]);
+	                                var mes = parseInt(array[1]) - 1;
+	                                var dias = parseInt(array[0]);
+	                                var dateParse = new Date(anio, mes, dias);
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, dateParse);
+	                                break;
+	                            case 9:
+	                                //campo búsqueda no se puede colocar valor predeterminado
+	                                break;
+	                            case 10:
+	                                //campo cliente no se puede colocar valor predeterminado
+	                                break;
+	                            case 11:
+	                                var valorInt = parseFloat(respuesta[i].xmsbs_predeterminado);
+	                                JumpStartLibXRM.Fx.setValueField(executionContext, respuesta[i].xmsbs_nombreesquema, valorInt);
+	                                break;
+	                            default:
+	                                break;
+	                        }
+	                    }
                     }
                     var Ncampo = CasoIngresoCRM.terminaEnNumero(respuesta[i].xmsbs_nombreesquema);
                     //requerido
@@ -5898,7 +5954,7 @@ CasoIngresoCRM = {
 					JumpStartLibXRM.Fx.removeOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChange_correo");
 					JumpStartLibXRM.Fx.removeOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChange_ValidaIntervalo");
 					JumpStartLibXRM.Fx.removeOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChangeSoloNumerosIntervalo");
-                    JumpStartLibXRM.Fx.removeOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChangeFormatoHHMMSS");
+                    JumpStartLibXRM.Fx.removeOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChangeFormatoHHMM");
 
 					if (respuesta[i].xmsbs_fncjsonchange)
 					{
@@ -5938,16 +5994,16 @@ CasoIngresoCRM = {
 							var ParametrosValidacion = { campo: respuesta[i].xmsbs_nombreesquema, MayorOIgualQue: respuesta[i].xmsbs_mayoroigualque, MenorOIgualQue: respuesta[i].xmsbs_menoroigualque };
 							CasoIngresoCRM.Form.ValidacionGenerica_Parametros.push(ParametrosValidacion);							
 						}
-                        else if(respuesta[i].xmsbs_fncjsonchange == 657130009) // Texto, hh:mm:ss
+                        else if(respuesta[i].xmsbs_fncjsonchange == 657130009) // Texto, hh:mm
 						{
-							JumpStartLibXRM.Fx.addOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChangeFormatoHHMMSS");
+							JumpStartLibXRM.Fx.addOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChangeFormatoHHMM");
 						}
                         else if(respuesta[i].xmsbs_fncjsonchange == 657130010) // Texto: Selecciona Opción
 						{
                             // Si existe algún campo con esta función, entonces muestra el botón: "Seleccionar Opción"
                             var wrSeleccionarOpcion = CasoIngresoCRM.formContext.getControl("WebResource_botonSeleccionarOpcion");
                             wrSeleccionarOpcion.setVisible(true);
-
+                            
                             // el camop SIEMPRE será de Solo Lectura
                             JumpStartLibXRM.Fx.disableField(executionContext, respuesta[i].xmsbs_nombreesquema);
 						}
@@ -5972,13 +6028,18 @@ CasoIngresoCRM = {
 						let requerido = respuesta[i].xmsbs_requeridocamposec;
 						
 						let ArrCampos = campos.split(";");
-						
+
 						ArrCampos.forEach(campo => {
+                          
+                            let oCampo = respuesta.find(c=>c.xmsbs_nombreesquema === campo);
+                            let lecturaCampo = oCampo ? oCampo.xmsbs_lectura : true;
+
 							CasoIngresoCRM.Form.VisibilidadCamposSecundarios.push({
-								campoPrincipal: respuesta[i].xmsbs_nombreesquema,
+    							campoPrincipal: respuesta[i].xmsbs_nombreesquema,
 								filtro: filtro,
 								valor: valor, 
 								campo: campo,
+                                lectura: lecturaCampo, 
 								visible: visible, 
 								requerido: requerido
 							});
@@ -5986,8 +6047,10 @@ CasoIngresoCRM = {
 						
 						JumpStartLibXRM.Fx.addOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChange_VisibilidadCampoSecundario");
 						
-						CasoIngresoCRM.Form.VisibilidadCampos.push(respuesta[i].xmsbs_nombreesquema);
-						
+                        if (!CasoIngresoCRM.Form.VisibilidadCampos.includes(respuesta[i].xmsbs_nombreesquema)){
+                            CasoIngresoCRM.Form.VisibilidadCampos.push(respuesta[i].xmsbs_nombreesquema);
+                        }
+					
 						// luego de que termina de cargar todos los campos, se llama a la función: onChange_VisibilidadCampoSecundario para que aplique la configuración en caso de que el campo principal ya tenga valor.
 						// (no aplica aqui)
 					}
@@ -6005,11 +6068,15 @@ CasoIngresoCRM = {
 						let ArrCampos = campos.split(";");
 						
 						ArrCampos.forEach(campo => {
-							CasoIngresoCRM.Form.VisibilidadCamposSecundarios2.push({
+                            let oCampo = respuesta.find(c=>c.xmsbs_nombreesquema === campo);
+                            let lecturaCampo = oCampo ? oCampo.xmsbs_lectura : true;
+
+							CasoIngresoCRM.Form.VisibilidadCamposSecundarios.push({
 								campoPrincipal: respuesta[i].xmsbs_nombreesquema,
 								filtro: filtro,
 								valor: valor, 
 								campo: campo,
+                                lectura: lecturaCampo, 
 								visible: visible, 
 								requerido: requerido
 							});
@@ -6017,7 +6084,9 @@ CasoIngresoCRM = {
 						
 						JumpStartLibXRM.Fx.addOnChange(executionContext, respuesta[i].xmsbs_nombreesquema, "CasoIngresoCRM.onChange_VisibilidadCampoSecundario2");
 						
-						CasoIngresoCRM.Form.VisibilidadCampos2.push(respuesta[i].xmsbs_nombreesquema);
+                        if (!CasoIngresoCRM.Form.VisibilidadCampos.includes(respuesta[i].xmsbs_nombreesquema)){
+                            CasoIngresoCRM.Form.VisibilidadCampos.push(respuesta[i].xmsbs_nombreesquema);
+                        }
 						
 						// luego de que termina de cargar todos los campos, se llama a la función: onChange_VisibilidadCampoSecundario para que aplique la configuración en caso de que el campo principal ya tenga valor.
 						// (no aplica aqui)
@@ -6031,14 +6100,21 @@ CasoIngresoCRM = {
             //alert("Error en el consumo del servicio rest api.");
         }
     },
-
-    onChange_VisibilidadCampoSecundario: function (executionContext){
+	
+	onChange_VisibilidadCampoSecundario: function (executionContext){
 		//debugger;
 		var ControlOnChange = executionContext.getEventSource().getName();
 		
 		CasoIngresoCRM.fncVisibilidadCamposSecundarios(executionContext, ControlOnChange);
 	},
 
+    onChange_VisibilidadCampoSecundario2: function (executionContext){
+		//debugger;
+		var ControlOnChange = executionContext.getEventSource().getName();
+		
+		CasoIngresoCRM.fncVisibilidadCamposSecundarios(executionContext, ControlOnChange);
+	},    
+	
 	fncVisibilidadCamposSecundarios: function (executionContext, campoName){
 		
         var formContext = executionContext.getFormContext();
@@ -6049,136 +6125,59 @@ CasoIngresoCRM = {
 		
 		if (tipoFormulario == JumpStartLibXRM.FormState.READ_ONLY || tipoFormulario == JumpStartLibXRM.FormState.DISABLED || isDisabled)
 			FrmLectura = true;
-					
-		CasoIngresoCRM.Form.VisibilidadCamposSecundarios.forEach(obj => {
-			if (obj.campoPrincipal == campoName){
 				
-				let valor = JumpStartLibXRM.Fx.getFieldValueAsText(executionContext, obj.campoPrincipal);
-				let FiltroOK = false;
-				
-				if (obj.filtro == 657130000 && obj.valor == valor) // "es igual a"
-					FiltroOK = true;
-				else if (obj.filtro == 657130001 && obj.valor != valor) // "No es igual a"
-					FiltroOK = true;				
-				else if (obj.filtro == 657130002 && obj.valor != "") // "Contiene datos"
-					FiltroOK = true;
-				else if (obj.filtro == 657130003 && obj.valor == "") // "No contiene datos"
-					FiltroOK = true;
-				
-				
-				var campo = obj.campo;
-				
-				// a este punto los campos ya se dibujaron en el form.
-				// si es picklist genérico, entonces evalúa si el campo está visible en el formulario, 
-				// si está visible trabaja sobre el campo picklist, si está oculto, entonces trabaja sobre el campo picklist_texto
-				if (campo == "xmsbs_picklist1g" || campo == "xmsbs_picklist2g" || campo == "xmsbs_picklist3g" || campo == "xmsbs_picklist4g" || campo == "xmsbs_picklist5g" || campo == "xmsbs_picklist6g" || campo == "xmsbs_picklist7g" ||  campo == "xmsbs_picklistmultiselect1g")
-				{
-					debugger;
-					var esVisiblePicklist = JumpStartLibXRM.Fx.getVisible(executionContext, campo);	
-					//var lbl = JumpStartLibXRM.Fx.getControlName(executionContext, campo);
-					
-					if (esVisiblePicklist == false)
-					{
-						campo = campo + "_texto";
-						JumpStartLibXRM.Fx.disableField(executionContext, campo);
-						//JumpStartLibXRM.Fx.setLabel(executionContext, campo, lbl);
-					}
-				}
-				
-				// por defecto será oculto y no requerido.
-				JumpStartLibXRM.Fx.hideField(executionContext, campo);
-				JumpStartLibXRM.Fx.updateRequirementLevel(executionContext, campo, "none");
-				
-				if (FiltroOK){
-					if (obj.visible == true)
-						JumpStartLibXRM.Fx.showField(executionContext, campo);
-					
-					if (!FrmLectura) // solo evalúa y setea requerido si el form es de escritura.
-					{
-						// no puede ser requerido si el campo en la matriz para esta etapa es de solo lectura, sin embargo, se deja la responsabilidad de integridad de datos a la administración de la matriz.
-						if (obj.requerido == true){
-							JumpStartLibXRM.Fx.enableField(executionContext, campo);
-							JumpStartLibXRM.Fx.updateRequirementLevel(executionContext, campo, "required");						
-						}
-					}
-				}
-			}
-		});		
-	},
+        // por defecto se dejan todos ocultos y no requeridos
+        CasoIngresoCRM.Form.VisibilidadCamposSecundarios.forEach(obj => {
+            if (obj.campoPrincipal == campoName){
+                var campo = obj.campo;
+                if(obj.lectura == true && (campo == "xmsbs_picklist1g" || campo == "xmsbs_picklist2g" || campo == "xmsbs_picklist3g" || campo == "xmsbs_picklist4g" || 
+                                        campo == "xmsbs_picklist5g" || campo == "xmsbs_picklist6g" || campo == "xmsbs_picklist7g" ||  campo == "xmsbs_picklistmultiselect1g")){
+                    campo = campo + "_texto";
+                }
 
-    onChange_VisibilidadCampoSecundario2: function (executionContext){
-		//debugger;
-		var ControlOnChange = executionContext.getEventSource().getName();
-		
-		CasoIngresoCRM.fncVisibilidadCamposSecundarios2(executionContext, ControlOnChange);
+                // por defecto debe ser oculto y no requerido. pero se aplica así por si es que en la matriz no está configurado de esta forma.
+                JumpStartLibXRM.Fx.hideField(executionContext, campo);
+                JumpStartLibXRM.Fx.updateRequirementLevel(executionContext, campo, "none");
+            }
+        });
+
+        CasoIngresoCRM.Form.VisibilidadCamposSecundarios.forEach(obj => {
+            if (obj.campoPrincipal == campoName){
+                let valor = JumpStartLibXRM.Fx.getFieldValueAsText(executionContext, obj.campoPrincipal);
+                let FiltroOK = false;
+                
+                if (obj.filtro == 657130000 && obj.valor == valor) // "es igual a"
+                    FiltroOK = true;
+                else if (obj.filtro == 657130001 && obj.valor != valor) // "No es igual a"
+                    FiltroOK = true;				
+                else if (obj.filtro == 657130002 && obj.valor != "") // "Contiene datos"
+                    FiltroOK = true;
+                else if (obj.filtro == 657130003 && obj.valor == "") // "No contiene datos"
+                    FiltroOK = true;
+
+                var campo = obj.campo;
+                if(obj.lectura == true && (campo == "xmsbs_picklist1g" || campo == "xmsbs_picklist2g" || campo == "xmsbs_picklist3g" || campo == "xmsbs_picklist4g" || 
+                                        campo == "xmsbs_picklist5g" || campo == "xmsbs_picklist6g" || campo == "xmsbs_picklist7g" ||  campo == "xmsbs_picklistmultiselect1g")){
+                    campo = campo + "_texto";
+                }
+
+                if (FiltroOK){
+                    if (obj.visible == true)
+                        JumpStartLibXRM.Fx.showField(executionContext, campo);
+                    if (obj.lectura == true)
+                        JumpStartLibXRM.Fx.disableField(executionContext, campo);
+                    
+                    if (!FrmLectura) // solo evalúa y setea requerido si el form es de escritura.
+                    {
+                        if (obj.requerido == true){
+                            JumpStartLibXRM.Fx.enableField(executionContext, campo);
+                            JumpStartLibXRM.Fx.updateRequirementLevel(executionContext, campo, "required");
+                        }
+                    }
+                }
+            }
+        });
 	},
-    
-	fncVisibilidadCamposSecundarios2: function (executionContext, campoName){
-		
-        var formContext = executionContext.getFormContext();
-		var tipoFormulario = formContext.ui.getFormType();
-		var FrmLectura = false;
-		
-		var isDisabled = JumpStartLibXRM.Fx.getDisabled(executionContext, campoName);
-		
-		if (tipoFormulario == JumpStartLibXRM.FormState.READ_ONLY || tipoFormulario == JumpStartLibXRM.FormState.DISABLED || isDisabled)
-			FrmLectura = true;
-					
-		CasoIngresoCRM.Form.VisibilidadCamposSecundarios2.forEach(obj => {
-			if (obj.campoPrincipal == campoName){
-				
-				let valor = JumpStartLibXRM.Fx.getFieldValueAsText(executionContext, obj.campoPrincipal);
-				let FiltroOK = false;
-				
-				if (obj.filtro == 657130000 && obj.valor == valor) // "es igual a"
-					FiltroOK = true;
-				else if (obj.filtro == 657130001 && obj.valor != valor) // "No es igual a"
-					FiltroOK = true;				
-				else if (obj.filtro == 657130002 && obj.valor != "") // "Contiene datos"
-					FiltroOK = true;
-				else if (obj.filtro == 657130003 && obj.valor == "") // "No contiene datos"
-					FiltroOK = true;
-				
-				
-				var campo = obj.campo;
-				
-				// a este punto los campos ya se dibujaron en el form.
-				// si es picklist genérico, entonces evalúa si el campo está visible en el formulario, 
-				// si está visible trabaja sobre el campo picklist, si está oculto, entonces trabaja sobre el campo picklist_texto
-				if (campo == "xmsbs_picklist1g" || campo == "xmsbs_picklist2g" || campo == "xmsbs_picklist3g" || campo == "xmsbs_picklist4g" || campo == "xmsbs_picklist5g" || campo == "xmsbs_picklist6g" || campo == "xmsbs_picklist7g" ||  campo == "xmsbs_picklistmultiselect1g")
-				{
-					debugger;
-					var esVisiblePicklist = JumpStartLibXRM.Fx.getVisible(executionContext, campo);	
-					//var lbl = JumpStartLibXRM.Fx.getControlName(executionContext, campo);
-					
-					if (esVisiblePicklist == false)
-					{
-						campo = campo + "_texto";
-						JumpStartLibXRM.Fx.disableField(executionContext, campo);
-						//JumpStartLibXRM.Fx.setLabel(executionContext, campo, lbl);
-					}
-				}
-				
-				// por defecto será oculto y no requerido.
-				JumpStartLibXRM.Fx.hideField(executionContext, campo);
-				JumpStartLibXRM.Fx.updateRequirementLevel(executionContext, campo, "none");
-				
-				if (FiltroOK){
-					if (obj.visible == true)
-						JumpStartLibXRM.Fx.showField(executionContext, campo);
-					
-					if (!FrmLectura) // solo evalúa y setea requerido si el form es de escritura.
-					{
-						// no puede ser requerido si el campo en la matriz para esta etapa es de solo lectura, sin embargo, se deja la responsabilidad de integridad de datos a la administración de la matriz.
-						if (obj.requerido == true){
-							JumpStartLibXRM.Fx.enableField(executionContext, campo);
-							JumpStartLibXRM.Fx.updateRequirementLevel(executionContext, campo, "required");						
-						}
-					}
-				}
-			}
-		});		
-	},    
 	
 	oDataSecciones: function (executionContext, etapaId){
         var entityType = "xmsbs_seccion";
@@ -6377,10 +6376,19 @@ CasoIngresoCRM = {
         var entityType = "incident";
 		var query = "$select=title";
 		query += "&$filter=_parentcaseid_value eq '" + incidentId + "'";
-		var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query, null, null, function ()
-		{});
+
+		var resultado = SDK.WEBAPI.retrieveMultipleRecords(executionContext, entityType, query);
 		return resultado;
     },
+
+    buscarSubrequerimientosImp: function (executionContext, incidentId){
+        var entityType = "incident";
+		var query = "$select=incidentid,_xmsbs_etapa_value,createdon,statuscode,xmsbs_estadosla,xmsbs_numerocorrelativo,_ownerid_value";
+		query += "&$filter=_parentcaseid_value eq '" + incidentId + "'";
+
+        var resultado = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(executionContext, entityType, query, JumpStartLibXRM.Fx.getUserAdminID());
+		return resultado;
+    },    
     
     MostrarSubrequerimientos: function (executionContext, incidentId){        
         Xrm.WebApi.online.retrieveMultipleRecords("incident", "?$select=title&$filter=_parentcaseid_value eq '" +incidentId.replace(/[{}]/g, "")+"'").then(
@@ -6911,9 +6919,9 @@ CasoIngresoCRM = {
         if (estado == '2'){     
             let array = new Array ();
             CasoIngresoCRM.RolesArray.SystemUser.forEach(
-            function (x){
-                array.push(x);
-            }
+                function (x){
+                    array.push(x);
+                }
             );
            
             let found = JumpStartLibXRM.Fx.UserHasRolesArray(executionContext, array);

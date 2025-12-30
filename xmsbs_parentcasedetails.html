@@ -115,6 +115,7 @@
   <script>
     (function () {
       const TYPE = { TEXTO:1, OPCIONES:2, OPCIONES_MULTI:3, DOS_OPCIONES:4, ENTERO:5, DIVISA:6, MEMO:7, FECHA:8, BUSQUEDA:9, DECIMAL:11 };
+      var UserAdminId = null;
 
       async function init() {
         // Contextos para WebApi y Repositorio
@@ -124,6 +125,8 @@
         var casoPrincipalID = JumpStartLibXRM.Fx.getLookupValueId(window._executionContext, "parentcaseid");
         if (!casoPrincipalID) { setHtml("p_description", "<span class='sub'>Este caso no tiene un Caso Principal.</span>"); return; }
         window._parentIncidentId = casoPrincipalID;
+
+        UserAdminId = JumpStartLibXRM.Fx.getUserAdminID();
 
         try {
           var oCasoPrincipal = getCasoPrincipal(casoPrincipalID);
@@ -158,7 +161,7 @@
         var entityType = "incident";
         var query = "$select=incidentid,createdon,modifiedon,_ownerid_value,statecode,statuscode,title,xmsbs_apellidomaterno,xmsbs_apellidopaterno,xmsbs_clientesantander,xmsbs_nombrecliente,xmsbs_numerocorrelativo,xmsbs_rut,_xmsbs_etapa_value";
         query += "&$filter=(incidentid eq '" + incidentId.replace(/[{}]/g, "") + "')";
-        return SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, entityType, query, null, null, function(){});
+        return SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, entityType, query, UserAdminId);
       }
 
       function DibujaDatosCasoPrincipal(p) {
@@ -168,7 +171,10 @@
         setText("p_xmsbs_nombrecliente", p.xmsbs_nombrecliente);
         setText("p_xmsbs_apellidopaterno", p.xmsbs_apellidopaterno);
         setText("p_xmsbs_apellidomaterno", p.xmsbs_apellidomaterno);
-        setText("p_xmsbs_clientesantander", p.xmsbs_clientesantander);
+        
+        //pach: La solución real debe considerar el tipo de dato del campo a mostrar. (ver: incidentfraude_print)
+        setText("p_xmsbs_clientesantander", (p.xmsbs_clientesantander==true ? "Sí" : "No"));
+
         const owner = p.ownerid && p.ownerid.fullname ? p.ownerid.fullname : getFormatted(p,"_ownerid_value","—");
         setText("p_owner", owner);
         setText("p_state",  getFormatted(p, "statecode", "—"), true);
@@ -179,8 +185,10 @@
       }
 
       function MostrarCamposDinamicos(etapaId){
-        const CamposCaso = SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, "xmsbs_campo",
-          "?$select=xmsbs_campoid,xmsbs_label,xmsbs_name,xmsbs_nombreesquema,xmsbs_nombremostrar,xmsbs_tipocampo,xmsbs_visible,xmsbs_integracion&$filter=(statecode eq 0 and _xmsbs_etapa_value eq '" + etapaId.replace(/[{}]/g, "") +"')");
+        const CamposCaso = SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, "xmsbs_campo",
+          "?$select=xmsbs_campoid,xmsbs_label,xmsbs_name,xmsbs_nombreesquema,xmsbs_nombremostrar,xmsbs_tipocampo,xmsbs_visible,xmsbs_integracion&$filter=(statecode eq 0 and _xmsbs_etapa_value eq '" + etapaId.replace(/[{}]/g, "") +"')",
+           UserAdminId);
+
         const gridContainer = document.getElementById("datosCasoGrid");
         const respuesta = [];
         for (let i=0;i<CamposCaso.value.length;i++){
@@ -239,7 +247,7 @@
         ].join("");
 
         try {
-          const lstDocumentos = await SDK.WEBAPI.retrieveMultipleRecords(window._executionContext, "xmsbs_documento", "?fetchXml=" + encodeURIComponent(fetch));
+          const lstDocumentos = await SDK.WEBAPI.retrieveMultipleRecordsImpersonate(window._executionContext, "xmsbs_documento", "?fetchXml=" + encodeURIComponent(fetch), UserAdminId);
           const rows = lstDocumentos.value || [];
           if (rows.length === 0) { tbody.innerHTML = ""; empty.style.display = "block"; return; }
 
@@ -386,13 +394,21 @@
       }
       async function loadDynamicValues(incidentId, camposMeta){
         try{
-          if(!incidentId||!camposMeta||!camposMeta.length) return;
-          const selectSet = new Set(); camposMeta.forEach(m=>selectSet.add(buildSelectForField(m)));
-          const selectList = Array.from(selectSet); if(!selectList.length) return;
-          const cleanId = incidentId.replace(/[{}]/g,"");
-          const result = await Xrm.WebApi.retrieveRecord("incident", cleanId, `?$select=${encodeURIComponent(selectList.join(","))}`);
+          debugger;
+
+          if(!incidentId||!camposMeta||!camposMeta.length) 
+            return;
+          const selectSet = new Set(); 
+          camposMeta.forEach(m=>selectSet.add(buildSelectForField(m)));
+          const selectList = Array.from(selectSet); 
+          if(!selectList.length)
+            return;
+          const result = await SDK.WEBAPI.retrieveRecordImpersonate(window._executionContext, incidentId.replace(/[{}]/g,""), "incident", selectList.join(","), null, UserAdminId);
           const row = result || null;
-          if(!row){ camposMeta.forEach(m=>setValueInGrid(m.xmsbs_nombreesquema,"—")); return; }
+          if(!row){ 
+            camposMeta.forEach(m=>setValueInGrid(m.xmsbs_nombreesquema,"—")); 
+            return; 
+          }
           camposMeta.forEach(meta => setValueInGrid(meta.xmsbs_nombreesquema, getFormattedDynamic(row, meta)));
         }catch(e){
           console.error("Error al cargar valores dinámicos:", e);

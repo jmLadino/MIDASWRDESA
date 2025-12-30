@@ -162,7 +162,6 @@
 		
 		function clickBotonConfirmar() 
         {
-            debugger;
 			error = "";
 			var selectCodigoReparo = $("#selectCodigoReparo").val();
 			var txtObservacionCaso = $("#txtObservacionCaso").val();
@@ -176,7 +175,6 @@
 				
 				if(_largoTxtObservacionCaso > 0)
 				{       
-					debugger;
 					// si se asignó correctamente, entonces actualiza el registro extensión del caso y lo marca con el Tipo de Asignación: Por Reparo (657130003)
 					var xmsbs_extensioncaso = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_extensioncaso", null);
 					if (xmsbs_extensioncaso)
@@ -184,8 +182,8 @@
 						var objeto = {};
 						objeto["xmsbs_tipodeasignacion"] = 657130003;
 						var resultado = SDK.WEBAPI.updateRecordImpersonate(window._executionContext, xmsbs_extensioncaso[0].id.replace(/[{}]/g, ""), objeto, "xmsbs_extensioncaso", UsuarioAdminID, null, null);
-					}
-					
+					}						
+
 					ExecuteSuceso(selectCodigoReparo, txtObservacionCaso);
 				}
 				else
@@ -203,11 +201,9 @@
 
         function ExecuteSuceso(selectCodigoReparo, txtObservacionCaso)
         {
-            //debugger;
             post("/Caso/EjecutarSuceso/" + idIncident + "/" + idAccionEtapa + "/" + codigoSuceso + "", "", function (data) 
             {                
                 $('#dvLoader').css("display", "none");
-                debugger;
                 if (data.success)
                 {
                     var _idURDestino = data.suC0001.ur.id.toString();
@@ -222,9 +218,7 @@
                         IdURDestino: _idURDestino
                     };
                     
-                    //debugger;
                     post("/Caso/CrearBitacoraReparo", requestBitacoraReparo, function (data) {
-                        //debugger;
                         if (data.success) {                            
                             //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionesdevisacion", txtObservacionCaso);                                
                             //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionlectura", txtObservacionCaso);                                
@@ -234,28 +228,47 @@
                         }
                     });
                     
-                    setTimeout(function () {
-                        //debugger;
+                    
+                        debugger;
+
+                        // solo para SubRequerimiento Fraude y está reparando a la Etapa 1
+                        // entonces, realiza el SAVE a nombre del admin.
+                        var oIncidentUPD = {};
+
+                        var esSubRequerimientoFraude = false;
+                        var FSid = JumpStartLibXRM.Fx.getValueField(window._executionContext, "xmsbs_flujosantander", null)[0].id.replace(/[{}]/g, "").toLowerCase();
+                        if (FSid == "31d7b247-d58c-f011-b4cb-000d3ac0d3a3") // FS945 : Sub-Requerimiento Fraude 3.0 Base 1
+                            esSubRequerimientoFraude = true;
+
                         //actualizar etapa
                         var fieldName = "xmsbs_etapa";
                         var id = data.suC0001.etapa.id;
                         var name = data.suC0001.etapa.name;
                         var entityType = data.suC0001.etapa.logicalName;
-                        var etapa = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                        if (esSubRequerimientoFraude)
+                            oIncidentUPD[fieldName+"@odata.bind"] = "/"+entityType+"s("+id+")";
+                        else
+                            JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
                         
                         //actualizar Acción 
                         var fieldName = "xmsbs_accion";
                         var id = data.suC0001.accion.id;
                         var name = data.suC0001.accion.name;
                         var entityType = data.suC0001.accion.logicalName;
-                        var flujo = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                        if (esSubRequerimientoFraude)
+                            oIncidentUPD[fieldName+"@odata.bind"] = "/"+entityType+"s("+id+")";
+                        else
+                            JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
                         
                         //actualizar propietario
                         var fieldName = "ownerid";
                         var id = data.suC0001.propietario.id;
                         var name = data.suC0001.propietario.name;
                         var entityType = data.suC0001.propietario.logicalName;
-                        var propietario = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                        if (esSubRequerimientoFraude)
+                            oIncidentUPD[fieldName+"@odata.bind"] = "/"+entityType+"s("+id+")";
+                        else
+                            JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
                         
                         //actualizar ROL
                         if(data.suC0001.rol != null){
@@ -264,7 +277,10 @@
                                 var id = data.suC0001.rol.id;
                                 var name = data.suC0001.rol.name;
                                 var entityType = data.suC0001.rol.logicalName;
-                                var propietario = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                                if (esSubRequerimientoFraude)
+                                    oIncidentUPD[fieldName+"@odata.bind"] = "/"+entityType+"s("+id+")";
+                                else
+                                    JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
                             }
                         }
                         
@@ -273,19 +289,31 @@
                         var id = data.suC0001.ur.id;
                         var name = data.suC0001.ur.name;
                         var entityType = data.suC0001.ur.logicalName;
-                        var flujo = JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
+                        if (esSubRequerimientoFraude)
+                            oIncidentUPD[fieldName+"@odata.bind"] = "/"+entityType+"s("+id+")";
+                        else
+                            JumpStartLibXRM.Fx.setLookupValue(window._executionContext, fieldName, id, name, entityType);
                                             
-                        //actualizar Razón para el estado
-                        JumpStartLibXRM.Fx.setValueField(window._executionContext, "statuscode", data.suC0001.estado);
-                        
-                        //se borra la respuesta ingresada
-                        JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_respuestacliente", null);
-                        //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_tipoderespuesta", null);
-                        
-                        
-                        JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionesdevisacion", txtObservacionCaso); 
-                        
-						debugger;
+                        debugger;
+                        if (esSubRequerimientoFraude){
+                            oIncidentUPD["statuscode"] = data.suC0001.estado;
+                            oIncidentUPD["xmsbs_respuestacliente"] = null;
+                            oIncidentUPD["xmsbs_observacionesdevisacion"] = txtObservacionCaso;
+                        }
+                        else{
+                            //actualizar Razón para el estado
+                            JumpStartLibXRM.Fx.setValueField(window._executionContext, "statuscode", data.suC0001.estado);
+                            
+                            //se borra la respuesta ingresada
+                            JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_respuestacliente", null);
+                            //JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_tipoderespuesta", null);
+                            
+                            JumpStartLibXRM.Fx.setValueField(window._executionContext, "xmsbs_observacionesdevisacion", txtObservacionCaso); 
+                        }
+
+
+
+						
 						// disminuye stock adquirencia.
 						if (StockAdquirenciaId){
 							var objeto = {};
@@ -299,8 +327,7 @@
 								JumpStartLibXRM.Fx.setFormNotification(window._executionContext, "ERROR", "Error al actualizar Stock. Informe al Administrador.", "NOT_StockAdquirencia");
 							}
 						}
-
-                         //debugger;
+                        
                         //Validamos si el nuevo usuario es igual al actual para cerrar o refrescar
                         var currentUserId = JumpStartLibXRM.Fx.getUserId();
                         if (currentUserId.indexOf("{") > -1){currentUserId = currentUserId.substring(1, 37);}
@@ -315,10 +342,17 @@
                                 function (success) {
                                     //console.log("Alert dialog closed");
                                     Xrm.Utility.closeProgressIndicator();
-                                    JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+                                    debugger;
+                                    if (esSubRequerimientoFraude)
+                                    {
+                                        SDK.WEBAPI.updateRecordImpersonate(window._executionContext, idIncident.replace(/[{}]/g, ""), oIncidentUPD, "incident", UsuarioAdminID, null, null);
+                                        JumpStartLibXRM.Fx.formClose(window._executionContext);
+                                    }
+                                    else
+                                        JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
                                 },
                                 function (error) {
-                                Xrm.Utility.closeProgressIndicator();
+                                    Xrm.Utility.closeProgressIndicator();
                                     //console.log(error.message);
                                 }
                             ); 
@@ -331,17 +365,22 @@
                                 function (success) {
                                     //console.log("Alert dialog closed");
                                     Xrm.Utility.closeProgressIndicator();
-                                    JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
+                                    debugger;
+                                    if (esSubRequerimientoFraude){
+                                        SDK.WEBAPI.updateRecordImpersonate(window._executionContext, idIncident.replace(/[{}]/g, ""), oIncidentUPD, "incident", UsuarioAdminID, null, null);
+                                        JumpStartLibXRM.Fx.formClose(window._executionContext);
+                                    }
+                                    else
+                                        JumpStartLibXRM.Fx.formSaveAndClose(window._executionContext);
                                 },
                                 function (error) {
-                                Xrm.Utility.closeProgressIndicator();
+                                    Xrm.Utility.closeProgressIndicator();
                                     //console.log(error.message);
                                 }
                             );                            
                         }
                         
-                        window.close();
-                    }, 2000);
+                        //window.close();
                 }
                 else
                 {
@@ -353,7 +392,6 @@
         }
 
         $(document).ready(function () {
-            //debugger;
             //parent.$("h1[data-id='defaultDialogChromeTitle']",parent.document).html("Reparar Caso");
             $('#dvLoader').css("display", "block");      
             setDisabled("selectCodigoReparo", true);             
@@ -394,7 +432,6 @@
                 {
                     setCodigosReparo(_package.Data);
                 }
-				
 				if (_package.StockAdquirenciaId)
 					StockAdquirenciaId = _package.StockAdquirenciaId;
 				if (_package.NuevoStock)

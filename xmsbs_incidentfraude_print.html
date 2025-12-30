@@ -995,12 +995,13 @@
                 attLogicalName = "_" + attLogicalName + "_value";
             }
             else if (attDataType === "Picklist" && attLogicalName.includes("xmsbs_picklist")) {
+                attDataType = "String";
                 attLogicalName = attLogicalName + "_texto";
             }
 
             // ---------------------------------------------
 
-            if (!EntityData[attLogicalName])
+            if (EntityData[attLogicalName] == null)
                 return value;
 
             if (attDataType === "Picklist" || attDataType === "Money" || attDataType === "DateTime" || attDataType === "Boolean" || attDataType === "Lookup") {
@@ -1042,7 +1043,7 @@
                 idDetalleOperacion = window._formContext.getAttribute("xmsbs_detalledeoperacion").getValue()[0].id;
                 numCorrelativo = window._formContext.getAttribute("xmsbs_numerocorrelativo").getValue();
 				var control = window._formContext.getAttribute("parentcaseid");
-				if (control)
+				if (control && control.getValue())
 					parentcaseid = control.getValue()[0].id;
 
                 if (idDetalleOperacion == DO1472_TC_Id)
